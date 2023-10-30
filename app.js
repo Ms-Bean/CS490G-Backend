@@ -7,10 +7,6 @@ const bodyParser = require("body-parser");
 const controller = require("./rest_controller");
 
 const PORT = 3500 || process.env.PORT;
-
-app.post("/insert_user", controller.insert_user_controller);
-app.get("/health_check", controller.health_check);
-
 app.use(cors());
 
 app.options("*", cors());
@@ -27,4 +23,7 @@ app.use(
   })
 );
 
+app.post("/insert_user", controller.insert_user_controller);
+app.get("/health_check", controller.health_check);
 app.post("/login", controller.login_controller);
+app.post("/assign_role", controller.assign_role_controller);

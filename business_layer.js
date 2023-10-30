@@ -40,7 +40,10 @@ async function insert_user_business_layer(first_name, last_name, username, email
     })   
     return new Promise((resolve, reject) => {
         data_layer.insert_user_data_layer(first_name, last_name, username, email, hashed_password, salt).then((data_layer_response) =>{
-            resolve("Successfully added user");
+            resolve({
+                user_id: data_layer_response,
+                message: "Successfully added user"
+            });
         }).catch((error) =>{
             console.log("data layer failed");
             reject(error);

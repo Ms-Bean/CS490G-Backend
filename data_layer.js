@@ -28,8 +28,20 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
             }
             else
             {
-                console.log("Success");
-                resolve(result);
+
+                sql = "SELECT user_id FROM Users WHERE username = '" + username + "'";
+                con.query(sql, function(err, result){
+                    if(err)
+                    {
+                        console.log(err);
+                        reject("sql failure");
+                    }
+                    else
+                    {
+                        console.log("Success");
+                        resolve(result[0].user_id);
+                    }
+                });
             }
         });
     });
@@ -60,7 +72,7 @@ async function assign_role_data_layer(user_id, is_coach){
         sql = "INSERT INTO Clients (user_id) VALUES (" + user_id + ")";
 
     return new Promise((resolve, reject) => {
-        con.query(sql, [username], function(err, result) {
+        con.query(sql, function(err, result) {
             if(err)
             {
                 console.log(err);

@@ -12,16 +12,19 @@ async function insert_user_controller(req, res) {
             req.headers.password
         )
         .then((response) => {
+            console.log(req.headers.username);
+            console.log(response.user_id)
+            req.session.user = { username: req.headers.username, user_id: response.user_id};
             res.header("Access-Control-Allow-Origin", "*");
             res.status(200).send({
-                message: "Successfully added user!",
+                message: response.message
             });
         })
         .catch((error_message) => {
             console.log(error_message);
             res.header("Access-Control-Allow-Origin", "*");
             res.status(400).send({
-                message: error_message,
+                message: error_message
             });
         });
 }
@@ -31,7 +34,7 @@ async function login_controller(req, res) {
         .login_business_layer(req.body.username, req.body.password)
         .then((response) => {
             req.session.user = { username: req.body.username, user_id: response.user_id};
-            console.log(req.session.user);
+            console.log(req.session);
             res.header("Access-Control-Allow-Origin", "*");
             res.status(200).send({
                 success: true,
@@ -46,9 +49,10 @@ async function login_controller(req, res) {
         });
 }
 async function assign_role_controller(req, res) {
+    console.log(req.session);
     business_layer
         .assign_role_business_layer(
-            req.session.user_id,
+            req.session.user["user_id"],
             req.body.is_coach
         )
         .then((response) => {
@@ -68,3 +72,4 @@ async function assign_role_controller(req, res) {
 module.exports.insert_user_controller = insert_user_controller;
 module.exports.health_check = health_check;
 module.exports.login_controller = login_controller;
+module.exports.assign_role_controller = assign_role_controller;
