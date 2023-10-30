@@ -4,7 +4,7 @@ let database_name = "cs490_database" //Replace with your database name
 var con = mysql.createConnection({ 
     host: "localhost",
     user: "root", //Replace with your user
-    password: "cactusgreen" //Replace with your password
+    password: "123123" //Replace with your password
 });
 con.connect(function(err) {
     if (err)
@@ -15,6 +15,25 @@ con.connect(function(err) {
     });
     console.log("connected to database");
 });
+
+
+function checkIfUsernameExists(username) {
+  return new Promise((resolve, reject) => {
+    con.query('SELECT * FROM Users WHERE username = ?', [username], (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        if (results.length > 0) {
+          resolve(true); 
+        } else {
+          resolve(false); 
+        }
+      }
+    });
+  });
+}
+
+module.exports = { checkIfUsernameExists };
 
 async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt)
 {        
