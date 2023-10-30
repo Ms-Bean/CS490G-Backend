@@ -47,16 +47,18 @@ async function insert_user_business_layer(first_name, last_name, username, email
         });
     });
 }
-module.exports.insert_user_business_layer = insert_user_business_layer;
 
 async function login_business_layer(username, password) {
     return new Promise((resolve, reject) => {
         data_layer.login_data_layer(username).then((data) => {
-            const { password_hash, password_salt } = data;
+            const { password_hash, password_salt, user_id } = data;
             const salted_password = password + password_salt;
             bcrypt.compare(salted_password, password_hash, function(err, result) {
                 if(err) reject(err);
-                if(result) resolve("Login successful");
+                if(result) resolve({
+                    message: "Login successful",
+                    user_id: user_id
+                });
                 else reject("Invalid credentials");
             });
         }).catch((error) => {
@@ -65,3 +67,4 @@ async function login_business_layer(username, password) {
     });
 }
 module.exports.login_business_layer = login_business_layer;
+module.exports.insert_user_business_layer = insert_user_business_layer;

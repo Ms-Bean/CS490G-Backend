@@ -1,5 +1,4 @@
 const business_layer = require("./business_layer");
-
 async function health_check(req, res) {
   res.status(200).send("Hello, world!");
 }
@@ -35,11 +34,12 @@ async function login_controller(req, res) {
   business_layer
     .login_business_layer(req.body.username, req.body.password)
     .then((response) => {
-      req.session.user = { username: req.body.username };
+      req.session.user = { username: req.body.username, user_id: response.user_id};
+      console.log(req.session.user);
       res.header("Access-Control-Allow-Origin", "*");
       res.status(200).send({
         success: true,
-        message: "Login successful",
+        message: response.message,
       });
     })
     .catch((error_message) => {
