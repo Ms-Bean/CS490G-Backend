@@ -3,6 +3,13 @@ const bcrypt = require('bcrypt');
 
 async function insert_user_business_layer(first_name, last_name, username, email, password)
 {
+    const usernameExistsFlag = await checkIfUsernameExists(username); //checking checkIfUsernameExists 
+    if(usernameExistsFlag){
+    reject('This username is already been used');
+    } 
+    else {
+        if(!/^([a-zA-Z]|[0-9]|[_])+$/.test(username))
+            return Promise.reject("Username containing characters other than letters, numbers, or underscores entered.");}
     if(!/^[a-zA-Z\-]+$/.test(first_name))
         return Promise.reject("First name must contain letters or hyphens only");
     if(first_name.length > 255)
@@ -19,8 +26,6 @@ async function insert_user_business_layer(first_name, last_name, username, email
         return Promise.reject("Excessively long username entered.");
     if(username.length < 1)
         return Promise.reject("Empty username entered.");
-    if(!/^([a-zA-Z]|[0-9]|[_])+$/.test(username))
-        return Promise.reject("Username containing characters other than letters, numbers, or underscores entered.");
     if(/^.*'.*$/.test(password) || /^.*".*$/.test(password))
         return Promise.reject("Password cannot contain quotes.");
     if(password.length < 1)
@@ -86,6 +91,8 @@ async function assign_role_business_layer(user_id, is_coach)
         });
     });
 }
+
+
 module.exports.login_business_layer = login_business_layer;
 module.exports.insert_user_business_layer = insert_user_business_layer;
 module.exports.assign_role_business_layer = assign_role_business_layer;
