@@ -35,3 +35,15 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
     });
 }
 module.exports.insert_user_data_layer = insert_user_data_layer;
+
+async function login_data_layer(username) {
+    var sql = "SELECT password_hash, password_salt FROM Users WHERE username = ?";
+    return new Promise((resolve, reject) => {
+        con.query(sql, [username], function(err, result) {
+            if(err) reject(err);
+            if(result.length > 0) resolve(result[0]);
+            else reject("User not found");
+        });
+    });
+}
+module.exports.login_data_layer = login_data_layer;
