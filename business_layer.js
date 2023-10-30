@@ -66,5 +66,23 @@ async function login_business_layer(username, password) {
         });
     });
 }
+
+async function assign_role_business_layer(user_id, is_coach)
+{
+    return new Promise((resolve, reject) =>{
+        if(typeof user_id != "number")
+        {
+            reject("invalid user_id"); //This is probably a hacker sending custom packets
+        }
+        if(typeof is_coach != "boolean")
+        {
+            reject("invalid is_coach flag");
+        }
+        data_layer.assign_role_data_layer(user_id, is_coach).then(response =>{
+            resolve(response)
+        });
+    });
+}
 module.exports.login_business_layer = login_business_layer;
 module.exports.insert_user_business_layer = insert_user_business_layer;
+module.exports.assign_role_business_layer = assign_role_business_layer;
