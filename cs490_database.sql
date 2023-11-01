@@ -16,14 +16,6 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Current Database: `cs490_database`
---
-
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `cs490_database` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-
-USE `cs490_database`;
-
---
 -- Table structure for table `Appointments`
 --
 
@@ -45,15 +37,6 @@ CREATE TABLE `Appointments` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `Appointments`
---
-
-LOCK TABLES `Appointments` WRITE;
-/*!40000 ALTER TABLE `Appointments` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Appointments` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `Clients`
 --
 
@@ -71,6 +54,8 @@ CREATE TABLE `Clients` (
   `target_weight_pounds` int DEFAULT NULL,
   `target_daily_water_intake` int DEFAULT NULL,
   `target_daily_hours_of_sleep` int DEFAULT NULL,
+  `experience_level` varchar(255) NOT NULL,
+  `budget` float NOT NULL,
   PRIMARY KEY (`user_id`),
   KEY `coach_id` (`coach_id`),
   KEY `workout_plan_id` (`workout_plan_id`),
@@ -79,15 +64,6 @@ CREATE TABLE `Clients` (
   CONSTRAINT `Clients_ibfk_3` FOREIGN KEY (`workout_plan_id`) REFERENCES `Workout_Plans` (`workout_plan_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `Clients`
---
-
-LOCK TABLES `Clients` WRITE;
-/*!40000 ALTER TABLE `Clients` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Clients` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `Coach_Requests`
@@ -110,15 +86,6 @@ CREATE TABLE `Coach_Requests` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `Coach_Requests`
---
-
-LOCK TABLES `Coach_Requests` WRITE;
-/*!40000 ALTER TABLE `Coach_Requests` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Coach_Requests` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `Coaches`
 --
 
@@ -136,15 +103,6 @@ CREATE TABLE `Coaches` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `Coaches`
---
-
-LOCK TABLES `Coaches` WRITE;
-/*!40000 ALTER TABLE `Coaches` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Coaches` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `Exercise_Bank`
 --
 
@@ -157,15 +115,6 @@ CREATE TABLE `Exercise_Bank` (
   PRIMARY KEY (`exercise_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `Exercise_Bank`
---
-
-LOCK TABLES `Exercise_Bank` WRITE;
-/*!40000 ALTER TABLE `Exercise_Bank` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Exercise_Bank` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `Exercise_Logs`
@@ -188,15 +137,6 @@ CREATE TABLE `Exercise_Logs` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `Exercise_Logs`
---
-
-LOCK TABLES `Exercise_Logs` WRITE;
-/*!40000 ALTER TABLE `Exercise_Logs` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Exercise_Logs` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `Messages`
 --
 
@@ -216,15 +156,6 @@ CREATE TABLE `Messages` (
   CONSTRAINT `Messages_ibfk_2` FOREIGN KEY (`client_id`) REFERENCES `Clients` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `Messages`
---
-
-LOCK TABLES `Messages` WRITE;
-/*!40000 ALTER TABLE `Messages` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Messages` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `Ratings`
@@ -251,15 +182,6 @@ CREATE TABLE `Ratings` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `Ratings`
---
-
-LOCK TABLES `Ratings` WRITE;
-/*!40000 ALTER TABLE `Ratings` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Ratings` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `Status_Logs`
 --
 
@@ -278,15 +200,6 @@ CREATE TABLE `Status_Logs` (
   CONSTRAINT `Status_Logs_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `Clients` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `Status_Logs`
---
-
-LOCK TABLES `Status_Logs` WRITE;
-/*!40000 ALTER TABLE `Status_Logs` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Status_Logs` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `Users`
@@ -314,19 +227,11 @@ CREATE TABLE `Users` (
   `profile_picture` blob,
   `phone` int DEFAULT NULL,
   `username` varchar(255) NOT NULL,
+  `role` varchar(255) NOT NULL,
   UNIQUE KEY `user_id` (`user_id`),
   CONSTRAINT `longitude_latitude_bound` CHECK (((`location_longitude` >= -(180)) and (`location_longitude` <= 180) and (`location_latitude` >= -(90)) and (`location_latitude` <= 90)))
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `Users`
---
-
-LOCK TABLES `Users` WRITE;
-/*!40000 ALTER TABLE `Users` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Users` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `Workout_Plan_Exercises`
@@ -353,15 +258,6 @@ CREATE TABLE `Workout_Plan_Exercises` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `Workout_Plan_Exercises`
---
-
-LOCK TABLES `Workout_Plan_Exercises` WRITE;
-/*!40000 ALTER TABLE `Workout_Plan_Exercises` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Workout_Plan_Exercises` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `Workout_Plan_Logs`
 --
 
@@ -379,15 +275,6 @@ CREATE TABLE `Workout_Plan_Logs` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `Workout_Plan_Logs`
---
-
-LOCK TABLES `Workout_Plan_Logs` WRITE;
-/*!40000 ALTER TABLE `Workout_Plan_Logs` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Workout_Plan_Logs` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `Workout_Plans`
 --
 
@@ -400,15 +287,6 @@ CREATE TABLE `Workout_Plans` (
   UNIQUE KEY `workout_plan_id` (`workout_plan_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `Workout_Plans`
---
-
-LOCK TABLES `Workout_Plans` WRITE;
-/*!40000 ALTER TABLE `Workout_Plans` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Workout_Plans` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -419,4 +297,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-29  9:11:53
+-- Dump completed on 2023-11-01  0:08:54
