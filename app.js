@@ -40,6 +40,7 @@ app.post("/login", controller.login_controller);
 app.post("/logout", controller.logout_controller);
 app.post("/assign_role", controller.assign_role_controller);
 app.post("/accept_client_survey", controller.accept_client_survey_controller);
+app.post("/accept_coach_survey", controller.accept_client_survey_controller);
 
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT.toString());

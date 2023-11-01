@@ -105,9 +105,33 @@ async function accept_client_survey_controller(req, res) {
     })
 }
 
+async function accept_coach_survey_controller(req, res) {
+  console.log(req.session);
+  business_layer
+    .accept_coach_survey_business_layer(
+      req.session.user["user_id"],
+      req.body.cost_per_session,
+      req.body.availability,
+      req.body.experience
+    )
+    .then((response) =>{
+      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.status(200).send({
+        message: response
+      });
+    })
+    .catch((error_message) =>{
+      console.log(error_message);
+      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.status(400).send({
+        message: error_message
+      });
+    })
+}
 module.exports.logout_controller = logout_controller;
 module.exports.insert_user_controller = insert_user_controller;
 module.exports.health_check = health_check;
 module.exports.login_controller = login_controller;
 module.exports.assign_role_controller = assign_role_controller;
 module.exports.accept_client_survey_controller = accept_client_survey_controller;
+module.exports.accept_coach_survey_controller = accept_coach_survey_controller;

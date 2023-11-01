@@ -96,6 +96,7 @@ async function assign_role_business_layer(user_id, is_coach)
 }
 async function accept_client_survey_business_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
 {
+    //TODO, check if user is a client
     return new Promise((resolve, reject) =>{
         if(user_id == undefined)
         {
@@ -128,8 +129,37 @@ async function accept_client_survey_business_layer(user_id, weight=undefined, he
         });
     });
 }
-
+async function accept_coach_survey_business_layer(user_id, cost_per_session, availability, experience)
+{
+    //TODO check if user is coach
+    if(user_id == undefined)
+    {
+        reject("User is not logged in.");
+    }
+    if(typeof(user_id) != "number")
+    {
+        reject("Invalid user_id");
+    }
+    if(typeof(cost_per_session) != "number")
+    {
+        reject("Invalid cost per session");
+    }
+    if(typeof(availability) != "string")
+    {
+        reject("Invalid availability");
+    }
+    if(typeof(experience) != "string")
+    {
+        reject("Invalid experience");
+    }
+    data_layer.accept_coach_survey_data_layer(user_id, cost_per_session, availability, experience).then(response =>{
+        resolve(response);
+    }).catch((error) =>{
+        reject(error);
+    });
+}
 module.exports.login_business_layer = login_business_layer;
 module.exports.insert_user_business_layer = insert_user_business_layer;
 module.exports.assign_role_business_layer = assign_role_business_layer;
 module.exports.accept_client_survey_business_layer = accept_client_survey_business_layer;
+module.exports.accept_coach_survey_business_layer = accept_coach_survey_business_layer;

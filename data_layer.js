@@ -137,7 +137,51 @@ async function accept_client_survey_data_layer(user_id, weight=undefined, height
         }
     });
 }
+async function accept_client_survey_data_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
+{
+    return new Promise((resolve, reject) => {
+        if(weight == undefined && height == undefined && experience_level == undefined && budget == undefined) //Dont do anything if there is no data to insert
+            resolve("Information updated.");
+        else   
+        {
+            sql = "UPDATE Clients SET " 
+            + (weight != undefined ? "weight = " + weight + ", " : "") 
+            + (height != undefined ? "height = " + height + ", " : "")  
+            + (experience_level != undefined ? "experience_level = '" + experience_level + "'," : "")  
+            + (budget != undefined ? "budget = " + budget + ", ": "");
+
+            sql = sql.substring(0, sql.length - 2); //Remove the last comma and space. We can assume there is at least one because of the check at the top of the function.
+
+            sql += " WHERE user_id = " + user_id;
+
+            con.query(sql, function(err, result) {
+                if(err)
+                {
+                    console.log(err);
+                    reject("Something went wrong in out database.");
+                }
+                resolve("Information updated.");
+            });
+        }
+    });
+}
+async function accept_coach_survey_data_layer(user_id, cost_per_session, availability, experience)
+{
+    //TODO, allow 'availability' and 'experience' to contain quotes without resulting in SQL injection
+    return new Promise((resolve, reject) => {
+        sql = "UPDATE Coaches SET cost_per_session = " + cost_per_session + ", availability = '" + availability + "', experience = '" +  experience + "' WHERE user_id = " + user_id;
+        con.query(sql, function(err, result) {
+            if(err)
+            {
+                console.log(err);
+                reject("Something went wrong in out database.");
+            }
+            resolve("Information updated.");
+        });
+    });
+}
 module.exports.insert_user_data_layer = insert_user_data_layer;
 module.exports.login_data_layer = login_data_layer;
 module.exports.assign_role_data_layer = assign_role_data_layer;
 module.exports.accept_client_survey_data_layer = accept_client_survey_data_layer;
+module.exports.accept_coach_survey_data_layer = accept_coach_survey_data_layer;
