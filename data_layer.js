@@ -4,7 +4,7 @@ let database_name = "cs490_database" //Replace with your database name
 var con = mysql.createConnection({ 
     host: "localhost",
     user: "root", //Replace with your user
-    password: "123123" //Replace with your password
+    password: "cactusgreen" //Replace with your password
 });
 con.connect(function(err) {
     if (err)
@@ -17,7 +17,7 @@ con.connect(function(err) {
 });
 
 
-function checkIfUsernameExists(username) {
+function check_if_username_exists(username) {
   return new Promise((resolve, reject) => {
     con.query('SELECT * FROM Users WHERE username = ?', [username], (error, results) => {
       if (error) {
@@ -33,11 +33,11 @@ function checkIfUsernameExists(username) {
   });
 }
 
-module.exports = { checkIfUsernameExists };
+module.exports = { check_if_username_exists };
 
 async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt)
 {        
-    var sql = "INSERT INTO Users (first_name, last_name, username, email, password_hash, password_salt) VALUES ('" + first_name + "', '" + last_name + "', '" + username + "', '" + email + "', '" + password_hash + "', '" + password_salt + "')";
+    var sql = "INSERT INTO Users (first_name, last_name, username, email, password_hash, password_salt, role) VALUES ('" + first_name + "', '" + last_name + "', '" + username + "', '" + email + "', '" + password_hash + "', '" + password_salt + "', 'user')";
     return new Promise((resolve, reject) => {
         con.query(sql, function (err, result){
             if(err)
@@ -47,7 +47,6 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
             }
             else
             {
-
                 sql = "SELECT user_id FROM Users WHERE username = '" + username + "'";
                 con.query(sql, function(err, result){
                     if(err)
@@ -97,10 +96,20 @@ async function assign_role_data_layer(user_id, is_coach){
                 console.log(err);
                 reject("Something went wrong in our database.");
             }
-            resolve("You are now a " + (is_coach ? "coach." : "client."));
+            sql = "UPDATE Users SET role = " + (is_coach ? "'coach'" : "'client'");
+            console.log(sql);
+            con.query(sql, function(err, result) {
+                if(err)
+                {
+                    console.log(err);
+                    reject("Something went wrong in our database.");
+                }
+                resolve("You are now a " + (is_coach ? "coach." : "client."));
+            });
         });
     });
 }
+
 module.exports.insert_user_data_layer = insert_user_data_layer;
 module.exports.login_data_layer = login_data_layer;
 module.exports.assign_role_data_layer = assign_role_data_layer;

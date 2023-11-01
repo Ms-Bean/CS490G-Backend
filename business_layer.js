@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 
 async function insert_user_business_layer(first_name, last_name, username, email, password)
 {
-    const usernameExistsFlag = await data_layer.checkIfUsernameExists(username); //checking checkIfUsernameExists 
+    const usernameExistsFlag = await data_layer.check_if_username_exists(username); //checking check_if_username_exists 
 
     if(usernameExistsFlag){
         return Promise.reject("That username is already taken.");

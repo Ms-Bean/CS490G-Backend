@@ -50,6 +50,7 @@ async function login_controller(req, res) {
         });
 }
 async function assign_role_controller(req, res) {
+    console.log("hello:")
     console.log(req.session);
     business_layer
         .assign_role_business_layer(
