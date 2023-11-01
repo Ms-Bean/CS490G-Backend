@@ -3,9 +3,10 @@ const bcrypt = require('bcrypt');
 
 async function insert_user_business_layer(first_name, last_name, username, email, password)
 {
-    const usernameExistsFlag = await checkIfUsernameExists(username); //checking checkIfUsernameExists 
+    const usernameExistsFlag = await data_layer.checkIfUsernameExists(username); //checking checkIfUsernameExists 
+
     if(usernameExistsFlag){
-    reject('This username is already been used');
+        return Promise.reject("That username is already taken.");
     } 
     else {
         if(!/^([a-zA-Z]|[0-9]|[_])+$/.test(username))
@@ -29,8 +30,8 @@ async function insert_user_business_layer(first_name, last_name, username, email
     if(/^.*'.*$/.test(password) || /^.*".*$/.test(password))
         return Promise.reject("Password cannot contain quotes.");
     if(password.length < 1)
-        return Promise.reject("Empty password entered.");
-
+            return Promise.reject("Empty password entered.");
+        
     var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
     var salt = '';
     for (var i = 0; i < 10; i++ )
