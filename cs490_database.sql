@@ -54,8 +54,8 @@ CREATE TABLE `Clients` (
   `target_weight_pounds` int DEFAULT NULL,
   `target_daily_water_intake` int DEFAULT NULL,
   `target_daily_hours_of_sleep` int DEFAULT NULL,
-  `experience_level` varchar(255) NOT NULL,
-  `budget` float NOT NULL,
+  `budget` float DEFAULT NULL,
+  `experience_level` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   KEY `coach_id` (`coach_id`),
   KEY `workout_plan_id` (`workout_plan_id`),
@@ -230,7 +230,7 @@ CREATE TABLE `Users` (
   `role` varchar(255) NOT NULL,
   UNIQUE KEY `user_id` (`user_id`),
   CONSTRAINT `longitude_latitude_bound` CHECK (((`location_longitude` >= -(180)) and (`location_longitude` <= 180) and (`location_latitude` >= -(90)) and (`location_latitude` <= 90)))
-) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -297,4 +297,4 @@ CREATE TABLE `Workout_Plans` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-01  0:08:54
+-- Dump completed on 2023-11-01  0:17:18
