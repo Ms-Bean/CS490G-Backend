@@ -89,11 +89,47 @@ async function assign_role_business_layer(user_id, is_coach)
         }
         data_layer.assign_role_data_layer(user_id, is_coach).then(response =>{
             resolve(response)
+        }).catch((error =>{
+            reject(error);
+        }));
+    });
+}
+async function accept_client_survey_business_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
+{
+    return new Promise((resolve, reject) =>{
+        if(user_id == undefined)
+        {
+            reject("User is not logged in.");
+        }
+        if(typeof(user_id) != "number")
+        {
+            reject("Invalid user id");
+        }
+        if(weight != undefined && typeof(weight) != number)
+        {
+            reject("Invalid weight");
+        }
+        if(height != undefined && typeof(height) != number)
+        {
+            reject("Invalid height");
+        }
+        if(experience_level != undefined && experience_level != "beginner" && experience_level != "intermediate" && experience_level != "advanced")
+        {
+            reject("Invalid experience level");
+        }
+        if(typeof(budget) != number)
+        {
+            reject("Invalid budget");
+        }
+        data_layer.accept_client_survey_data_layer(user_id, weight, height, experience_level, budget).then(response =>{
+            resolve(response);
+        }).catch((error) =>{
+            reject(error);
         });
     });
 }
 
-
 module.exports.login_business_layer = login_business_layer;
 module.exports.insert_user_business_layer = insert_user_business_layer;
 module.exports.assign_role_business_layer = assign_role_business_layer;
+module.exports.accept_client_survey_business_layer = accept_client_survey_business_layer;
