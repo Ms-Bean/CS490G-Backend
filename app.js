@@ -41,6 +41,14 @@ app.post("/logout", controller.logout_controller);
 app.post("/assign_role", controller.assign_role_controller);
 app.post("/accept_client_survey", controller.accept_client_survey_controller);
 app.post("/accept_coach_survey", controller.accept_client_survey_controller);
+app.get("/check_session", (req, res) => {
+  console.log("Checking session data:", req.session);
+  if (req.session.user) {
+    res.status(200).send({ isLoggedIn: true, user: req.session.user });
+  } else {
+    res.status(200).send({ isLoggedIn: false });
+  }
+});
 
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT.toString());
