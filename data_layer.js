@@ -35,9 +35,9 @@ function check_if_username_exists(username) {
 
 module.exports = { check_if_username_exists };
 
-async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt)
+async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role)
 {        
-    var sql = "INSERT INTO Users (first_name, last_name, username, email, password_hash, password_salt, role) VALUES ('" + first_name + "', '" + last_name + "', '" + username + "', '" + email + "', '" + password_hash + "', '" + password_salt + "', 'user')";
+    var sql = "INSERT INTO Users (first_name, last_name, username, email, password_hash, password_salt, role) VALUES ('" + first_name + "', '" + last_name + "', '" + username + "', '" + email + "', '" + password_hash + "', '" + password_salt + "', '" + role + "')";
     return new Promise((resolve, reject) => {
         con.query(sql, function (err, result){
             if(err)

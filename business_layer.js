@@ -1,7 +1,7 @@
 const data_layer = require("./data_layer");
 const bcrypt = require('bcrypt');
 
-async function insert_user_business_layer(first_name, last_name, username, email, password)
+async function insert_user_business_layer(first_name, last_name, username, email, password, role)
 {
     const usernameExistsFlag = await data_layer.check_if_username_exists(username); //checking check_if_username_exists 
 
@@ -45,7 +45,7 @@ async function insert_user_business_layer(first_name, last_name, username, email
         });
     })   
     return new Promise((resolve, reject) => {
-        data_layer.insert_user_data_layer(first_name, last_name, username, email, hashed_password, salt).then((data_layer_response) =>{
+        data_layer.insert_user_data_layer(first_name, last_name, username, email, hashed_password, salt, role).then((data_layer_response) =>{
             resolve({
                 user_id: data_layer_response,
                 message: "Successfully added user"

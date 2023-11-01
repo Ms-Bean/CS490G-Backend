@@ -9,7 +9,8 @@ async function insert_user_controller(req, res) {
       req.body.last_name,
       req.body.username,
       req.body.email,
-      req.body.password
+      req.body.password,
+      req.body.role
     )
     .then((response) => {
       console.log(req.body.username);
