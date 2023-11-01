@@ -96,7 +96,7 @@ async function assign_role_data_layer(user_id, is_coach){
                 console.log(err);
                 reject("Something went wrong in our database.");
             }
-            sql = "UPDATE Users SET role = " + (is_coach ? "'coach'" : "'client'") + "WHERE user_id = " + user_id;
+            sql = "UPDATE Users SET role = " + (is_coach ? "'coach'" : "'client'") + " WHERE user_id = " + user_id;
             console.log(sql);
             con.query(sql, function(err, result) {
                 if(err)
