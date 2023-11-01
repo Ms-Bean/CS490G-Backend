@@ -97,6 +97,7 @@ CREATE TABLE `Coaches` (
   `accepting_new_clients` tinyint(1) NOT NULL DEFAULT '0',
   `availability` text NOT NULL,
   `hourly_rate` float NOT NULL,
+  `experience` text NOT NULL,
   PRIMARY KEY (`user_id`),
   CONSTRAINT `Coaches_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -297,4 +298,4 @@ CREATE TABLE `Workout_Plans` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-01  1:25:30
+-- Dump completed on 2023-11-01  1:29:37
