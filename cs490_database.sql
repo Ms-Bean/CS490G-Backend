@@ -94,11 +94,11 @@ DROP TABLE IF EXISTS `Coaches`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Coaches` (
   `user_id` int NOT NULL,
-  `hourly_rate` float DEFAULT NULL,
   `accepting_new_clients` tinyint(1) NOT NULL DEFAULT '0',
+  `availability` text NOT NULL,
+  `hourly_rate` float NOT NULL,
   PRIMARY KEY (`user_id`),
-  CONSTRAINT `Coaches_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`) ON DELETE CASCADE,
-  CONSTRAINT `hourly_rate_accepting_new_clients_chk` CHECK (((`accepting_new_clients` = 0) or (`hourly_rate` is not null)))
+  CONSTRAINT `Coaches_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -230,7 +230,7 @@ CREATE TABLE `Users` (
   `role` varchar(255) NOT NULL,
   UNIQUE KEY `user_id` (`user_id`),
   CONSTRAINT `longitude_latitude_bound` CHECK (((`location_longitude` >= -(180)) and (`location_longitude` <= 180) and (`location_latitude` >= -(90)) and (`location_latitude` <= 90)))
-) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -297,4 +297,4 @@ CREATE TABLE `Workout_Plans` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-01  0:17:18
+-- Dump completed on 2023-11-01  1:25:30
