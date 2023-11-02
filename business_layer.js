@@ -108,6 +108,7 @@ async function accept_client_survey_business_layer(user_id, weight=undefined, he
             }
             if(typeof(budget) != number)
             {
+                console.log(budget);
                 reject("Invalid budget");
             }
             data_layer.accept_client_survey_data_layer(user_id, weight, height, experience_level, budget).then(response =>{

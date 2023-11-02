@@ -17,6 +17,8 @@ async function insert_user_controller(req, res) {
       console.log(req.body.username);
       console.log(response.user_id)
       req.session.user = { username: req.body.username, user_id: response.user_id};
+      console.log("Session after registration:")
+      console.log(req.session);
       res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // Use of wildcard causes issues during registration?
       res.header("Access-Control-Allow-Credentials", "true"); // Allows the browser to send credentials/cookies with the request
       res.status(200).send({
@@ -64,6 +66,14 @@ async function logout_controller(req, res) {
 }
 async function accept_client_survey_controller(req, res) {
   console.log(req.session);
+  if(req.session.user == undefined || req.session.user["user_id"] == undefined)
+  {
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.status(400).send({
+      message: "User is not logged in."
+    });
+  }
+
   business_layer
     .accept_client_survey_business_layer(
       req.session.user["user_id"],
