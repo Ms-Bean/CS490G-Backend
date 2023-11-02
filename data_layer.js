@@ -44,8 +44,8 @@ function get_role_data_layer(user_id) {
           }
         }
       });
-    });
-  }
+  });
+}
 
 async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role)
 {        
