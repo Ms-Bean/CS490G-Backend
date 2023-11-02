@@ -188,7 +188,7 @@ async function request_coach_business_layer(coach_id, client_id, comment)
     {
         reject("User is not logged in");
     }
-    if(typeof(coach_id) != "number")
+    if(!/^[0-9]+$/.test(coach_id))
     {
         reject("Invalid coach id");
     }
@@ -206,15 +206,15 @@ async function request_coach_business_layer(coach_id, client_id, comment)
 async function accept_client_business_layer(coach_id, client_id)
 {
     //TODO, check if coach_id and client_id belong to a coach and client, respectively
-    if(coach_id == undefined)
+    if(coach_id === undefined)
     {
         reject("User not logged in");
     }
-    if(typeof(coach_id) != "number")
+    if(!/^[0-9]+$/.test(coach_id))
     {
         reject("Invalid coach id");
     }
-    if(typeof(client_id) != "number")
+    if(!/^[0-9]+$/.test(client_id))
     {
         reject("Invalid client id");
     }
@@ -224,9 +224,25 @@ async function accept_client_business_layer(coach_id, client_id)
         reject(error);
     });
 }
+
+async function get_role_business_layer(user_id)
+{
+    if(!/^[0-9]+$/.test(user_id))
+    {
+        reject("Invalid user id");
+    }
+    data_layer.get_role_data_layer(user_id).then(response =>{
+        resolve(response)
+    }).catch((error) =>{
+        reject(error);
+    });
+}
+
+
 module.exports.accept_client_business_layer = accept_client_business_layer;
 module.exports.login_business_layer = login_business_layer;
 module.exports.insert_user_business_layer = insert_user_business_layer;
 module.exports.accept_client_survey_business_layer = accept_client_survey_business_layer;
 module.exports.accept_coach_survey_business_layer = accept_coach_survey_business_layer;
 module.exports.request_coach_business_layer = request_coach_business_layer;
+module.exports.get_role_business_layer = get_role_business_layer;
