@@ -46,7 +46,7 @@ function get_role_data_layer(user_id) {
       });
   });
 }
-module.exports = { check_if_username_exists };
+module.exports = { check_if_username_exists_data_layer };
 
 // TODO Either create a Message class / Type or find a way to export this definition for other functions to use
 /**
