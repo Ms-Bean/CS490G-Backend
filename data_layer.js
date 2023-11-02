@@ -15,7 +15,7 @@ con.connect(function(err) {
     });
     console.log("connected to database");
 });
-function check_if_username_exists(username) {
+function check_if_username_exists_data_layer(username) {
   return new Promise((resolve, reject) => {
     con.query('SELECT * FROM Users WHERE username = ?', [username], (error, results) => {
       if (error) {
@@ -30,47 +30,22 @@ function check_if_username_exists(username) {
     });
   });
 }
-function check_if_coach(user_id) {
-    return new Promise((resolve, reject) => {
-      con.query('SELECT role FROM users WHERE user_id = ?', [user_id], (error, results) => {
-        if (error) {
-          reject(error);
-        } else {
-          if (results.length > 0) {
-            if (results[0].role === 'coach') {
-              resolve(true);  // The user is a coach
-            } else {
-              resolve(false);  // The user is not a coach
-            }
-          } else {
-            reject(new Error("User not found"));  // User not found with the specified user_id
-          }
-        }
-      });
-    });
-  }
-  
-  function check_if_client(user_id) {
-    return new Promise((resolve, reject) => {
-      con.query('SELECT role FROM users WHERE user_id = ?', [user_id], (error, results) => {
-        if (error) {
-          reject(error);
-        } else {
-          if (results.length > 0) {
-            if (results[0].role === 'client') {
-              resolve(true);  // The user is a client
-            } else {
-              resolve(false);  // The user is not a client
-            }
-          } else {
-            reject(new Error("User not found"));  // User not found with the specified user_id
-          }
-        }
-      });
-    });
-  }
 
-module.exports = { check_if_username_exists };
+function get_role_data_layer(user_id) {
+    return new Promise((resolve, reject) => {
+      con.query('SELECT role FROM Users WHERE user_id = ?', [user_id], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          if (results.length > 0) {
+            resolve(results[0].role);
+          } else {
+            reject(new Error("User not found"));  // User not found with the specified user_id
+          }
+        }
+      });
+  });
+}
 
 async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role)
 {        
@@ -105,6 +80,7 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
                             console.log(err); //This should never happen. Ever.
                             reject(err);
                            } 
+                           resolve(user_id);
                         });
                     }
                 });
@@ -133,27 +109,34 @@ async function login_data_layer(username) {
 async function accept_client_survey_data_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
 {
     return new Promise((resolve, reject) => {
-        if(weight == undefined && height == undefined && experience_level == undefined && budget == undefined) //Dont do anything if there is no data to insert
-            resolve("Information updated.");
-        else   
+        if(experience_level !== undefined || budget !== undefined) //Dont do anything if there is no data to insert
         {
             sql = "UPDATE Clients SET " 
-            + (weight != undefined ? "weight = " + weight + ", " : "") 
-            + (height != undefined ? "height = " + height + ", " : "")  
-            + (experience_level != undefined ? "experience_level = '" + experience_level + "'," : "")  
-            + (budget != undefined ? "budget = " + budget + ", ": "");
+            + (experience_level !== undefined ? "experience_level = '" + experience_level + "'," : "")  
+            + (budget !== undefined ? "budget = " + budget + ", ": "");
 
             sql = sql.substring(0, sql.length - 2); //Remove the last comma and space. We can assume there is at least one because of the check at the top of the function.
 
             sql += " WHERE user_id = " + user_id;
-
+            console.log(sql);
             con.query(sql, function(err, result) {
                 if(err)
                 {
                     console.log(err);
                     reject("Something went wrong in our database.");
                 }
-                resolve("Information updated.");
+                sql = "INSERT INTO Status_Logs (client_id, weight, height_cm, date) VALUES (?, ?, ?, CURRENT_DATE())";
+                con.query(sql, [user_id, weight, height], function(err, result) {
+                  if(err)
+                  {
+                    console.log(err);
+                    reject("Something went wrong in our database.");
+                  }
+                  else
+                  {
+                    resolve("Information updated.");  
+                  }
+                });
             });
         }
     });
@@ -239,3 +222,5 @@ module.exports.insert_user_data_layer = insert_user_data_layer;
 module.exports.login_data_layer = login_data_layer;
 module.exports.accept_client_survey_data_layer = accept_client_survey_data_layer;
 module.exports.accept_coach_survey_data_layer = accept_coach_survey_data_layer;
+module.exports.check_if_username_exists_data_layer = check_if_username_exists_data_layer;
+module.exports.get_role_data_layer = get_role_data_layer;
