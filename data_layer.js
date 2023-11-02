@@ -94,10 +94,10 @@ function get_client_coach_messages_data_layer(client_id, coach_id) {
 }
 
 async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role)
-{        
-    var sql = "INSERT INTO Users (first_name, last_name, username, email, password_hash, password_salt, role) VALUES ('" + first_name + "', '" + last_name + "', '" + username + "', '" + email + "', '" + password_hash + "', '" + password_salt + "', '" + role + "')";
+{
+    let sql = "INSERT INTO Users (first_name, last_name, username, email, password_hash, password_salt, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
     return new Promise((resolve, reject) => {
-        con.query(sql, function (err, result){
+        con.query(sql, [first_name, last_name, username, email, password_hash, password_salt, role], function (err, result){
             if(err)
             {
                 console.log(err);
@@ -105,8 +105,8 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
             }
             else
             {
-                sql = "SELECT user_id FROM Users WHERE username = '" + username + "'";
-                con.query(sql, function(err, result){
+                sql = "SELECT user_id FROM Users WHERE username = ?";
+                con.query(sql, [username], function(err, result){
                     if(err)
                     {
                         console.log(err);
@@ -114,12 +114,12 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
                     }
                     else
                     {
-                        user_id = result[0].user_id;
-                        if(role == 'coach')
-                            sql = "INSERT INTO Coaches (user_id , accepting_new_clients, availability, hourly_rate, experience) VALUES (" + user_id +  ", 0, 'This coach has not indicated their availability', 0, 'This coach has not indicated their experience')"; 
+                        let user_id = result[0].user_id;
+                        if(role === 'coach')
+                            sql = "INSERT INTO Coaches (user_id , accepting_new_clients, availability, hourly_rate, experience) VALUES (? , 0, 'This coach has not indicated their availability', 0, 'This coach has not indicated their experience')"; 
                         else
-                            sql = "INSERT INTO Clients (user_id) VALUES (" + user_id +  ")";
-                        con.query(sql, function(err, result){
+                            sql = "INSERT INTO Clients (user_id) VALUES (?)";
+                        con.query(sql, [user_id], function(err, result){
                            if(err)
                            {
                             console.log(err); //This should never happen. Ever.
@@ -156,7 +156,8 @@ async function accept_client_survey_data_layer(user_id, weight=undefined, height
     return new Promise((resolve, reject) => {
         if(experience_level !== undefined || budget !== undefined) //Dont do anything if there is no data to insert
         {
-            sql = "UPDATE Clients SET " 
+            // TODO Figure out to safely build dynamic SQL queries, to avoid SQL injection
+            let sql = "UPDATE Clients SET " 
             + (experience_level !== undefined ? "experience_level = '" + experience_level + "'," : "")  
             + (budget !== undefined ? "budget = " + budget + ", ": "");
 
@@ -189,8 +190,8 @@ async function accept_client_survey_data_layer(user_id, weight=undefined, height
 async function accept_coach_survey_data_layer(user_id, cost_per_session, availability, experience)
 {
     return new Promise((resolve, reject) => {
-        sql = "UPDATE Coaches SET cost_per_session = " + cost_per_session + ", availability = '" + availability + "', experience = '" +  experience + "' WHERE user_id = " + user_id;
-        con.query(sql, function(err, result) {
+        const sql = "UPDATE Coaches SET hourly_rate = ?, availability = ?, experience = ? WHERE user_id = ?";
+        con.query(sql, [cost_per_session, availability, experience, user_id], function(err, result) {
             if(err)
             {
                 console.log(err);
@@ -204,8 +205,8 @@ async function accept_coach_survey_data_layer(user_id, cost_per_session, availab
 async function request_coach_data_layer(coach_id, client_id, comment)
 {
     return new Promise((resolve, reject) => {
-        sql = "INSERT INTO Coach_Requests (coach_id, client_id, comment) VALUES (" + coach_id + ", " + client_id + ", '" + comment + "')";
-        con.query(sql, function(err, result){
+        const sql = "INSERT INTO Coach_Requests (coach_id, client_id, comment) VALUES (?, ?, ?)";
+        con.query(sql, [coach_id, client_id, comment], function(err, result){
             if(err)
             {
                 console.log(err);
@@ -216,21 +217,23 @@ async function request_coach_data_layer(coach_id, client_id, comment)
     });
 }
 
+// TODO split into smaller functions
+// TODO function crashes if it's unable to find a request_id
 async function accept_client_data_layer(coach_id, client_id)
 {    
     return new Promise((resolve, reject) => {
-        sql = "SELECT request_id FROM Coach_Requests WHERE coach_id = " + coach_id + " AND client_id = " + client_id;
-        con.query(sql, function(err, result){
+        let sql = "SELECT request_id FROM Coach_Requests WHERE coach_id = ? AND client_id = ?";
+        con.query(sql, [coach_id, client_id], function(err, results){
             if(err)
             {
                 console.log(err);
                 reject("Something went wrong in our database");
             }
-            if(result.length == 0)
+            if(results.length == 0)
                 reject("The client has not requested you to be their coach.");
-            request_id = result[0].request_id;
-            sql = "SELECT coach_id FROM Clients WHERE user_id = " + client_id;
-            con.query(sql, function(err, result){
+            const request_id = results[0].request_id;
+            sql = "SELECT coach_id FROM Clients WHERE user_id = ?";
+            con.query(sql, [client_id], function(err, results){
                 if(err)
                 {
                     console.log(err);
@@ -240,15 +243,15 @@ async function accept_client_data_layer(coach_id, client_id)
                 {
                     reject("This client already has a coach.");
                 }
-                sql = "UPDATE Clients SET coach_id = " + coach_id + " WHERE client_id = " + client_id;
-                con.query(sql, function(err, result){
+                sql = "UPDATE Clients SET coach_id = ? WHERE user_id = ?";
+                con.query(sql, [coach_id, client_id], function(err, results){
                     if(err)
                     {
                         console.log(err);
                         reject("Something went wrong in our database.");
                     }
-                    sql = "DELETE FROM Coach_Requests WHERE request_id = " + request_id;
-                    con.query(sql, function(err, result){
+                    sql = "DELETE FROM Coach_Requests WHERE request_id = ?";
+                    con.query(sql, [request_id], function(err, results){
                         if(err)
                         {
                             console.log(err);
