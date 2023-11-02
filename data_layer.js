@@ -33,7 +33,7 @@ function check_if_username_exists_data_layer(username) {
 
 function get_role_data_layer(user_id) {
     return new Promise((resolve, reject) => {
-      con.query('SELECT role FROM users WHERE user_id = ?', [user_id], (error, results) => {
+      con.query('SELECT role FROM Users WHERE user_id = ?', [user_id], (error, results) => {
         if (error) {
           reject(error);
         } else {
@@ -46,29 +46,6 @@ function get_role_data_layer(user_id) {
       });
     });
   }
-  module.exports = { get_role_data_layer };
-  
-  function check_if_client_data_layer(user_id) {
-    return new Promise((resolve, reject) => {
-      con.query('SELECT role FROM users WHERE user_id = ?', [user_id], (error, results) => {
-        if (error) {
-          reject(error);
-        } else {
-          if (results.length > 0) {
-            if (results[0].role === 'client') {
-              resolve(true);  // The user is a client
-            } else {
-              resolve(false);  // The user is not a client
-            }
-          } else {
-            reject(new Error("User not found"));  // User not found with the specified user_id
-          }
-        }
-      });
-    });
-  }
-
-module.exports = { check_if_client_data_layer };
 
 async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role)
 {        
