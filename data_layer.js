@@ -48,8 +48,7 @@ function get_role_data_layer(user_id) {
 }
 
 async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role)
-{        
-    // var sql = "INSERT INTO Users (first_name, last_name, username, email, password_hash, password_salt, role) VALUES ('" + first_name + "', '" + last_name + "', '" + username + "', '" + email + "', '" + password_hash + "', '" + password_salt + "', '" + role + "')";
+{
     let sql = "INSERT INTO Users (first_name, last_name, username, email, password_hash, password_salt, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
     return new Promise((resolve, reject) => {
         con.query(sql, [first_name, last_name, username, email, password_hash, password_salt, role], function (err, result){
@@ -111,7 +110,8 @@ async function accept_client_survey_data_layer(user_id, weight=undefined, height
     return new Promise((resolve, reject) => {
         if(experience_level !== undefined || budget !== undefined) //Dont do anything if there is no data to insert
         {
-            sql = "UPDATE Clients SET " 
+            // TODO Figure out to safely build dynamic SQL queries, to avoid SQL injection
+            let sql = "UPDATE Clients SET " 
             + (experience_level !== undefined ? "experience_level = '" + experience_level + "'," : "")  
             + (budget !== undefined ? "budget = " + budget + ", ": "");
 
@@ -144,8 +144,8 @@ async function accept_client_survey_data_layer(user_id, weight=undefined, height
 async function accept_coach_survey_data_layer(user_id, cost_per_session, availability, experience)
 {
     return new Promise((resolve, reject) => {
-        sql = "UPDATE Coaches SET cost_per_session = " + cost_per_session + ", availability = '" + availability + "', experience = '" +  experience + "' WHERE user_id = " + user_id;
-        con.query(sql, function(err, result) {
+        const sql = "UPDATE Coaches SET hourly_rate = ?, availability = ?, experience = ? WHERE user_id = ?";
+        con.query(sql, [cost_per_session, availability, experience, user_id], function(err, result) {
             if(err)
             {
                 console.log(err);

@@ -39,7 +39,7 @@ app.get("/health_check", controller.health_check);
 app.post("/login", controller.login_controller);
 app.post("/logout", controller.logout_controller);
 app.post("/onboarding/client", controller.accept_client_survey_controller);
-app.post("/onboarding/coach", controller.accept_client_survey_controller);
+app.post("/onboarding/coach", controller.accept_coach_survey_controller);
 app.post("/request_coach", controller.request_coach_controller);
 app.post("/accept_client", controller.accept_client_controller);
 app.get("/check_session", (req, res) => {
