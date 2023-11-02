@@ -171,21 +171,23 @@ async function request_coach_data_layer(coach_id, client_id, comment)
     });
 }
 
+// TODO split into smaller functions
+// TODO function crashes if it's unable to find a request_id
 async function accept_client_data_layer(coach_id, client_id)
 {    
     return new Promise((resolve, reject) => {
-        sql = "SELECT request_id FROM Coach_Requests WHERE coach_id = " + coach_id + " AND client_id = " + client_id;
-        con.query(sql, function(err, result){
+        let sql = "SELECT request_id FROM Coach_Requests WHERE coach_id = ? AND client_id = ?";
+        con.query(sql, [coach_id, client_id], function(err, results){
             if(err)
             {
                 console.log(err);
                 reject("Something went wrong in our database");
             }
-            if(result.length == 0)
+            if(results.length == 0)
                 reject("The client has not requested you to be their coach.");
-            request_id = result[0].request_id;
-            sql = "SELECT coach_id FROM Clients WHERE user_id = " + client_id;
-            con.query(sql, function(err, result){
+            const request_id = results[0].request_id;
+            sql = "SELECT coach_id FROM Clients WHERE user_id = ?";
+            con.query(sql, [client_id], function(err, results){
                 if(err)
                 {
                     console.log(err);
@@ -195,15 +197,15 @@ async function accept_client_data_layer(coach_id, client_id)
                 {
                     reject("This client already has a coach.");
                 }
-                sql = "UPDATE Clients SET coach_id = " + coach_id + " WHERE client_id = " + client_id;
-                con.query(sql, function(err, result){
+                sql = "UPDATE Clients SET coach_id = ? WHERE user_id = ?";
+                con.query(sql, [coach_id, client_id], function(err, results){
                     if(err)
                     {
                         console.log(err);
                         reject("Something went wrong in our database.");
                     }
-                    sql = "DELETE FROM Coach_Requests WHERE request_id = " + request_id;
-                    con.query(sql, function(err, result){
+                    sql = "DELETE FROM Coach_Requests WHERE request_id = ?";
+                    con.query(sql, [request_id], function(err, results){
                         if(err)
                         {
                             console.log(err);
