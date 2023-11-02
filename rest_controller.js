@@ -82,7 +82,7 @@ async function accept_client_survey_controller(req, res) {
         req.session.user["user_id"],
         req.body.weight,
         req.body.height,
-        req.body.experience_level,
+        req.body.experience,
         req.body.budget
       )
       .then((response) =>{

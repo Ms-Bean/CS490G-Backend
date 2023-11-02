@@ -86,36 +86,48 @@ async function accept_client_survey_business_layer(user_id, weight=undefined, he
     const role = await data_layer.get_role_data_layer(user_id); //checking if user is a client
     if(role == 'client'){
         return new Promise((resolve, reject) =>{
-            if(user_id == undefined)
+            if(user_id === undefined)
             {
                 reject("User is not logged in.");
             }
-            if(typeof(user_id) != "number")
+            else if(typeof(user_id) != "number")
             {
                 reject("Invalid user id");
             }
-            if(weight != undefined && typeof(weight) != number)
+            else if(!/^[0-9]+$/.test(weight))
             {
+                console.log(weight);
+                console.log(typeof(weight))
                 reject("Invalid weight");
             }
-            if(height != undefined && typeof(height) != number)
+            else if(!/^[0-9]+$/.test(height))
             {
                 reject("Invalid height");
             }
-            if(experience_level != undefined && experience_level != "beginner" && experience_level != "intermediate" && experience_level != "advanced")
+            else if(experience_level !== undefined && experience_level != "Beginner" && experience_level != "Intermediate" && experience_level != "Advanced")
             {
                 reject("Invalid experience level");
+                console.log(experience_level);
             }
-            if(typeof(budget) != number)
+            else if(budget != "$" && budget != "$$" && budget != "$$$")
             {
                 console.log(budget);
                 reject("Invalid budget");
             }
-            data_layer.accept_client_survey_data_layer(user_id, weight, height, experience_level, budget).then(response =>{
-                resolve(response);
-            }).catch((error) =>{
-                reject(error);
-            });
+            else
+            {
+                if(budget == "$")
+                    budget = 1
+                if(budget == "$$")
+                    budget = 2
+                if(budget == "$$$")
+                    budget = 3;
+                data_layer.accept_client_survey_data_layer(user_id, weight, height, experience_level, budget).then(response =>{
+                    resolve(response);
+                }).catch((error) =>{
+                    reject(error);
+                });
+            }
         });
     }
     else{

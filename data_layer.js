@@ -108,27 +108,34 @@ async function login_data_layer(username) {
 async function accept_client_survey_data_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
 {
     return new Promise((resolve, reject) => {
-        if(weight == undefined && height == undefined && experience_level == undefined && budget == undefined) //Dont do anything if there is no data to insert
-            resolve("Information updated.");
-        else   
+        if(experience_level !== undefined || budget !== undefined) //Dont do anything if there is no data to insert
         {
             sql = "UPDATE Clients SET " 
-            + (weight != undefined ? "weight = " + weight + ", " : "") 
-            + (height != undefined ? "height = " + height + ", " : "")  
-            + (experience_level != undefined ? "experience_level = '" + experience_level + "'," : "")  
-            + (budget != undefined ? "budget = '" + budget + "', ": "");
+            + (experience_level !== undefined ? "experience_level = '" + experience_level + "'," : "")  
+            + (budget !== undefined ? "budget = " + budget + ", ": "");
 
             sql = sql.substring(0, sql.length - 2); //Remove the last comma and space. We can assume there is at least one because of the check at the top of the function.
 
             sql += " WHERE user_id = " + user_id;
-
+            console.log(sql);
             con.query(sql, function(err, result) {
                 if(err)
                 {
                     console.log(err);
                     reject("Something went wrong in our database.");
                 }
-                resolve("Information updated.");
+                sql = "INSERT INTO Status_Logs (client_id, weight, height_cm, date) VALUES (?, ?, ?, CURRENT_DATE())";
+                con.query(sql, [user_id, weight, height], function(err, result) {
+                  if(err)
+                  {
+                    console.log(err);
+                    reject("Something went wrong in our database.");
+                  }
+                  else
+                  {
+                    resolve("Information updated.");  
+                  }
+                });
             });
         }
     });
