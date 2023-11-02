@@ -159,8 +159,8 @@ async function accept_coach_survey_data_layer(user_id, cost_per_session, availab
 async function request_coach_data_layer(coach_id, client_id, comment)
 {
     return new Promise((resolve, reject) => {
-        sql = "INSERT INTO Coach_Requests (coach_id, client_id, comment) VALUES (" + coach_id + ", " + client_id + ", '" + comment + "')";
-        con.query(sql, function(err, result){
+        const sql = "INSERT INTO Coach_Requests (coach_id, client_id, comment) VALUES (?, ?, ?)";
+        con.query(sql, [coach_id, client_id, comment], function(err, result){
             if(err)
             {
                 console.log(err);

@@ -183,24 +183,26 @@ async function request_coach_business_layer(coach_id, client_id, comment)
 {
     //TODO, Check if coach_id and client_id belong to a coach and a client, respectively
     //Reject with "You are not logged in as a client" if client_id does not belong to a client
-
-    if(client_id == undefined)
-    {
-        reject("User is not logged in");
-    }
-    if(typeof(coach_id) != "number")
-    {
-        reject("Invalid coach id");
-    }
-    if(/^.*'.*$/.test(comment))
-    {
-        reject("Comment cannot contain quotes") //TODO allow comment to contain quotes without SQL injection
-    }
-    data_layer.request_coach_data_layer(coach_id, client_id, comment).then(response =>{
-        resolve(response);
-    }).catch((error) =>{
-        reject(error);
-    });
+    // TODO, handle undefined comment
+    return new Promise((resolve, reject) => {
+        if(client_id == undefined)
+        {
+            reject("User is not logged in");
+        }
+        if(typeof(coach_id) != "number")
+        {
+            reject("Invalid coach id");
+        }
+        if(/^.*'.*$/.test(comment))
+        {
+            reject("Comment cannot contain quotes") //TODO allow comment to contain quotes without SQL injection
+        }
+        data_layer.request_coach_data_layer(coach_id, client_id, comment).then(response =>{
+            resolve(response);
+        }).catch((error) =>{
+            reject(error);
+        });
+    })
 }
 
 async function accept_client_business_layer(coach_id, client_id)
