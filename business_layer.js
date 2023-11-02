@@ -3,8 +3,7 @@ const bcrypt = require('bcrypt');
 
 async function insert_user_business_layer(first_name, last_name, username, email, password, role)
 {
-    const username_Exists_Flag = await data_layer.check_if_username_exists(username); //checking check_if_username_exists 
-
+    const username_Exists_Flag = await data_layer.check_if_username_exists_data_layer(username); //checking check_if_username_exists 
     if(username_Exists_Flag){
         return Promise.reject("That username is already taken.");
     } 
@@ -80,7 +79,7 @@ async function login_business_layer(username, password) {
 
 async function accept_client_survey_business_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
 {
-    const client_check_Flag = await data_layer.check_if_client(user_id); //checking if user is a client
+    const client_check_Flag = await data_layer.check_if_client_data_layer(user_id); //checking if user is a client
     if(client_check_Flag){
         return new Promise((resolve, reject) =>{
             if(user_id == undefined)
@@ -115,12 +114,12 @@ async function accept_client_survey_business_layer(user_id, weight=undefined, he
         });
     }
     else{
-        return Promise.reject("You are not a client.");
+        return Promise.reject("User is not a client.");
     }
 }
 async function accept_coach_survey_business_layer(user_id, cost_per_session, availability, experience)
 {
-    const coach_check_Flag = await data_layer.check_if_coach(user_id); //checking if user is a coach
+    const coach_check_Flag = await data_layer.check_if_coach_data_layer(user_id); //checking if user is a coach
     if(coach_check_Flag){
         if(user_id == undefined)
         {
@@ -157,7 +156,7 @@ async function accept_coach_survey_business_layer(user_id, cost_per_session, ava
         });
     }
     else{
-        return Promise.reject("You are not a coach.");
+        return Promise.reject("User is not a coach.");
     }
 }
 async function request_coach_business_layer(coach_id, client_id, comment)
