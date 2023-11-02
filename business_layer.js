@@ -46,7 +46,11 @@ async function insert_user_business_layer(first_name, last_name, username, email
         });
     })   
     return new Promise((resolve, reject) => {
+
+    console.log("Going to insert");
         data_layer.insert_user_data_layer(first_name, last_name, username, email, hashed_password, salt, role).then((data_layer_response) =>{
+        
+      console.log("INserted");
             resolve({
                 user_id: data_layer_response,
                 message: "Successfully added user"

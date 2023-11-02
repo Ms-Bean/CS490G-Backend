@@ -79,6 +79,7 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
                             console.log(err); //This should never happen. Ever.
                             reject(err);
                            } 
+                           resolve(user_id);
                         });
                     }
                 });
