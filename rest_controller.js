@@ -66,35 +66,41 @@ async function logout_controller(req, res) {
 }
 async function accept_client_survey_controller(req, res) {
   console.log(req.session);
-  if(req.session.user == undefined || req.session.user["user_id"] == undefined)
+  if(req.session.user === undefined || req.session.user.user_id == undefined)
   {
+    console.log(req.session);
     res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.header("Access-Control-Allow-Credentials", "true");
     res.status(400).send({
       message: "User is not logged in."
     });
   }
-
-  business_layer
-    .accept_client_survey_business_layer(
-      req.session.user["user_id"],
-      req.body.weight,
-      req.body.height,
-      req.body.experience_level,
-      req.body.budget
-    )
-    .then((response) =>{
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-      res.status(200).send({
-        message: response
-      });
-    })
-    .catch((error_message) =>{
-      console.log(error_message);
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-      res.status(400).send({
-        message: error_message
-      });
-    })
+  else
+  {
+    business_layer
+      .accept_client_survey_business_layer(
+        req.session.user["user_id"],
+        req.body.weight,
+        req.body.height,
+        req.body.experience_level,
+        req.body.budget
+      )
+      .then((response) =>{
+        res.header("Access-Control-Allow-Credentials", "true");
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.status(200).send({
+          message: response
+        });
+      })
+      .catch((error_message) =>{
+        console.log(error_message);
+        res.header("Access-Control-Allow-Credentials", "true");
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.status(400).send({
+          message: error_message
+        });
+      })
+    }
 }
 
 async function accept_coach_survey_controller(req, res) {

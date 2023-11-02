@@ -84,7 +84,7 @@ async function login_business_layer(username, password) {
 async function accept_client_survey_business_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
 {
     const role = await data_layer.get_role_data_layer(user_id); //checking if user is a client
-    if(role == client){
+    if(role == 'client'){
         return new Promise((resolve, reject) =>{
             if(user_id == undefined)
             {
