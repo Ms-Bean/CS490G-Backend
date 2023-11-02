@@ -33,6 +33,51 @@ function check_if_username_exists(username) {
 
 module.exports = { check_if_username_exists };
 
+// TODO Either create a Message class / Type or find a way to export this definition for other functions to use
+/**
+ * @typedef {Object} Message
+ * @property {number} message_id 
+ * @property {number} client_id 
+ * @property {number} coach_id 
+ * @property {number} content
+ * @property {Date} timestamp 
+ */
+/**
+ * 
+ * @param {Object} messages 
+ * @returns {Message}
+ */
+function _convert_to_message(message) {
+    return {
+        message_id: message.message_id,
+        client_id: message.client_id,
+        coach_id: message.coach_id,
+        content: message.content,
+        timestamp: message.timestamp
+    };
+}
+
+/**
+ * 
+ * @param {number} client_id 
+ * @param {number} coach_id 
+ * @returns {Promise<Message>}
+ */
+function get_client_coach_messages_data_layer(client_id, coach_id) {
+    const sql = "SELECT message_id, coach_id, client_id, content, timestamp FROM messages WHERE coach_id = ? AND client_id = ?";
+    return new Promise((resolve, reject) => {
+        con.query(sql, [coach_id, client_id], (err, results) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                const messages = results.map((m) => _convert_to_message(m))
+                resolve(messages);
+            }
+        });
+    });
+}
+
 async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role)
 {        
     var sql = "INSERT INTO Users (first_name, last_name, username, email, password_hash, password_salt, role) VALUES ('" + first_name + "', '" + last_name + "', '" + username + "', '" + email + "', '" + password_hash + "', '" + password_salt + "', '" + role + "')";
@@ -199,3 +244,4 @@ module.exports.insert_user_data_layer = insert_user_data_layer;
 module.exports.login_data_layer = login_data_layer;
 module.exports.accept_client_survey_data_layer = accept_client_survey_data_layer;
 module.exports.accept_coach_survey_data_layer = accept_coach_survey_data_layer;
+module.exports.get_client_coach_messages_data_layer = get_client_coach_messages_data_layer;
