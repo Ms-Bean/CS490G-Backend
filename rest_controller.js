@@ -1,3 +1,4 @@
+const { request } = require("express");
 const business_layer = require("./business_layer");
 async function health_check(req, res) {
   res.status(200).send("Hello, world!");
@@ -47,27 +48,6 @@ async function login_controller(req, res) {
         res.header("Access-Control-Allow-Origin", "http://localhost:3000");
         res.status(400).send({
           message: error_message,
-        });
-      });
-}
-async function assign_role_controller(req, res) {
-    console.log(req.session);
-    business_layer
-      .assign_role_business_layer(
-        req.session.user["user_id"],
-        req.body.is_coach
-      )
-      .then((response) => {
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-        res.status(200).send({
-            message: response,
-        });
-      })
-      .catch((error_message) => {
-        console.log(error_message);
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-        res.status(400).send({
-            message: error_message,
         });
       });
 }
@@ -129,10 +109,33 @@ async function accept_coach_survey_controller(req, res) {
       });
     })
 }
+
+async function request_coach_controller(req, res)
+{
+  business_layer
+    .request_coach_business_layer(
+      req.body.coach_id,
+      req.session.user["user_id"],
+      req.body.comment
+    )    
+    .then((response) =>{
+      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.status(200).send({
+        message: response
+      });
+    })
+    .catch((error_message) =>{
+      console.log(error_message);
+      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.status(400).send({
+        message: error_message
+      });
+    });
+}
 module.exports.logout_controller = logout_controller;
 module.exports.insert_user_controller = insert_user_controller;
 module.exports.health_check = health_check;
 module.exports.login_controller = login_controller;
-module.exports.assign_role_controller = assign_role_controller;
 module.exports.accept_client_survey_controller = accept_client_survey_controller;
 module.exports.accept_coach_survey_controller = accept_coach_survey_controller;
+module.exports.request_coach_controller = request_coach_controller;

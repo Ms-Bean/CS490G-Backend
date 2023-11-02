@@ -31,6 +31,8 @@ async function insert_user_business_layer(first_name, last_name, username, email
         return Promise.reject("Password cannot contain quotes.");
     if(password.length < 1)
             return Promise.reject("Empty password entered.");
+    if(role != "client" && role != "coach")
+        return Promise.reject("Role must be client or coach");
         
     var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
     var salt = '';
@@ -76,24 +78,6 @@ async function login_business_layer(username, password) {
     });
 }
 
-async function assign_role_business_layer(user_id, is_coach)
-{
-    return new Promise((resolve, reject) =>{
-        if(typeof user_id != "number")
-        {
-            reject("invalid user_id"); //This is probably a hacker sending custom packets
-        }
-        if(typeof is_coach != "boolean")
-        {
-            reject("invalid is_coach flag");
-        }
-        data_layer.assign_role_data_layer(user_id, is_coach).then(response =>{
-            resolve(response)
-        }).catch((error =>{
-            reject(error);
-        }));
-    });
-}
 async function accept_client_survey_business_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
 {
     //TODO, check if user is a client
@@ -152,7 +136,37 @@ async function accept_coach_survey_business_layer(user_id, cost_per_session, ava
     {
         reject("Invalid experience");
     }
+    if(/^.*'.*$/.test(availability))
+    {
+        reject("Availability cannot contain quotes"); //TODO: Allow quotes without sql injection
+    }
+    if(/^.*'.*$/.test(experience))
+    {
+        reject("Experience cannot contain quotes");
+    }
     data_layer.accept_coach_survey_data_layer(user_id, cost_per_session, availability, experience).then(response =>{
+        resolve(response);
+    }).catch((error) =>{
+        reject(error);
+    });
+}
+async function request_coach_business_layer(coach_id, client_id, comment)
+{
+    //TODO, Check if coach_id and client_id belong to a coach and a client, respectively
+    //Reject with "You are not logged in as a client" if client_id does not belong to a client
+    if(client_id == undefined)
+    {
+        reject("User is not logged in");
+    }
+    if(typeof(coach_id) != "Number")
+    {
+        reject("Invalid coach id");
+    }
+    if(/^.*'.*$/.test(comment))
+    {
+        reject("Comment cannot contain quotes") //TODO allow comment to contain quotes without SQL injection
+    }
+    data_layer.request_coach_data_layer(coach_id, client_id, comment).then(response =>{
         resolve(response);
     }).catch((error) =>{
         reject(error);
@@ -160,6 +174,6 @@ async function accept_coach_survey_business_layer(user_id, cost_per_session, ava
 }
 module.exports.login_business_layer = login_business_layer;
 module.exports.insert_user_business_layer = insert_user_business_layer;
-module.exports.assign_role_business_layer = assign_role_business_layer;
 module.exports.accept_client_survey_business_layer = accept_client_survey_business_layer;
 module.exports.accept_coach_survey_business_layer = accept_coach_survey_business_layer;
+module.exports.request_coach_business_layer = request_coach_business_layer;

@@ -56,8 +56,18 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
                     }
                     else
                     {
-                        console.log("Success");
-                        resolve(result[0].user_id);
+                        user_id = result[0].user_id;
+                        if(role == 'coach')
+                            sql = "INSERT INTO Coaches (user_id , accepting_new_clients, availability, hourly_rate, experience) VALUES (" + user_id +  ", 0, 'This coach has not indicated their availability', 0, 'This coach has not indicated their experience')"; 
+                        else
+                            sql = "INSERT INTO Clients (user_id) VALUES (" + user_id +  ")";
+                        con.query(sql, function(err, result){
+                           if(err)
+                           {
+                            console.log(err); //This should never happen. Ever.
+                            reject(err);
+                           } 
+                        });
                     }
                 });
             }
@@ -82,33 +92,6 @@ async function login_data_layer(username) {
     });
 }
 
-async function assign_role_data_layer(user_id, is_coach){
-    var sql;
-    if(is_coach)
-        sql = "INSERT INTO Coaches (user_id, accepting_new_clients) VALUES (" + user_id + ", 0)";
-    else
-        sql = "INSERT INTO Clients (user_id) VALUES (" + user_id + ")";
-
-    return new Promise((resolve, reject) => {
-        con.query(sql, function(err, result) {
-            if(err)
-            {
-                console.log(err);
-                reject("Something went wrong in our database.");
-            }
-            sql = "UPDATE Users SET role = " + (is_coach ? "'coach'" : "'client'") + " WHERE user_id = " + user_id;
-            console.log(sql);
-            con.query(sql, function(err, result) {
-                if(err)
-                {
-                    console.log(err);
-                    reject("Something went wrong in our database.");
-                }
-                resolve("You are now a " + (is_coach ? "coach." : "client."));
-            });
-        });
-    });
-}
 async function accept_client_survey_data_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
 {
     return new Promise((resolve, reject) => {
@@ -152,8 +135,24 @@ async function accept_coach_survey_data_layer(user_id, cost_per_session, availab
         });
     });
 }
+
+async function request_coach_data_layer(coach_id, client_id, comment)
+{
+    return new Promise((resolve, reject) => {
+        sql = "INSERT INTO Coach_Requests (coach_id, client_id, comment) VALUES (" + coach_id + ", " + client_id + ", '" + comment + "')";
+        con.query(sql, function(err, result){
+            if(err)
+            {
+                console.log(err);
+                reject("Something went wrong in our database");
+            }
+            resolve("The request has been sent.");
+        });
+    });
+}
+
+module.exports.request_coach_data_layer = request_coach_data_layer;
 module.exports.insert_user_data_layer = insert_user_data_layer;
 module.exports.login_data_layer = login_data_layer;
-module.exports.assign_role_data_layer = assign_role_data_layer;
 module.exports.accept_client_survey_data_layer = accept_client_survey_data_layer;
 module.exports.accept_coach_survey_data_layer = accept_coach_survey_data_layer;
