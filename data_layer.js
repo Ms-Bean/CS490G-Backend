@@ -30,6 +30,45 @@ function check_if_username_exists(username) {
     });
   });
 }
+function check_if_coach(user_id) {
+    return new Promise((resolve, reject) => {
+      con.query('SELECT role FROM users WHERE user_id = ?', [user_id], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          if (results.length > 0) {
+            if (results[0].role === 'coach') {
+              resolve(true);  // The user is a coach
+            } else {
+              resolve(false);  // The user is not a coach
+            }
+          } else {
+            reject(new Error("User not found"));  // User not found with the specified user_id
+          }
+        }
+      });
+    });
+  }
+  
+  function check_if_client(user_id) {
+    return new Promise((resolve, reject) => {
+      con.query('SELECT role FROM users WHERE user_id = ?', [user_id], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          if (results.length > 0) {
+            if (results[0].role === 'client') {
+              resolve(true);  // The user is a client
+            } else {
+              resolve(false);  // The user is not a client
+            }
+          } else {
+            reject(new Error("User not found"));  // User not found with the specified user_id
+          }
+        }
+      });
+    });
+  }
 
 module.exports = { check_if_username_exists };
 
