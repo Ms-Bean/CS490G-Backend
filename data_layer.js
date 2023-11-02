@@ -15,7 +15,7 @@ con.connect(function(err) {
     });
     console.log("connected to database");
 });
-function check_if_username_exists(username) {
+function check_if_username_exists_data_layer(username) {
   return new Promise((resolve, reject) => {
     con.query('SELECT * FROM Users WHERE username = ?', [username], (error, results) => {
       if (error) {
@@ -30,7 +30,10 @@ function check_if_username_exists(username) {
     });
   });
 }
-function check_if_coach(user_id) {
+
+module.exports = { check_if_username_exists_data_layer };
+
+function check_if_coach_data_layer(user_id) {
     return new Promise((resolve, reject) => {
       con.query('SELECT role FROM users WHERE user_id = ?', [user_id], (error, results) => {
         if (error) {
@@ -49,8 +52,9 @@ function check_if_coach(user_id) {
       });
     });
   }
+  module.exports = { check_if_coach_data_layer };
   
-  function check_if_client(user_id) {
+  function check_if_client_data_layer(user_id) {
     return new Promise((resolve, reject) => {
       con.query('SELECT role FROM users WHERE user_id = ?', [user_id], (error, results) => {
         if (error) {
@@ -70,7 +74,7 @@ function check_if_coach(user_id) {
     });
   }
 
-module.exports = { check_if_username_exists };
+module.exports = { check_if_client_data_layer };
 
 async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role)
 {        
