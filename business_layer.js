@@ -3,9 +3,8 @@ const bcrypt = require('bcrypt');
 
 async function insert_user_business_layer(first_name, last_name, username, email, password, role)
 {
-    const usernameExistsFlag = await data_layer.check_if_username_exists(username); //checking check_if_username_exists 
-
-    if(usernameExistsFlag){
+    const username_Exists_Flag = await data_layer.check_if_username_exists_data_layer(username); //checking check_if_username_exists 
+    if(username_Exists_Flag){
         return Promise.reject("That username is already taken.");
     } 
     else {
@@ -47,7 +46,11 @@ async function insert_user_business_layer(first_name, last_name, username, email
         });
     })   
     return new Promise((resolve, reject) => {
+
+    console.log("Going to insert");
         data_layer.insert_user_data_layer(first_name, last_name, username, email, hashed_password, salt, role).then((data_layer_response) =>{
+        
+      console.log("INserted");
             resolve({
                 user_id: data_layer_response,
                 message: "Successfully added user"
@@ -80,80 +83,107 @@ async function login_business_layer(username, password) {
 
 async function accept_client_survey_business_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
 {
-    //TODO, check if user is a client
-    return new Promise((resolve, reject) =>{
-        if(user_id == undefined)
-        {
-            reject("User is not logged in.");
-        }
-        if(typeof(user_id) != "number")
-        {
-            reject("Invalid user id");
-        }
-        if(weight != undefined && typeof(weight) != number)
-        {
-            reject("Invalid weight");
-        }
-        if(height != undefined && typeof(height) != number)
-        {
-            reject("Invalid height");
-        }
-        if(experience_level != undefined && experience_level != "beginner" && experience_level != "intermediate" && experience_level != "advanced")
-        {
-            reject("Invalid experience level");
-        }
-        if(typeof(budget) != number)
-        {
-            reject("Invalid budget");
-        }
-        data_layer.accept_client_survey_data_layer(user_id, weight, height, experience_level, budget).then(response =>{
-            resolve(response);
-        }).catch((error) =>{
-            reject(error);
+    const role = await data_layer.get_role_data_layer(user_id); //checking if user is a client
+    if(role == 'client'){
+        return new Promise((resolve, reject) =>{
+            if(user_id === undefined)
+            {
+                reject("User is not logged in.");
+            }
+            else if(typeof(user_id) != "number")
+            {
+                reject("Invalid user id");
+            }
+            else if(!/^[0-9]+$/.test(weight))
+            {
+                console.log(weight);
+                console.log(typeof(weight))
+                reject("Invalid weight");
+            }
+            else if(!/^[0-9]+$/.test(height))
+            {
+                reject("Invalid height");
+            }
+            else if(experience_level !== undefined && experience_level != "Beginner" && experience_level != "Intermediate" && experience_level != "Advanced")
+            {
+                reject("Invalid experience level");
+                console.log(experience_level);
+            }
+            else if(budget != "$" && budget != "$$" && budget != "$$$")
+            {
+                console.log(budget);
+                reject("Invalid budget");
+            }
+            else
+            {
+                if(budget == "$")
+                    budget = 1
+                if(budget == "$$")
+                    budget = 2
+                if(budget == "$$$")
+                    budget = 3;
+                data_layer.accept_client_survey_data_layer(user_id, weight, height, experience_level, budget).then(response =>{
+                    resolve(response);
+                }).catch((error) =>{
+                    reject(error);
+                });
+            }
         });
-    });
+    }
+    else{
+        return Promise.reject("User is not a client.");
+    }
 }
 async function accept_coach_survey_business_layer(user_id, cost_per_session, availability, experience)
 {
-    //TODO check if user is coach
-    if(user_id == undefined)
-    {
-        reject("User is not logged in.");
+    const role = await data_layer.get_role_data_layer(user_id); //checking if user is a coach
+    
+    if(role == "coach"){
+        return new Promise((resolve, reject) =>{
+            if(user_id == undefined)
+            {
+                reject("User is not logged in.");
+            }
+            if(typeof(user_id) != "number")
+            {
+                reject("Invalid user_id");
+            }
+            if(typeof(cost_per_session) != "number")
+            {
+                reject("Invalid cost per session");
+            }
+            if(typeof(availability) != "string")
+            {
+                reject("Invalid availability");
+            }
+            if(typeof(experience) != "string")
+            {
+                reject("Invalid experience");
+            }
+            if(/^.*'.*$/.test(availability))
+            {
+                reject("Availability cannot contain quotes"); //TODO: Allow quotes without sql injection
+            }
+            if(/^.*'.*$/.test(experience))
+            {
+                reject("Experience cannot contain quotes");
+            }
+            data_layer.accept_coach_survey_data_layer(user_id, cost_per_session, availability, experience).then(response =>{
+                resolve(response);
+            }).catch((error) =>{
+                reject(error);
+            });
+        });
     }
-    if(typeof(user_id) != "number")
-    {
-        reject("Invalid user_id");
+    else{
+        return Promise.reject("User is not a coach.");
     }
-    if(typeof(cost_per_session) != "number")
-    {
-        reject("Invalid cost per session");
-    }
-    if(typeof(availability) != "string")
-    {
-        reject("Invalid availability");
-    }
-    if(typeof(experience) != "string")
-    {
-        reject("Invalid experience");
-    }
-    if(/^.*'.*$/.test(availability))
-    {
-        reject("Availability cannot contain quotes"); //TODO: Allow quotes without sql injection
-    }
-    if(/^.*'.*$/.test(experience))
-    {
-        reject("Experience cannot contain quotes");
-    }
-    data_layer.accept_coach_survey_data_layer(user_id, cost_per_session, availability, experience).then(response =>{
-        resolve(response);
-    }).catch((error) =>{
-        reject(error);
-    });
 }
 async function request_coach_business_layer(coach_id, client_id, comment)
 {
     //TODO, Check if coach_id and client_id belong to a coach and a client, respectively
     //Reject with "You are not logged in as a client" if client_id does not belong to a client
+
     if(client_id == undefined)
     {
         reject("User is not logged in");
