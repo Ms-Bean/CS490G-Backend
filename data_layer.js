@@ -116,7 +116,7 @@ async function accept_client_survey_data_layer(user_id, weight=undefined, height
             + (weight != undefined ? "weight = " + weight + ", " : "") 
             + (height != undefined ? "height = " + height + ", " : "")  
             + (experience_level != undefined ? "experience_level = '" + experience_level + "'," : "")  
-            + (budget != undefined ? "budget = " + budget + ", ": "");
+            + (budget != undefined ? "budget = '" + budget + "', ": "");
 
             sql = sql.substring(0, sql.length - 2); //Remove the last comma and space. We can assume there is at least one because of the check at the top of the function.
 
