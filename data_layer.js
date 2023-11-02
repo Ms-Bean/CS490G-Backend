@@ -15,8 +15,6 @@ con.connect(function(err) {
     });
     console.log("connected to database");
 });
-
-
 function check_if_username_exists(username) {
   return new Promise((resolve, reject) => {
     con.query('SELECT * FROM Users WHERE username = ?', [username], (error, results) => {
@@ -113,7 +111,7 @@ async function accept_client_survey_data_layer(user_id, weight=undefined, height
                 if(err)
                 {
                     console.log(err);
-                    reject("Something went wrong in out database.");
+                    reject("Something went wrong in our database.");
                 }
                 resolve("Information updated.");
             });
@@ -128,7 +126,7 @@ async function accept_coach_survey_data_layer(user_id, cost_per_session, availab
             if(err)
             {
                 console.log(err);
-                reject("Something went wrong in out database.");
+                reject("Something went wrong in our database.");
             }
             resolve("Information updated.");
         });

@@ -4,7 +4,7 @@
   "description": "The backend (nodejs)",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose ./unit_tests"
+    "test": "jest --verbose --forceExit"
   },
   "author": "",
   "license": "ISC",
