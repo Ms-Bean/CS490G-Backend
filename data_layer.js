@@ -31,18 +31,14 @@ function check_if_username_exists_data_layer(username) {
   });
 }
 
-function check_if_coach_data_layer(user_id) {
+function get_role_data_layer(user_id) {
     return new Promise((resolve, reject) => {
       con.query('SELECT role FROM users WHERE user_id = ?', [user_id], (error, results) => {
         if (error) {
           reject(error);
         } else {
           if (results.length > 0) {
-            if (results[0].role === 'coach') {
-              resolve(true);  // The user is a coach
-            } else {
-              resolve(false);  // The user is not a coach
-            }
+            resolve(results[0].role);
           } else {
             reject(new Error("User not found"));  // User not found with the specified user_id
           }
@@ -50,7 +46,7 @@ function check_if_coach_data_layer(user_id) {
       });
     });
   }
-  module.exports = { check_if_coach_data_layer };
+  module.exports = { get_role_data_layer };
   
   function check_if_client_data_layer(user_id) {
     return new Promise((resolve, reject) => {
@@ -241,3 +237,4 @@ module.exports.login_data_layer = login_data_layer;
 module.exports.accept_client_survey_data_layer = accept_client_survey_data_layer;
 module.exports.accept_coach_survey_data_layer = accept_coach_survey_data_layer;
 module.exports.check_if_username_exists_data_layer = check_if_username_exists_data_layer;
+module.exports.get_role_data_layer = get_role_data_layer;
