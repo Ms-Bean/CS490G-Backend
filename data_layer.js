@@ -74,9 +74,10 @@ module.exports = { check_if_username_exists };
 
 async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role)
 {        
-    var sql = "INSERT INTO Users (first_name, last_name, username, email, password_hash, password_salt, role) VALUES ('" + first_name + "', '" + last_name + "', '" + username + "', '" + email + "', '" + password_hash + "', '" + password_salt + "', '" + role + "')";
+    // var sql = "INSERT INTO Users (first_name, last_name, username, email, password_hash, password_salt, role) VALUES ('" + first_name + "', '" + last_name + "', '" + username + "', '" + email + "', '" + password_hash + "', '" + password_salt + "', '" + role + "')";
+    let sql = "INSERT INTO Users (first_name, last_name, username, email, password_hash, password_salt, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
     return new Promise((resolve, reject) => {
-        con.query(sql, function (err, result){
+        con.query(sql, [first_name, last_name, username, email, password_hash, password_salt, role], function (err, result){
             if(err)
             {
                 console.log(err);
@@ -84,8 +85,8 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
             }
             else
             {
-                sql = "SELECT user_id FROM Users WHERE username = '" + username + "'";
-                con.query(sql, function(err, result){
+                sql = "SELECT user_id FROM Users WHERE username = ?";
+                con.query(sql, [username], function(err, result){
                     if(err)
                     {
                         console.log(err);
@@ -93,12 +94,12 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
                     }
                     else
                     {
-                        user_id = result[0].user_id;
-                        if(role == 'coach')
-                            sql = "INSERT INTO Coaches (user_id , accepting_new_clients, availability, hourly_rate, experience) VALUES (" + user_id +  ", 0, 'This coach has not indicated their availability', 0, 'This coach has not indicated their experience')"; 
+                        let user_id = result[0].user_id;
+                        if(role === 'coach')
+                            sql = "INSERT INTO Coaches (user_id , accepting_new_clients, availability, hourly_rate, experience) VALUES (? , 0, 'This coach has not indicated their availability', 0, 'This coach has not indicated their experience')"; 
                         else
-                            sql = "INSERT INTO Clients (user_id) VALUES (" + user_id +  ")";
-                        con.query(sql, function(err, result){
+                            sql = "INSERT INTO Clients (user_id) VALUES (?)";
+                        con.query(sql, [user_id], function(err, result){
                            if(err)
                            {
                             console.log(err); //This should never happen. Ever.
