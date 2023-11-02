@@ -41,6 +41,7 @@ app.post("/logout", controller.logout_controller);
 app.post("/accept_client_survey", controller.accept_client_survey_controller);
 app.post("/accept_coach_survey", controller.accept_client_survey_controller);
 app.post("/request_coach", controller.request_coach_controller);
+app.post("/accept_client", controller.accept_client_controller);
 app.get("/check_session", (req, res) => {
   console.log("Checking session data:", req.session);
   if (req.session.user) {

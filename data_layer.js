@@ -122,7 +122,6 @@ async function accept_client_survey_data_layer(user_id, weight=undefined, height
 }
 async function accept_coach_survey_data_layer(user_id, cost_per_session, availability, experience)
 {
-    //TODO, allow 'availability' and 'experience' to contain quotes without resulting in SQL injection
     return new Promise((resolve, reject) => {
         sql = "UPDATE Coaches SET cost_per_session = " + cost_per_session + ", availability = '" + availability + "', experience = '" +  experience + "' WHERE user_id = " + user_id;
         con.query(sql, function(err, result) {
@@ -151,6 +150,52 @@ async function request_coach_data_layer(coach_id, client_id, comment)
     });
 }
 
+async function accept_client_data_layer(coach_id, client_id)
+{    
+    return new Promise((resolve, reject) => {
+        sql = "SELECT request_id FROM Coach_Requests WHERE coach_id = " + coach_id + " AND client_id = " + client_id;
+        con.query(sql, function(err, result){
+            if(err)
+            {
+                console.log(err);
+                reject("Something went wrong in our database");
+            }
+            if(result.length == 0)
+                reject("The client has not requested you to be their coach.");
+            request_id = result[0].request_id;
+            sql = "SELECT coach_id FROM Clients WHERE user_id = " + client_id;
+            con.query(sql, function(err, result){
+                if(err)
+                {
+                    console.log(err);
+                    reject("Something went wrong in our database.");
+                }
+                if(typeof(results[0].coach_id) == "number")
+                {
+                    reject("This client already has a coach.");
+                }
+                sql = "UPDATE Clients SET coach_id = " + coach_id + " WHERE client_id = " + client_id;
+                con.query(sql, function(err, result){
+                    if(err)
+                    {
+                        console.log(err);
+                        reject("Something went wrong in our database.");
+                    }
+                    sql = "DELETE FROM Coach_Requests WHERE request_id = " + request_id;
+                    con.query(sql, function(err, result){
+                        if(err)
+                        {
+                            console.log(err);
+                            reject("Something went wrong in our database.");
+                        }
+                        resolve("You now have a new client");
+                    });
+                });
+            });
+        });
+    });
+}
+module.exports.accept_client_data_layer = accept_client_data_layer;
 module.exports.request_coach_data_layer = request_coach_data_layer;
 module.exports.insert_user_data_layer = insert_user_data_layer;
 module.exports.login_data_layer = login_data_layer;
