@@ -31,8 +31,6 @@ function check_if_username_exists_data_layer(username) {
   });
 }
 
-module.exports = { check_if_username_exists_data_layer };
-
 function check_if_coach_data_layer(user_id) {
     return new Promise((resolve, reject) => {
       con.query('SELECT role FROM users WHERE user_id = ?', [user_id], (error, results) => {
@@ -242,3 +240,4 @@ module.exports.insert_user_data_layer = insert_user_data_layer;
 module.exports.login_data_layer = login_data_layer;
 module.exports.accept_client_survey_data_layer = accept_client_survey_data_layer;
 module.exports.accept_coach_survey_data_layer = accept_coach_survey_data_layer;
+module.exports.check_if_username_exists_data_layer = check_if_username_exists_data_layer;

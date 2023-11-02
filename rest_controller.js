@@ -28,6 +28,7 @@ async function insert_user_controller(req, res) {
       res.status(400).send({
         message: error_message
       });
+      console.log(error_message);
     });
   }
 
