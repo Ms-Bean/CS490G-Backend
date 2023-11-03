@@ -231,13 +231,29 @@ async function accept_client_business_layer(coach_id, client_id)
 
 /**
  * 
- * @param {number} user_id 
+ * @param {number} user_id1 
+ * @param {number} user_id2 
+ * @returns {Promise<boolean>} True if user 1 is coach of user 2; otherwise, False
+ */
+async function _check_if_coach_of(user_id1, user_id2) {
+    const role1 = await data_layer.get_role_data_layer(user_id1);
+    if (role1 !== 'coach') {
+        return false;
+    }
+
+    const user1_clients = await data_layer.get_clients_of_coach(user_id1) || [];
+    return user1_clients.includes(user_id2);
+}
+
+/**
+ * 
+ * @param {number} current_user_id 
  * @param {number} recipient_id 
  * @param {string} content 
  * @returns {Promise<string>} 
  */
-async function insert_message_business_layer(user_id, recipient_id, content) {
-    if (!Number.isInteger(user_id)) {
+async function insert_message_business_layer(current_user_id, recipient_id, content) {
+    if (!Number.isInteger(current_user_id)) {
         return Promise.reject("Invalid user id");
     }
     if (!Number.isInteger(recipient_id)) {
@@ -247,21 +263,19 @@ async function insert_message_business_layer(user_id, recipient_id, content) {
         return Promise.reject("Cannot send empty message");
     }
 
-    const user_role = await data_layer.get_role_data_layer(user_id);
-    const user_clients = (user_role === 'coach') ? await data_layer.get_clients_of_coach(user_id) : [];
-    if (user_clients.includes(recipient_id)) {
-        return data_layer.insert_message_data_layer(user_id, recipient_id, content);
+    let coach_id, client_id;
+    if (await _check_if_coach_of(current_user_id, recipient_id)) {
+        coach_id = current_user_id;
+        client_id = recipient_id;
+    } else if (await _check_if_coach_of(recipient_id, current_user_id)) {
+        coach_id = recipient_id;
+        client_id = current_user_id;
+    } else {
+        return Promise.reject("User cannot send message to recipient that's not their coach or client");
     }
 
-    const recipient_role = await data_layer.get_role_data_layer(recipient_id);
-    const recipient_clients = (recipient_role === 'coach') ? await data_layer.get_clients_of_coach(recipient_id) : [];
-    if (recipient_clients.includes(user_id)) {
-        return data_layer.insert_message_data_layer(recipient_id, user_id, content);
-    }
-
-    console.table([{id: user_id, role: user_role, clients: user_clients}, {id: recipient_id, role: recipient_role, clients: recipient_clients}]);
-
-    return Promise.reject("User cannot send message to recipient that's not their coach or client");
+    // console.table([{id: current_user_id, role: user_role, clients: user_clients}, {id: recipient_id, role: recipient_role, clients: recipient_clients}]);
+    return data_layer.insert_message_data_layer(coach_id, client_id, content);
 }
 
 async function get_role_business_layer(user_id) { // Remove reject calls, not valid in async function (use throw instead)
