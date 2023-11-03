@@ -229,18 +229,17 @@ async function accept_client_business_layer(coach_id, client_id)
     })
 }
 
-async function get_role_business_layer(user_id)
-{
-    if(!/^[0-9]+$/.test(user_id))
-    {
-        reject("Invalid user id");
+async function get_role_business_layer(user_id) { // Remove reject calls, not valid in async function (use throw instead)
+    if (!/^[0-9]+$/.test(user_id)) {
+      throw new Error("Invalid user id");
     }
-    data_layer.get_role_data_layer(user_id).then(response =>{
-        resolve(response)
-    }).catch((error) =>{
-        reject(error);
-    });
-}
+    try {
+      const response = await data_layer.get_role_data_layer(user_id);
+      return response; 
+    } catch (error) {
+      throw error;
+    }
+  }
 
 
 module.exports.accept_client_business_layer = accept_client_business_layer;
