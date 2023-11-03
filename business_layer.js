@@ -229,6 +229,41 @@ async function accept_client_business_layer(coach_id, client_id)
     })
 }
 
+/**
+ * 
+ * @param {number} user_id 
+ * @param {number} recipient_id 
+ * @param {string} content 
+ * @returns {Promise<string>} 
+ */
+async function insert_message_business_layer(user_id, recipient_id, content) {
+    if (!Number.isInteger(user_id)) {
+        return Promise.reject("Invalid user id");
+    }
+    if (!Number.isInteger(recipient_id)) {
+        return Promise.reject("Invalid recipient id");
+    }
+    if (!content) {
+        return Promise.reject("Cannot send empty message");
+    }
+
+    const user_role = await data_layer.get_role_data_layer(user_id);
+    const user_clients = (user_role === 'coach') ? await data_layer.get_clients_of_coach(user_id) : [];
+    if (user_clients.includes(recipient_id)) {
+        return data_layer.insert_message_data_layer(user_id, recipient_id, content);
+    }
+
+    const recipient_role = await data_layer.get_role_data_layer(recipient_id);
+    const recipient_clients = (recipient_role === 'coach') ? await data_layer.get_clients_of_coach(recipient_id) : [];
+    if (recipient_clients.includes(user_id)) {
+        return data_layer.insert_message_data_layer(recipient_id, user_id, content);
+    }
+
+    console.table([{id: user_id, role: user_role, clients: user_clients}, {id: recipient_id, role: recipient_role, clients: recipient_clients}]);
+
+    return Promise.reject("User cannot send message to recipient that's not their coach or client");
+}
+
 async function get_role_business_layer(user_id) { // Remove reject calls, not valid in async function (use throw instead)
     if (!/^[0-9]+$/.test(user_id)) {
       throw new Error("Invalid user id");
@@ -249,3 +284,4 @@ module.exports.accept_client_survey_business_layer = accept_client_survey_busine
 module.exports.accept_coach_survey_business_layer = accept_coach_survey_business_layer;
 module.exports.request_coach_business_layer = request_coach_business_layer;
 module.exports.get_role_business_layer = get_role_business_layer;
+module.exports.insert_message_business_layer = insert_message_business_layer;

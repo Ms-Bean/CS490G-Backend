@@ -48,6 +48,25 @@ function get_role_data_layer(user_id) {
 }
 module.exports = { check_if_username_exists_data_layer };
 
+/**
+ * 
+ * @param {number} coach_id 
+ * @returns {Promise<number>}
+ */
+function get_clients_of_coach(coach_id) {
+    const sql = "SELECT user_id FROM CLIENTS WHERE coach_id = ?";
+    return new Promise((resolve, reject) => {
+        con.query(sql, [coach_id], (err, results) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                resolve(results.map(r => r.user_id));
+            }
+        });
+    });
+}
+
 // TODO Either create a Message class / Type or find a way to export this definition for other functions to use
 /**
  * @typedef {Object} Message
@@ -88,6 +107,29 @@ function get_client_coach_messages_data_layer(client_id, coach_id) {
             } else {
                 const messages = results.map((m) => _convert_to_message(m))
                 resolve(messages);
+            }
+        });
+    });
+}
+
+/**
+ * 
+ * @param {number} coach_id 
+ * @param {number} client_id 
+ * @param {string} content 
+ * @returns {Promise<string>}
+ */
+function insert_message_data_layer(coach_id, client_id, content) {
+    const sql = "INSERT INTO messages (coach_id, client_id, content) VALUES (?, ?, ?)";
+    return new Promise((resolve, reject) => {
+        con.query(sql, [coach_id, client_id, content], (err, results) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                const success_message = "Message successfully added to database";
+                console.log(success_message);
+                resolve(success_message);
             }
         });
     });
@@ -270,3 +312,6 @@ module.exports.insert_user_data_layer = insert_user_data_layer;
 module.exports.login_data_layer = login_data_layer;
 module.exports.accept_client_survey_data_layer = accept_client_survey_data_layer;
 module.exports.accept_coach_survey_data_layer = accept_coach_survey_data_layer;
+module.exports.insert_message_data_layer = insert_message_data_layer;
+module.exports.get_clients_of_coach = get_clients_of_coach;
+module.exports.get_role_data_layer = get_role_data_layer;

@@ -191,6 +191,18 @@ async function get_role_controller(req, res)
       });
     })
 }
+
+
+async function insert_message_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  business_layer.insert_message_business_layer(
+    req.session.user['user_id'],
+    req.body.recipient_id,
+    req.body.content
+  ).then((success_message) => res.json({message: success_message}))
+   .catch((err_message) => res.status(400).json({message: err_message}));
+}
+
 module.exports.accept_client_controller = accept_client_controller;
 module.exports.logout_controller = logout_controller;
 module.exports.insert_user_controller = insert_user_controller;
@@ -200,3 +212,4 @@ module.exports.accept_client_survey_controller = accept_client_survey_controller
 module.exports.accept_coach_survey_controller = accept_coach_survey_controller;
 module.exports.request_coach_controller = request_coach_controller;
 module.exports.get_role_controller = get_role_controller;
+module.exports.insert_message_controller = insert_message_controller;
