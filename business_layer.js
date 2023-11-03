@@ -273,10 +273,38 @@ async function insert_message_business_layer(current_user_id, recipient_id, cont
     } else {
         return Promise.reject("User cannot send message to recipient that's not their coach or client");
     }
-
-    // console.table([{id: current_user_id, role: user_role, clients: user_clients}, {id: recipient_id, role: recipient_role, clients: recipient_clients}]);
     return data_layer.insert_message_data_layer(coach_id, client_id, content);
 }
+
+// TODO rename other_user_id to a more descriptive name
+async function get_client_coach_messages_business_layer(current_user_id, other_user_id, page_size, page_num) {
+    if (!Number.isInteger(current_user_id)) {
+        return Promise.reject("Invalid user id");
+    }
+    if (!Number.isInteger(other_user_id)) {
+        return Promise.reject("Invalid other user id");
+    }
+    if (!Number.isInteger(page_size) || page_size <= 0) {
+        return Promise.reject("Invalid page size");
+    }
+    if (!Number.isInteger(page_num) || page_num <= 0) {
+        return Promise.reject("Invalid page number");
+    }
+
+    let coach_id, client_id;
+    if (await _check_if_coach_of(current_user_id, other_user_id)) {
+        coach_id = current_user_id;
+        client_id = other_user_id;
+    } else if (await _check_if_coach_of(other_user_id, current_user_id)) {
+        coach_id = other_user_id;
+        client_id = current_user_id;
+    } else {
+        return Promise.reject("User cannot view messages from user that's not their coach or client");
+    }
+    const messages = await data_layer.get_client_coach_messages_data_layer(client_id, coach_id, page_size, page_num);
+    console.log(`Messages from Business: ${JSON.stringify(messages)}`);
+    return messages;
+} 
 
 async function get_role_business_layer(user_id) { // Remove reject calls, not valid in async function (use throw instead)
     if (!/^[0-9]+$/.test(user_id)) {
@@ -299,3 +327,4 @@ module.exports.accept_coach_survey_business_layer = accept_coach_survey_business
 module.exports.request_coach_business_layer = request_coach_business_layer;
 module.exports.get_role_business_layer = get_role_business_layer;
 module.exports.insert_message_business_layer = insert_message_business_layer;
+module.exports.get_client_coach_messages_business_layer = get_client_coach_messages_business_layer;

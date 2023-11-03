@@ -44,6 +44,7 @@ app.post("/request_coach", controller.request_coach_controller);
 app.post("/accept_client", controller.accept_client_controller);
 app.get("/get_role", controller.get_role_controller);
 app.post('/message', controller.insert_message_controller);
+app.get('/message', controller.get_client_coach_messages_controller);
 
 app.get("/check_session", (req, res) => {
   console.log("Checking session data:", req.session);

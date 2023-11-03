@@ -203,6 +203,21 @@ async function insert_message_controller(req, res) {
    .catch((err_message) => res.status(400).json({message: err_message}));
 }
 
+async function get_client_coach_messages_controller(req, res) {
+  console.log("CORRECT MESSAGES CONTROLLER CALLED");
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  business_layer.get_client_coach_messages_business_layer(
+    req.session.user['user_id'],
+    req.body.other_user_id,
+    req.body.page_size,
+    req.body.page_num
+  ).then((messages) => {
+    console.log(`MESSAGES BEING SENT: ${messages}`);
+    res.json({messages: messages});
+  })
+  .catch((err_message) => res.status(400).json({message: err_message}));
+}
+
 module.exports.accept_client_controller = accept_client_controller;
 module.exports.logout_controller = logout_controller;
 module.exports.insert_user_controller = insert_user_controller;
@@ -213,3 +228,4 @@ module.exports.accept_coach_survey_controller = accept_coach_survey_controller;
 module.exports.request_coach_controller = request_coach_controller;
 module.exports.get_role_controller = get_role_controller;
 module.exports.insert_message_controller = insert_message_controller;
+module.exports.get_client_coach_messages_controller = get_client_coach_messages_controller;
