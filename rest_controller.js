@@ -204,16 +204,14 @@ async function insert_message_controller(req, res) {
 }
 
 async function get_client_coach_messages_controller(req, res) {
-  console.log("CORRECT MESSAGES CONTROLLER CALLED");
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   business_layer.get_client_coach_messages_business_layer(
     req.session.user['user_id'],
     req.body.other_user_id,
     req.body.page_size,
     req.body.page_num
-  ).then((messages) => {
-    console.log(`MESSAGES BEING SENT: ${messages}`);
-    res.json({messages: messages});
+  ).then((message_dto) => {
+    res.json(message_dto);
   })
   .catch((err_message) => res.status(400).json({message: err_message}));
 }

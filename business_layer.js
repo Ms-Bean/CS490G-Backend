@@ -301,9 +301,22 @@ async function get_client_coach_messages_business_layer(current_user_id, other_u
     } else {
         return Promise.reject("User cannot view messages from user that's not their coach or client");
     }
-    const messages = await data_layer.get_client_coach_messages_data_layer(client_id, coach_id, page_size, page_num);
-    console.log(`Messages from Business: ${JSON.stringify(messages)}`);
-    return messages;
+
+    const message_count = await data_layer.count_client_coach_messages(client_id, coach_id);
+    const page_count = Math.ceil(message_count / page_size);
+    
+    const messages = await data_layer.get_client_coach_message_page_data_layer(client_id, coach_id, page_size, page_num);
+    const messages_dto = {
+        page_info: {
+            page_num: page_num,
+            page_size: page_size,
+            page_count: page_count,
+            has_next: page_num < page_count,
+            has_prev: page_num > 1
+        },
+        messages: messages
+    }
+    return messages_dto;
 } 
 
 async function get_role_business_layer(user_id) { // Remove reject calls, not valid in async function (use throw instead)

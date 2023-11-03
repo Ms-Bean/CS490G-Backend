@@ -99,8 +99,9 @@ function _convert_to_message(message) {
  * @param {number} page_num 
  * @returns {Promise<Message[]>}
  */
-function get_client_coach_messages_data_layer(client_id, coach_id, page_size, page_num) {
-    const sql = "SELECT message_id, coach_id, client_id, content, timestamp FROM messages WHERE coach_id = ? AND client_id = ? LIMIT ? OFFSET ?";
+function get_client_coach_message_page_data_layer(client_id, coach_id, page_size, page_num) {
+    // order by clause is descending to ensure that latest messages appear first
+    const sql = "SELECT message_id, coach_id, client_id, content, timestamp FROM messages WHERE coach_id = ? AND client_id = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?";
     const next_entry = (page_num - 1) * page_size;
     return new Promise((resolve, reject) => {
         con.query(sql, [coach_id, client_id, page_size, next_entry], (err, results) => {
@@ -109,6 +110,27 @@ function get_client_coach_messages_data_layer(client_id, coach_id, page_size, pa
                 return reject(err);
             } else {
                 resolve(results.map(m => _convert_to_message(m)));
+            }
+        });
+    });
+}
+
+
+/**
+ * 
+ * @param {number} client_id 
+ * @param {number} coach_id 
+ * @returns {Promise<number>}
+ */
+function count_client_coach_messages(client_id, coach_id) {
+    const sql = "SELECT COUNT(message_id) AS message_count FROM messages WHERE coach_id = ? AND client_id = ?";
+    return new Promise((resolve, reject) => {
+        con.query(sql, [coach_id, client_id], (err, results) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                resolve(results[0].message_count);
             }
         });
     });
@@ -317,4 +339,5 @@ module.exports.accept_coach_survey_data_layer = accept_coach_survey_data_layer;
 module.exports.insert_message_data_layer = insert_message_data_layer;
 module.exports.get_clients_of_coach = get_clients_of_coach;
 module.exports.get_role_data_layer = get_role_data_layer;
-module.exports.get_client_coach_messages_data_layer = get_client_coach_messages_data_layer;
+module.exports.get_client_coach_message_page_data_layer = get_client_coach_message_page_data_layer;
+module.exports.count_client_coach_messages = count_client_coach_messages;
