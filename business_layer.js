@@ -113,6 +113,7 @@ async function accept_client_survey_business_layer(user_id, weight=undefined, he
             {
                 console.log(budget);
                 reject("Invalid budget");
+                budget = budget.length; //Convert it to an int 1 to 3
             }
             else
             {
@@ -122,7 +123,7 @@ async function accept_client_survey_business_layer(user_id, weight=undefined, he
                     budget = 2
                 if(budget == "$$$")
                     budget = 3;
-                data_layer.accept_client_survey_data_layer(user_id, weight, height, experience_level, budget).then(response =>{
+                data_layer.accept_client_survey_data_layer(user_id, parseInt(weight), parseInt(height), experience_level, budget).then(response =>{
                     resolve(response);
                 }).catch((error) =>{
                     reject(error);

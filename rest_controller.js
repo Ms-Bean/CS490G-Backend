@@ -174,22 +174,29 @@ async function accept_client_controller(req, res)
 
 async function get_role_controller(req, res)
 {
-  business_layer
-    .get_role_business_layer(
-      req.session.user["user_id"]
-    )
-    .then((response) =>{
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-      res.status(200).send({
-        message: response
-      });
-    }).catch((error_message) =>{
-      console.log(error_message);
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-      res.status(400).send({
-        message: error_message
-      });
-    })
+  if(req.session.user === undefined)
+    res.status(400).send({message: "You are not logged in."});
+  else if(req.session.user["user_id"] === undefined)
+    res.status(400).send({message: "You are not logged in."});
+  else
+  {
+    business_layer
+      .get_role_business_layer(
+        req.session.user["user_id"]
+      )
+      .then((response) =>{
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.status(200).send({
+          message: response
+        });
+      }).catch((error_message) =>{
+        console.log(error_message);
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.status(400).send({
+          message: error_message
+        });
+      })
+    }
 }
 
 
