@@ -60,7 +60,3 @@ app.get("/check_session", (req, res) => {
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT.toString());
 });
-
-data_layer.get_address_id_data_layer("1800 Warren Avenue", "Houston", "Texas", "08853").then((response) =>{
-  console.log(response);
-});

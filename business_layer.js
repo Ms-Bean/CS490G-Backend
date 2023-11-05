@@ -330,8 +330,28 @@ async function get_role_business_layer(user_id) { // Remove reject calls, not va
     } catch (error) {
       throw error;
     }
-  }
+}
 
+async function set_user_address_business_layer(user_id, address, city, state, zip_code)
+{
+    if(!/^[0-9]{5}$/.test(zip_code))
+    {
+        return Promise.reject("Invalid zip code");
+    }
+    try{
+        await data_layer.get_role_data_layer(user_id); //Check that the user exists
+        return new Promise((resolve, reject) =>{
+            data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
+                resolve(response);
+            }).catch((err) =>{
+                reject(err);
+            });
+        });
+    }
+    catch(err){
+        return Promise.reject("User not found");
+    }
+}
 
 module.exports.accept_client_business_layer = accept_client_business_layer;
 module.exports.login_business_layer = login_business_layer;
@@ -342,3 +362,4 @@ module.exports.request_coach_business_layer = request_coach_business_layer;
 module.exports.get_role_business_layer = get_role_business_layer;
 module.exports.insert_message_business_layer = insert_message_business_layer;
 module.exports.get_client_coach_messages_business_layer = get_client_coach_messages_business_layer;
+module.exports.set_user_address_business_layer = set_user_address_business_layer;

@@ -14,6 +14,28 @@ async function insert_user_controller(req, res) {
       req.body.role
     )
     .then((response) => {
+      if(req.body.state !== undefined && req.body.city !== undefined && req.body.street_address !== undefined)
+      {
+        business_layer
+          .set_user_address_business_layer(
+            response.user_id,
+            req.body.state,
+            req.body.city,
+            req.body.address
+            )
+            .then((response_2) =>{
+              console.log(req.body.username);
+              console.log(response.user_id)
+              req.session.user = { username: req.body.username, user_id: response.user_id};
+              console.log("Session after registration:")
+              console.log(req.session);
+              res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // Use of wildcard causes issues during registration?
+              res.header("Access-Control-Allow-Credentials", "true"); // Allows the browser to send credentials/cookies with the request
+              res.status(200).send({
+                message: response.message
+              });
+            })
+      }
       console.log(req.body.username);
       console.log(response.user_id)
       req.session.user = { username: req.body.username, user_id: response.user_id};

@@ -313,7 +313,26 @@ async function get_address_id_data_layer(address, city, state, zip_code)
         });
     });
 }
-async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role, street_address, city, state, zip_code, country)
+async function set_user_address_data_layer(user_id, address, city, state, zip_code)
+{
+    let address_id = await get_address_id_data_layer(address, city, state, zip_code);
+    let sql = "INSERT INTO User_Location (user_id, address_id) VALUES (?, ?)";
+    return new Promise((resolve, reject) => {
+        con.query(sql, [user_id, address_id], function(err, result){
+            if(err)
+            {
+                console.log(err);
+                reject("sql failure");
+            }
+            else
+            {
+                resolve("Address updated.");
+            }
+        });
+    });
+    
+}
+async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role)
 {
     let sql = "INSERT INTO Users (username, email, password_hash, password_salt, role) VALUES (?, ?, ?, ?, ?)";
     return new Promise((resolve, reject) => {
@@ -514,3 +533,4 @@ module.exports.count_client_coach_messages = count_client_coach_messages;
 module.exports.get_city_id_data_layer = get_city_id_data_layer;
 module.exports.get_state_id_data_layer = get_state_id_data_layer;
 module.exports.get_address_id_data_layer = get_address_id_data_layer;
+module.exports.set_user_address_data_layer = set_user_address_data_layer;
