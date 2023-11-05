@@ -4,56 +4,43 @@ async function health_check(req, res) {
   res.status(200).send("Hello, world!");
 }
 async function insert_user_controller(req, res) {
-  business_layer
-    .insert_user_business_layer(
+  try {
+    const userResponse = await business_layer.insert_user_business_layer(
       req.body.first_name,
       req.body.last_name,
       req.body.username,
       req.body.email,
       req.body.password,
       req.body.role
-    )
-    .then((response) => {
-      if(req.body.state !== undefined && req.body.city !== undefined && req.body.street_address !== undefined)
-      {
-        business_layer
-          .set_user_address_business_layer(
-            response.user_id,
-            req.body.state,
-            req.body.city,
-            req.body.street_address
-            )
-            .then((response_2) =>{
-              console.log(req.body.username);
-              console.log(response.user_id)
-              req.session.user = { username: req.body.username, user_id: response.user_id};
-              console.log("Session after registration:")
-              console.log(req.session);
-              res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // Use of wildcard causes issues during registration?
-              res.header("Access-Control-Allow-Credentials", "true"); // Allows the browser to send credentials/cookies with the request
-              res.status(200).send({
-                message: response.message
-              });
-            })
-      }
-      console.log(req.body.username);
-      console.log(response.user_id)
-      req.session.user = { username: req.body.username, user_id: response.user_id};
-      console.log("Session after registration:")
-      console.log(req.session);
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // Use of wildcard causes issues during registration?
-      res.header("Access-Control-Allow-Credentials", "true"); // Allows the browser to send credentials/cookies with the request
-      res.status(200).send({
-        message: response.message
-      });
-    })
-    .catch((error_message) => {
+    );
+
+    // Set session information (common for both branches)
+    req.session.user = { username: req.body.username, user_id: userResponse.user_id };
+    console.log("Session after registration:", req.session);
+
+    // If address information is provided, set the address.
+    if (req.body.state && req.body.city && req.body.street_address && req.body.zip_code) {
+      console.log("Setting address:", req.body);
+      await business_layer.set_user_address_business_layer(
+        userResponse.user_id,
+        req.body.state,
+        req.body.city,
+        req.body.street_address,
+        req.body.zip_code
+      );
+    }
+
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.status(200).send({ message: userResponse.message });
+
+  } catch (error_message) {
+    console.error(error_message);
+    if (!res.headersSent) {
       res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-      res.status(400).send({
-        message: error_message
-      });
-      console.log(error_message);
-    });
+      res.status(400).send({ message: error_message });
+    }
+  }
 }
 
 async function login_controller(req, res) {
