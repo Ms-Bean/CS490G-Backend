@@ -28,6 +28,7 @@ CREATE TABLE `Addresses` (
   `city_id` int NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `zip_code` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`address_id`),
   KEY `city_id` (`city_id`),
   CONSTRAINT `Addresses_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `Cities` (`city_id`)
@@ -467,4 +468,4 @@ CREATE TABLE `Workout_Plans` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-05  1:16:44
+-- Dump completed on 2023-11-05  1:20:43
