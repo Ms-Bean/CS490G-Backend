@@ -21,7 +21,7 @@ async function insert_user_controller(req, res) {
             response.user_id,
             req.body.state,
             req.body.city,
-            req.body.address
+            req.body.street_address
             )
             .then((response_2) =>{
               console.log(req.body.username);
