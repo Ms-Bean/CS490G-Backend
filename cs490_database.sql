@@ -16,6 +16,25 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `Addresses`
+--
+
+DROP TABLE IF EXISTS `Addresses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Addresses` (
+  `address_id` int NOT NULL AUTO_INCREMENT,
+  `address` varchar(255) NOT NULL,
+  `city_id` int NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`address_id`),
+  KEY `city_id` (`city_id`),
+  CONSTRAINT `Addresses_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `Cities` (`city_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `Appointments`
 --
 
@@ -324,13 +343,13 @@ DROP TABLE IF EXISTS `User_Location`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `User_Location` (
   `user_id` int NOT NULL,
-  `city_id` int NOT NULL,
+  `address_id` int NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`),
-  KEY `city_id` (`city_id`),
+  KEY `address_id` (`address_id`),
   CONSTRAINT `User_Location_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`),
-  CONSTRAINT `User_Location_ibfk_2` FOREIGN KEY (`city_id`) REFERENCES `Cities` (`city_id`)
+  CONSTRAINT `User_Location_ibfk_2` FOREIGN KEY (`address_id`) REFERENCES `Addresses` (`address_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -399,7 +418,7 @@ CREATE TABLE `Users` (
   `role` varchar(255) NOT NULL,
   `phone_number` varchar(255) DEFAULT NULL,
   UNIQUE KEY `user_id` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=111 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -448,4 +467,4 @@ CREATE TABLE `Workout_Plans` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-04  5:43:40
+-- Dump completed on 2023-11-05  1:16:44
