@@ -16,6 +16,25 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `Address_City`
+--
+
+DROP TABLE IF EXISTS `Address_City`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Address_City` (
+  `address_id` int NOT NULL,
+  `city_id` int NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`address_id`),
+  KEY `city_id` (`city_id`),
+  CONSTRAINT `Address_City_ibfk_1` FOREIGN KEY (`address_id`) REFERENCES `Addresses` (`address_id`),
+  CONSTRAINT `Address_City_ibfk_2` FOREIGN KEY (`city_id`) REFERENCES `Cities` (`city_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `Addresses`
 --
 
@@ -25,13 +44,10 @@ DROP TABLE IF EXISTS `Addresses`;
 CREATE TABLE `Addresses` (
   `address_id` int NOT NULL AUTO_INCREMENT,
   `address` varchar(255) NOT NULL,
-  `city_id` int NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `zip_code` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`address_id`),
-  KEY `city_id` (`city_id`),
-  CONSTRAINT `Addresses_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `Cities` (`city_id`)
+  PRIMARY KEY (`address_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -468,4 +484,4 @@ CREATE TABLE `Workout_Plans` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-05  1:20:43
+-- Dump completed on 2023-11-05  1:29:22
