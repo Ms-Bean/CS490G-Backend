@@ -234,7 +234,8 @@ CREATE TABLE `Photo_Progression` (
   `user_id` int NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`user_id`,`created`),
+  `time_taken` timestamp NOT NULL,
+  PRIMARY KEY (`user_id`,`time_taken`),
   CONSTRAINT `Photo_Progression_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -381,7 +382,7 @@ CREATE TABLE `Users` (
   `role` varchar(255) NOT NULL,
   `phone_number` varchar(255) DEFAULT NULL,
   UNIQUE KEY `user_id` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=111 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=113 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -455,4 +456,4 @@ CREATE TABLE `Workout_Progress` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-05  5:48:43
+-- Dump completed on 2023-11-05 10:16:18
