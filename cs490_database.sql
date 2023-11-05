@@ -196,7 +196,10 @@ CREATE TABLE `Exercise_Bank` (
   `description` text NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`exercise_id`)
+  `user_who_created_it` int NOT NULL,
+  PRIMARY KEY (`exercise_id`),
+  KEY `user_who_created_it` (`user_who_created_it`),
+  CONSTRAINT `Exercise_Bank_ibfk_1` FOREIGN KEY (`user_who_created_it`) REFERENCES `Users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -418,7 +421,10 @@ CREATE TABLE `Workout_Plans` (
   `name` varchar(255) NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`workout_plan_id`)
+  `user_who_created_it` int NOT NULL,
+  PRIMARY KEY (`workout_plan_id`),
+  KEY `user_who_created_it` (`user_who_created_it`),
+  CONSTRAINT `Workout_Plans_ibfk_1` FOREIGN KEY (`user_who_created_it`) REFERENCES `Users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -456,4 +462,4 @@ CREATE TABLE `Workout_Progress` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-05 10:16:18
+-- Dump completed on 2023-11-05 11:15:39
