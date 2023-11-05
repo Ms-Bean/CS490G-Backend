@@ -90,25 +90,6 @@ CREATE TABLE `Cities` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `City_Country`
---
-
-DROP TABLE IF EXISTS `City_Country`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `City_Country` (
-  `city_id` int NOT NULL,
-  `country_id` int NOT NULL,
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`city_id`),
-  KEY `country_id` (`country_id`),
-  CONSTRAINT `City_Country_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `Cities` (`city_id`),
-  CONSTRAINT `City_Country_ibfk_2` FOREIGN KEY (`country_id`) REFERENCES `Countries` (`country_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `City_State`
 --
 
@@ -484,4 +465,4 @@ CREATE TABLE `Workout_Plans` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-05  1:29:22
+-- Dump completed on 2023-11-05  3:25:08
