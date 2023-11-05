@@ -4,7 +4,8 @@ let database_name = "cs490_database" //Replace with your database name
 var con = mysql.createConnection({ 
     host: "localhost",
     user: "root", //Replace with your user
-    password: "cactusgreen" //Replace with your password
+    password: "cactusgreen", //Replace with your password
+    database: database_name
 });
 con.connect(function(err) {
     if (err)
@@ -159,7 +160,160 @@ function insert_message_data_layer(coach_id, client_id, content) {
     });
 }
 
-async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role)
+async function get_state_id_data_layer(state)
+{
+    /*Inserts the state if it does not exist, then gets the state id.*/
+    return new Promise((resolve, reject) =>{
+        let get_state_id_sql = "SELECT state_id FROM States WHERE name = ?";
+        con.query(get_state_id_sql, [state], function (err, result){
+            if(err)
+            {
+                console.log(err);
+                reject("sql failure");
+            }
+            else
+            {
+                if(result.length > 0)
+                {
+                    resolve(result[0].state_id);
+                }
+                else
+                {
+                    let insert_state_sql = "INSERT INTO States (name) VALUES (?)";
+                    con.query(insert_state_sql, [state], function(err, result){
+                        if(err)
+                        {
+                            console.log(err);
+                            reject("sql failure");
+                        }
+                        let get_last_insert_id_sql = "SELECT LAST_INSERT_ID()";
+                        con.query(get_last_insert_id_sql, function(err, result)
+                        {
+                            if(err)
+                            {
+                                console.log(err);
+                                reject("sql failure");
+                            }
+                            resolve(result[0]["LAST_INSERT_ID()"]);
+                        });
+                    });
+                }
+            }
+        });
+    });
+}
+async function get_city_id_data_layer(city, state)
+{
+    /*Inserts the city and state if the pair does not exist, then gets the city id.*/
+    let state_id = await get_state_id_data_layer(state);
+    return new Promise((resolve, reject) =>{
+        let get_city_id_sql = "SELECT Cities.city_id, City_State.state_id FROM Cities INNER JOIN City_State WHERE Cities.name = ? AND City_State.state_id = ?";
+        con.query(get_city_id_sql, [city, state_id], function (err, result){
+            if(err)
+            {
+                console.log(err);
+                reject("sql failure");
+            }
+            else
+            {
+                if(result.length > 0)
+                {
+                    resolve(result[0]["city_id"]);
+                }
+                else
+                {
+                    let insert_city_sql = "INSERT INTO Cities (name) VALUES (?)";
+                    con.query(insert_city_sql, [city], function(err, result){
+                        if(err)
+                        {
+                            console.log(err);
+                            reject("sql failure");
+                        }
+                        let get_last_insert_id_sql = "SELECT LAST_INSERT_ID()";
+                        con.query(get_last_insert_id_sql, function(err, result)
+                        {
+                            if(err)
+                            {
+                                console.log(err);
+                                reject("sql failure");
+                            }
+                            let city_id = result[0]["LAST_INSERT_ID()"];
+
+                            let insert_city_state_relation_sql = "INSERT INTO City_State (city_id, state_id) VALUES (?, ?)";
+                            con.query(insert_city_state_relation_sql, [city_id, state_id], function(err, result){
+                                if(err)
+                                {
+                                    console.log(err);
+                                    reject("sql failure");
+                                }
+                                else
+                                {
+                                    resolve(city_id);
+                                }
+                            })
+                        });
+                    });
+                }
+            }
+        });
+    });
+}
+async function get_address_id_data_layer(address, city, state, zip_code)
+{
+    let city_id = await get_city_id_data_layer(city, state);
+    return new Promise((resolve, reject) =>{
+        let get_address_id_sql = "SELECT Addresses.address_id, Address_City.city_id FROM Addresses INNER JOIN Address_City ON Addresses.address_id = Address_City.address_id WHERE Addresses.address = ? AND Addresses.zip_code = ? AND Address_City.city_id = ?";
+        con.query(get_address_id_sql, [address, zip_code, city_id], function (err, result){
+            if(err)
+            {
+                console.log(err);
+                reject("sql failure");
+            }
+            else
+            {
+                if(result.length > 0)
+                {
+                    resolve(result[0]["address_id"]);
+                }
+                else
+                {
+                    let insert_address_sql = "INSERT INTO Addresses (address, zip_code) VALUES (?, ?)";
+                    con.query(insert_address_sql, [address, zip_code], function(err, result){
+                        if(err)
+                        {
+                            console.log(err);
+                            reject("sql failure");
+                        }
+                        let get_last_insert_id_sql = "SELECT LAST_INSERT_ID()";
+                        con.query(get_last_insert_id_sql, function(err, result)
+                        {
+                            if(err)
+                            {
+                                console.log(err);
+                                reject("sql failure");
+                            }
+                            let address_id = result[0]["LAST_INSERT_ID()"];
+
+                            let insert_address_city_relation_sql = "INSERT INTO Address_City (address_id, city_id) VALUES (?, ?)";
+                            con.query(insert_address_city_relation_sql, [address_id, city_id], function(err, result){
+                                if(err)
+                                {
+                                    console.log(err);
+                                    reject("sql failure");
+                                }
+                                else
+                                {
+                                    resolve(address_id);
+                                }
+                            })
+                        });
+                    });
+                }
+            }
+        });
+    });
+}
+async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role, street_address, city, state, zip_code, country)
 {
     let sql = "INSERT INTO Users (username, email, password_hash, password_salt, role) VALUES (?, ?, ?, ?, ?)";
     return new Promise((resolve, reject) => {
@@ -356,3 +510,7 @@ module.exports.get_clients_of_coach = get_clients_of_coach;
 module.exports.get_role_data_layer = get_role_data_layer;
 module.exports.get_client_coach_message_page_data_layer = get_client_coach_message_page_data_layer;
 module.exports.count_client_coach_messages = count_client_coach_messages;
+
+module.exports.get_city_id_data_layer = get_city_id_data_layer;
+module.exports.get_state_id_data_layer = get_state_id_data_layer;
+module.exports.get_address_id_data_layer = get_address_id_data_layer;

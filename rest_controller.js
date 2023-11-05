@@ -32,7 +32,7 @@ async function insert_user_controller(req, res) {
       });
       console.log(error_message);
     });
-  }
+}
 
 async function login_controller(req, res) {
     business_layer
