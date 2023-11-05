@@ -184,22 +184,6 @@ CREATE TABLE `Coaches_Goals` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `Countries`
---
-
-DROP TABLE IF EXISTS `Countries`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `Countries` (
-  `country_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`country_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `Exercise_Bank`
 --
 
@@ -273,25 +257,6 @@ CREATE TABLE `Ratings` (
   KEY `client_id` (`client_id`),
   CONSTRAINT `Ratings_ibfk_1` FOREIGN KEY (`coach_id`) REFERENCES `Users` (`user_id`),
   CONSTRAINT `Ratings_ibfk_2` FOREIGN KEY (`client_id`) REFERENCES `Users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `State_Country`
---
-
-DROP TABLE IF EXISTS `State_Country`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `State_Country` (
-  `state_id` int NOT NULL,
-  `country_id` int NOT NULL,
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`state_id`),
-  KEY `country_id` (`country_id`),
-  CONSTRAINT `State_Country_ibfk_1` FOREIGN KEY (`state_id`) REFERENCES `States` (`state_id`),
-  CONSTRAINT `State_Country_ibfk_2` FOREIGN KEY (`country_id`) REFERENCES `Countries` (`country_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -465,4 +430,4 @@ CREATE TABLE `Workout_Plans` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-05  3:25:08
+-- Dump completed on 2023-11-05  3:26:37
