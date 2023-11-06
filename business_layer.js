@@ -145,7 +145,7 @@ async function accept_coach_survey_business_layer(user_id, cost_per_session, ava
             {
                 reject("User is not logged in.");
             }
-            if(!/^[0-9]$/.test(user_id))
+            if(!/^[0-9]+$/.test(user_id))
             {
                 reject("Invalid user_id");
             }
