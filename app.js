@@ -61,7 +61,3 @@ app.get("/check_session", (req, res) => {
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT.toString());
 });
-
-data_layer.get_user_account_info(117).then((response) =>{
-  console.log(response);
-});
