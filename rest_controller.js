@@ -5,6 +5,7 @@ async function health_check(req, res) {
 }
 async function insert_user_controller(req, res) {
   try {
+    console.log(req.body);
     const userResponse = await business_layer.insert_user_business_layer(
       req.body.first_name,
       req.body.last_name,
@@ -16,16 +17,14 @@ async function insert_user_controller(req, res) {
 
     // Set session information (common for both branches)
     req.session.user = { username: req.body.username, user_id: userResponse.user_id };
-    console.log("Session after registration:", req.session);
 
     // If address information is provided, set the address.
     if (req.body.state && req.body.city && req.body.street_address && req.body.zip_code) {
-      console.log("Setting address:", req.body);
       await business_layer.set_user_address_business_layer(
         userResponse.user_id,
-        req.body.state,
-        req.body.city,
         req.body.street_address,
+        req.body.city,
+        req.body.state,
         req.body.zip_code
       );
     }
@@ -48,7 +47,6 @@ async function login_controller(req, res) {
       .login_business_layer(req.body.username, req.body.password)
       .then((response) => {
         req.session.user = { username: req.body.username, user_id: response.user_id};
-        console.log(req.session);
         res.header("Access-Control-Allow-Origin", "http://localhost:3000");
         res.header("Access-Control-Allow-Credentials", "true");
         res.status(200).send({
@@ -74,10 +72,8 @@ async function logout_controller(req, res) {
   });
 }
 async function accept_client_survey_controller(req, res) {
-  console.log(req.session);
   if(req.session.user === undefined || req.session.user.user_id == undefined)
   {
-    console.log(req.session);
     res.header("Access-Control-Allow-Origin", "http://localhost:3000");
     res.header("Access-Control-Allow-Credentials", "true");
     res.status(400).send({
@@ -113,7 +109,6 @@ async function accept_client_survey_controller(req, res) {
 }
 
 async function accept_coach_survey_controller(req, res) {
-  console.log(req.session);
   business_layer
     .accept_coach_survey_business_layer(
       req.session.user["user_id"],
