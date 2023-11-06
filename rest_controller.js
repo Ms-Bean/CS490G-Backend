@@ -226,7 +226,28 @@ async function get_client_coach_messages_controller(req, res) {
   })
   .catch((err_message) => res.status(400).json({message: err_message}));
 }
+async function get_user_account_info_controller(req, res)
+{  
+  business_layer
+  .get_user_account_info_business_layer(
+    req.session.user["user_id"],
+  )
+  .then((response) =>{
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.status(200).send({
+      message: response
+    });
+  })
+  .catch((error_message) =>{
+    console.log(error_message);
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.status(400).send({
+      message: error_message
+    });
+  });
 
+}
+module.exports.get_user_account_info_controller = get_user_account_info_controller;
 module.exports.accept_client_controller = accept_client_controller;
 module.exports.logout_controller = logout_controller;
 module.exports.insert_user_controller = insert_user_controller;

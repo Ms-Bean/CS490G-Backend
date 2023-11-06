@@ -145,7 +145,7 @@ async function accept_coach_survey_business_layer(user_id, cost_per_session, ava
             {
                 reject("User is not logged in.");
             }
-            if(typeof(user_id) != "number")
+            if(!/^[0-9]$/.test(user_id))
             {
                 reject("Invalid user_id");
             }
@@ -353,6 +353,18 @@ async function set_user_address_business_layer(user_id, address, city, state, zi
     }
 }
 
+async function get_user_account_info_business_layer(user_id)
+{
+    data_layer.get_role_data_layer(user_id).then(response =>{
+        return new Promise((resolve, reject) =>{
+            data_layer.get_user_account_info_data_layer(user_id).then(response =>{
+                resolve(response);
+            }).catch((err) =>{
+                reject(err);
+            });
+        });
+    });
+}
 module.exports.accept_client_business_layer = accept_client_business_layer;
 module.exports.login_business_layer = login_business_layer;
 module.exports.insert_user_business_layer = insert_user_business_layer;
@@ -363,3 +375,4 @@ module.exports.get_role_business_layer = get_role_business_layer;
 module.exports.insert_message_business_layer = insert_message_business_layer;
 module.exports.get_client_coach_messages_business_layer = get_client_coach_messages_business_layer;
 module.exports.set_user_address_business_layer = set_user_address_business_layer;
+module.exports.get_user_account_info_business_layer = get_user_account_info_business_layer;
