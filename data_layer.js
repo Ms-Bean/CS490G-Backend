@@ -116,7 +116,6 @@ function get_client_coach_message_page_data_layer(client_id, coach_id, page_size
     });
 }
 
-
 /**
  * 
  * @param {number} client_id 
@@ -518,6 +517,46 @@ async function accept_client_data_layer(coach_id, client_id)
         });
     });
 }
+async function get_user_account_info(user_id)
+{
+    let return_data = {
+        address: "",
+        city: "",
+        state: "",
+        username: "",
+        email: "",
+        phone_number: ""
+    };
+    let get_address_city_state_sql = "SELECT T5.user_id, T5.address, T5.city_name, States.name AS state_name FROM (SELECT T4.user_id, T4.address_id, T4.address, T4.city_id, T4.name AS city_name, City_State.state_id FROM (SELECT T3.user_id, T3.address_id, T3.address, T3.city_id, Cities.name FROM (SELECT T2.user_id, T2.address_id, T2.address, Address_City.city_id FROM (SELECT T1.user_id, Addresses.address_id, Addresses.address FROM (SELECT Users.user_id, User_Location.address_id FROM Users INNER JOIN User_Location ON Users.user_id = User_Location.user_id) T1 INNER JOIN Addresses ON T1.address_id = Addresses.address_id) T2 INNER JOIN Address_City ON T2.address_id = Address_City.address_id) T3 INNER JOIN Cities ON T3.city_id = Cities.city_id) T4 INNER JOIN City_State ON T4.city_id = City_State.city_id) T5 INNER JOIN States ON T5.state_id = States.state_id WHERE user_id = ?"
+    return new Promise((resolve, reject) =>{
+        con.query(get_address_city_state_sql, [user_id], function(err, results){
+            if(err)
+            {
+                console.log(err);
+                reject("sql failure");
+            }
+            if(results.length > 0) //The user may not have given an address
+            {
+                return_data.address = results[0].address;
+                return_data.city = results[0].city_name;
+                return_data.state = results[0].state_name;
+            }
+            let get_other_account_info_sql = "SELECT email, username, phone_number FROM Users WHERE user_id = ?";
+            con.query(get_other_account_info_sql, [user_id], function(err, results){
+                if(err)
+                {
+                    console.log(err);
+                    reject("sql failure");
+                }
+                return_data.phone_number = results[0].phone_number; //There must be at least 1 entry here in order for the user to be logged in.
+                return_data.email = results[0].email;
+                return_data.username = results[0].username;
+
+                resolve(return_data);
+            })
+        });
+    })
+}
 module.exports.accept_client_data_layer = accept_client_data_layer;
 module.exports.request_coach_data_layer = request_coach_data_layer;
 module.exports.insert_user_data_layer = insert_user_data_layer;
@@ -534,3 +573,5 @@ module.exports.get_city_id_data_layer = get_city_id_data_layer;
 module.exports.get_state_id_data_layer = get_state_id_data_layer;
 module.exports.get_address_id_data_layer = get_address_id_data_layer;
 module.exports.set_user_address_data_layer = set_user_address_data_layer;
+
+module.exports.get_user_account_info = get_user_account_info;

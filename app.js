@@ -44,6 +44,7 @@ app.post("/onboarding/coach", controller.accept_coach_survey_controller);
 app.post("/request_coach", controller.request_coach_controller);
 app.post("/accept_client", controller.accept_client_controller);
 app.get("/get_role", controller.get_role_controller);
+app.get("/get_user_account_info", controller.get_user_account_info_controller);
 app.route('/messages')
     .post(controller.insert_message_controller)
     .get(controller.get_client_coach_messages_controller);
