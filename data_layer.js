@@ -333,9 +333,9 @@ async function set_user_address_data_layer(user_id, address, city, state, zip_co
 }
 async function insert_user_data_layer(first_name, last_name, username, email, password_hash, password_salt, role)
 {
-    let sql = "INSERT INTO Users (username, email, password_hash, password_salt, role) VALUES (?, ?, ?, ?, ?)";
+    let sql = "INSERT INTO Users (username, email, password_hash, password_salt, role, first_name, last_name) VALUES (?, ?, ?, ?, ?, ?, ?)";
     return new Promise((resolve, reject) => {
-        con.query(sql, [username, email, password_hash, password_salt, role], function (err, result){
+        con.query(sql, [username, email, password_hash, password_salt, role, first_name, last_name], function (err, result){
             if(err)
             {
                 console.log(err);
@@ -353,8 +353,8 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
                     else
                     {
                         let user_id = result[0].user_id;
-                        sql = "INSERT INTO User_Profile (user_id, first_name, last_name) VALUES (?, ?, ?)";
-                        con.query(sql, [user_id, first_name, last_name], function(err, result){
+                        sql = "INSERT INTO User_Profile (user_id) VALUES (?)";
+                        con.query(sql, [user_id], function(err, result){
                             if(err)
                             {
                                 console.log(err);
@@ -517,7 +517,7 @@ async function accept_client_data_layer(coach_id, client_id)
         });
     });
 }
-async function get_user_account_info(user_id)
+async function get_user_account_info_data_layer(user_id)
 {
     let return_data = {
         address: "",
@@ -525,7 +525,9 @@ async function get_user_account_info(user_id)
         state: "",
         username: "",
         email: "",
-        phone_number: ""
+        phone_number: "",
+        first_name: "",
+        last_name: "",
     };
     let get_address_city_state_sql = "SELECT T5.user_id, T5.address, T5.city_name, States.name AS state_name FROM (SELECT T4.user_id, T4.address_id, T4.address, T4.city_id, T4.name AS city_name, City_State.state_id FROM (SELECT T3.user_id, T3.address_id, T3.address, T3.city_id, Cities.name FROM (SELECT T2.user_id, T2.address_id, T2.address, Address_City.city_id FROM (SELECT T1.user_id, Addresses.address_id, Addresses.address FROM (SELECT Users.user_id, User_Location.address_id FROM Users INNER JOIN User_Location ON Users.user_id = User_Location.user_id) T1 INNER JOIN Addresses ON T1.address_id = Addresses.address_id) T2 INNER JOIN Address_City ON T2.address_id = Address_City.address_id) T3 INNER JOIN Cities ON T3.city_id = Cities.city_id) T4 INNER JOIN City_State ON T4.city_id = City_State.city_id) T5 INNER JOIN States ON T5.state_id = States.state_id WHERE user_id = ?"
     return new Promise((resolve, reject) =>{
@@ -541,7 +543,7 @@ async function get_user_account_info(user_id)
                 return_data.city = results[0].city_name;
                 return_data.state = results[0].state_name;
             }
-            let get_other_account_info_sql = "SELECT email, username, phone_number FROM Users WHERE user_id = ?";
+            let get_other_account_info_sql = "SELECT email, username, phone_number, first_name, last_name FROM Users WHERE user_id = ?";
             con.query(get_other_account_info_sql, [user_id], function(err, results){
                 if(err)
                 {
@@ -551,12 +553,14 @@ async function get_user_account_info(user_id)
                 return_data.phone_number = results[0].phone_number; //There must be at least 1 entry here in order for the user to be logged in.
                 return_data.email = results[0].email;
                 return_data.username = results[0].username;
-
+                return_data.first_name = results[0].first_name;
+                return_data.last_name = results[0].last_name;
                 resolve(return_data);
             })
         });
     })
 }
+
 module.exports.accept_client_data_layer = accept_client_data_layer;
 module.exports.request_coach_data_layer = request_coach_data_layer;
 module.exports.insert_user_data_layer = insert_user_data_layer;
@@ -574,4 +578,4 @@ module.exports.get_state_id_data_layer = get_state_id_data_layer;
 module.exports.get_address_id_data_layer = get_address_id_data_layer;
 module.exports.set_user_address_data_layer = set_user_address_data_layer;
 
-module.exports.get_user_account_info = get_user_account_info;
+module.exports.get_user_account_info_data_layer = get_user_account_info_data_layer;

@@ -31,7 +31,6 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  console.log('Session data:', req.session);
   next();
 });
 
@@ -50,7 +49,6 @@ app.route('/messages')
     .get(controller.get_client_coach_messages_controller);
 
 app.get("/check_session", (req, res) => {
-  console.log("Checking session data:", req.session);
   if (req.session.user) {
     res.status(200).send({ isLoggedIn: true, user: req.session.user });
   } else {

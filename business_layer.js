@@ -355,14 +355,16 @@ async function set_user_address_business_layer(user_id, address, city, state, zi
 
 async function get_user_account_info_business_layer(user_id)
 {
-    data_layer.get_role_data_layer(user_id).then(response =>{
-        return new Promise((resolve, reject) =>{
+    return new Promise((resolve, reject) =>{
+        data_layer.get_role_data_layer(user_id).then(getrole_response =>{
             data_layer.get_user_account_info_data_layer(user_id).then(response =>{
                 resolve(response);
             }).catch((err) =>{
                 reject(err);
             });
-        });
+        }).catch((err) =>{
+            reject("User is not logged in.");
+        })
     });
 }
 module.exports.accept_client_business_layer = accept_client_business_layer;

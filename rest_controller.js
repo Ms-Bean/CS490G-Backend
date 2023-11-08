@@ -5,7 +5,6 @@ async function health_check(req, res) {
 }
 async function insert_user_controller(req, res) {
   try {
-    console.log(req.body);
     const userResponse = await business_layer.insert_user_business_layer(
       req.body.first_name,
       req.body.last_name,
@@ -243,12 +242,13 @@ async function get_user_account_info_controller(req, res)
     .then((response) =>{
       res.header("Access-Control-Allow-Origin", "http://localhost:3000");
       res.status(200).send({
-        message: response
+        response
       });
     })
     .catch((error_message) =>{
       console.log(error_message);
       res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      console.log("wtf");
       res.status(400).send({
         message: error_message
       });
