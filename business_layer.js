@@ -338,33 +338,79 @@ async function set_user_address_business_layer(user_id, address, city, state, zi
     {
         return Promise.reject("Invalid zip code");
     }
-    try{
-        await data_layer.get_role_data_layer(user_id); //Check that the user exists
-        return new Promise((resolve, reject) =>{
-            data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
-                resolve(response);
+    return new Promise((resolve, reject) =>{    
+        data_layer.get_role_data_layer(user_id).then((response) =>{ //Check that the user exists
+            data_layer.check_state_exists(state).then((response) =>{
+                data_layer.unset_user_address_data_layer(user_id).then((response) =>{ //This should have no effect if the user does not already have an address.
+                    data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
+                        resolve(response);
+                    }).catch((err) =>{
+                        console.log("ERROR");
+                        reject(err);
+                    });
+                }).catch((err) =>{
+                    reject(err);
+                })
             }).catch((err) =>{
                 reject(err);
             });
-        });
-    }
-    catch(err){
-        return Promise.reject("User not found");
-    }
+        }).catch((err) =>{
+            reject("User not found");
+        }); 
+    })
 }
-
+async function alter_account_info_business_layer(user_id, first_name, last_name, username, email, password, phone_number, address, city, state, zip_code)
+{    
+    console.log("Business layer");
+    return new Promise((resolve, reject) => {
+        console.log("Phone number:");
+        console.log(phone_number);
+        data_layer.alter_account_info_data_layer(user_id, first_name, last_name, username, email, password, phone_number).then(response =>{
+            if(address && city && state && zip_code)
+            {
+                data_layer.unset_user_address_data_layer(user_id).then(response =>{
+                    data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
+                        console.log(response);
+                        resolve(response);
+                    }).catch((err) =>{
+                        console.log(err);
+                        reject(err);
+                    });
+                }).catch((err) =>{
+                    console.log(err);
+                    reject(err);
+                });
+            }
+            else
+            {
+                console.log(address);
+                console.log(city);
+                console.log(state);
+                console.log(zip_code);
+                resolve("User information updated");
+            }
+        }).catch((err) =>
+        {
+            console.log(err);
+            reject(err);
+        });
+    });
+}
 async function get_user_account_info_business_layer(user_id)
 {
-    data_layer.get_role_data_layer(user_id).then(response =>{
-        return new Promise((resolve, reject) =>{
+    return new Promise((resolve, reject) =>{
+        data_layer.get_role_data_layer(user_id).then(getrole_response =>{
             data_layer.get_user_account_info_data_layer(user_id).then(response =>{
                 resolve(response);
             }).catch((err) =>{
                 reject(err);
             });
-        });
+        }).catch((err) =>{
+            reject("User is not logged in.");
+        })
     });
 }
+
 module.exports.accept_client_business_layer = accept_client_business_layer;
 module.exports.login_business_layer = login_business_layer;
 module.exports.insert_user_business_layer = insert_user_business_layer;
@@ -376,3 +422,4 @@ module.exports.insert_message_business_layer = insert_message_business_layer;
 module.exports.get_client_coach_messages_business_layer = get_client_coach_messages_business_layer;
 module.exports.set_user_address_business_layer = set_user_address_business_layer;
 module.exports.get_user_account_info_business_layer = get_user_account_info_business_layer;
+module.exports.alter_account_info_business_layer = alter_account_info_business_layer;
