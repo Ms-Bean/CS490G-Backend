@@ -248,11 +248,50 @@ async function get_user_account_info_controller(req, res)
     .catch((error_message) =>{
       console.log(error_message);
       res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-      console.log("wtf");
       res.status(400).send({
         message: error_message
       });
     });
+  }
+}
+async function alter_account_info_controller(req, res)
+{
+  console.log("HIII");
+  if(req.session.user === undefined || req.session.user["user_id"] == undefined)
+  {  
+    res.status(400).send({
+      message: "User is not logged in"
+    });
+  }
+  else
+  {
+    business_layer
+      .alter_account_info_business_layer(
+        req.session.user["user_id"],
+        req.body.first_name,
+        req.body.last_name,
+        req.body.username,
+        req.body.email,
+        req.body.password,
+        req.body.phone_number,
+        req.body.street_address,
+        req.body.city,
+        req.body.state,
+        req.body.zip_code
+      )
+      .then((response) =>{
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.status(200).send({
+          message: response
+        });
+      })
+      .catch((err) =>{
+        console.log(err);
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.status(400).send({
+          message: err
+        });
+      })
   }
 }
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
@@ -267,3 +306,4 @@ module.exports.request_coach_controller = request_coach_controller;
 module.exports.get_role_controller = get_role_controller;
 module.exports.insert_message_controller = insert_message_controller;
 module.exports.get_client_coach_messages_controller = get_client_coach_messages_controller;
+module.exports.alter_account_info_controller = alter_account_info_controller;
