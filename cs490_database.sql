@@ -362,9 +362,9 @@ CREATE TABLE `Ratings` (
   `coach_id` int NOT NULL,
   `client_id` int NOT NULL,
   `comment` text NOT NULL,
-  `rating` decimal(3,2) NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `rating` int NOT NULL,
   PRIMARY KEY (`coach_id`,`client_id`),
   KEY `client_id` (`client_id`),
   CONSTRAINT `Ratings_ibfk_1` FOREIGN KEY (`coach_id`) REFERENCES `Users` (`user_id`),
@@ -661,4 +661,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-09  5:49:16
+-- Dump completed on 2023-11-09 20:19:38
