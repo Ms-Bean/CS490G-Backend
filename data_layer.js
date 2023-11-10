@@ -704,7 +704,8 @@ async function get_user_account_info_data_layer(user_id)
  * @param {number} search_options.filter_options.hourly_rate.max 
  * @param {Object} search_options.filter_options.location 
  * @param {string} search_options.filter_options.location.city 
- * @param {string} search_options.filter_options.location.state 
+ * @param {string} search_options.filter_options.location.state
+ * @returns {Promise<Object>} 
  */
 function search_coaches_data_layer({filter_options}) {
     const sql = `SELECT coaches.user_id, coaches.hourly_rate, coaches.coaching_history, coaches.accepting_new_clients, coaches.experience_level,

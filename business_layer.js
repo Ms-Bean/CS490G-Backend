@@ -411,6 +411,60 @@ async function get_user_account_info_business_layer(user_id)
     });
 }
 
+
+/**
+ * 
+ * @param {Object} search_options
+ * @param {Object} [search_options.filter_options]
+ * @param {string} [search_options.filter_options.name] 
+ * @param {Object} [search_options.filter_options.rating] 
+ * @param {number} [search_options.filter_options.rating.min] 
+ * @param {number} [search_options.filter_options.rating.max] 
+ * @param {Object} [search_options.filter_options.hourly_rate] 
+ * @param {number} [search_options.filter_options.hourly_rate.min] 
+ * @param {number} [search_options.filter_options.hourly_rate.max] 
+ * @param {Object} [search_options.filter_options.location] 
+ * @param {string} [search_options.filter_options.location.city] 
+ * @param {string} [search_options.filter_options.location.state] 
+ * @returns {Promise<Object>} 
+ */
+async function search_coaches_business_layer({filter_options}) {
+    /* Fill missing properties with defaults */
+    const MAX_HOURLY_RATE = 1_000_000;  // TODO: determine max hourly rate
+    const name = filter_options?.name ?? "";
+    const rating = {
+        min: filter_options?.rating?.min ?? 1,
+        max: filter_options?.rating?.max ?? 5
+    };
+    const hourly_rate = {
+        min: filter_options?.hourly_rate?.min ?? 0,
+        max: filter_options?.hourly_rate?.max ?? MAX_HOURLY_RATE,
+    };
+    const location = {
+        city: filter_options?.location?.city ?? "",
+        state: filter_options?.location?.state ?? ""
+    };
+
+    /* Catch invalid properties */
+    if (rating.min < 1 || rating.max > 5 || rating.min > rating.max) {
+        return Promise.reject(new Error("Invalid ratings"));
+    } else if (hourly_rate.min < 0 || hourly_rate.max > MAX_HOURLY_RATE || hourly_rate.min > hourly_rate.max) {
+        return Promise.reject(new Error("Invalid hourly rate"));
+    }
+
+    const filled_search_options = {
+        filter_options: {
+            name: name,
+            rating: rating,
+            hourly_rate: hourly_rate,
+            location: location
+        }
+    };
+
+    const coaches = await data_layer.search_coaches_data_layer(filled_search_options);
+    return coaches;
+}
+
 module.exports.accept_client_business_layer = accept_client_business_layer;
 module.exports.login_business_layer = login_business_layer;
 module.exports.insert_user_business_layer = insert_user_business_layer;
@@ -423,3 +477,4 @@ module.exports.get_client_coach_messages_business_layer = get_client_coach_messa
 module.exports.set_user_address_business_layer = set_user_address_business_layer;
 module.exports.get_user_account_info_business_layer = get_user_account_info_business_layer;
 module.exports.alter_account_info_business_layer = alter_account_info_business_layer;
+module.exports.search_coaches_business_layer = search_coaches_business_layer;
