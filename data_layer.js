@@ -691,6 +691,81 @@ async function get_user_account_info_data_layer(user_id)
     })
 }
 
+/**
+ * 
+ * @param {Object} search_options
+ * @param {Object} search_options.filter_options
+ * @param {string} search_options.filter_options.name 
+ * @param {Object} search_options.filter_options.rating 
+ * @param {number} search_options.filter_options.rating.min 
+ * @param {number} search_options.filter_options.rating.max 
+ * @param {Object} search_options.filter_options.hourly_rate 
+ * @param {number} search_options.filter_options.hourly_rate.min 
+ * @param {number} search_options.filter_options.hourly_rate.max 
+ * @param {Object} search_options.filter_options.location 
+ * @param {string} search_options.filter_options.location.city 
+ * @param {string} search_options.filter_options.location.state 
+ */
+function search_coaches_data_layer({filter_options}) {
+    const sql = `SELECT coaches.user_id, coaches.hourly_rate, coaches.coaching_history, coaches.accepting_new_clients, coaches.experience_level,
+                    users.first_name, users.last_name, user_profile.about_me, coaches_goals.goal, addresses.address, cities.name AS city, states.name AS state,
+                    AVG(ratings.rating) AS average_rating
+                FROM coaches
+                    INNER JOIN users ON coaches.user_id = users.user_id
+                    INNER JOIN user_profile ON coaches.user_id = user_profile.user_id
+                    INNER JOIN coaches_goals ON coaches.user_id = coaches_goals.coach_id
+                    INNER JOIN ratings ON coaches.user_id = ratings.coach_id
+                    INNER JOIN user_location ON coaches.user_id = user_location.user_id
+                    INNER JOIN addresses ON user_location.address_id = addresses.address_id
+                    INNER JOIN address_city ON addresses.address_id = address_city.address_id
+                    INNER JOIN cities ON address_city.city_id = cities.city_id
+                    INNER JOIN city_state ON cities.city_id = city_state.city_id
+                    INNER JOIN states ON city_state.state_id = states.state_id
+                WHERE CONCAT(users.first_name, " ", users.last_name) LIKE "%?%"
+                    AND coaches.hourly_rate BETWEEN ? AND ? AND cities.name LIKE "%?%"
+                    AND states.name LIKE "%?%"
+                GROUP BY coaches.user_id
+                HAVING average_rating BETWEEN ? AND ?`;
+                const values = [filter_options.name, filter_options.hourly_rate.min, filter_options.hourly_rate.max,
+                                filter_options.location.city, filter_options.location.state, filter_options.rating.min,
+                                filter_options.rating.max];
+
+    return new Promise((resolve, reject) => {
+        con.query(sql, values, (results, err) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            }
+
+            const mapped_results = results.map(r => {
+                return {
+                    coach_id: r.user_id,
+                    personal_info: {
+                        first_name: r.first_name,
+                        last_name: r.last_name,
+                        about_me: r.about_me
+                    },
+                    professional_info: {
+                        hourly_rate: r.hourly_rate,
+                        coaching_history: r.coaching_history,
+                        accepting_new_clients: r.accepting_new_clients,
+                        experience_level: r.experience_level,
+                        goal: r.goal,
+                        rating: r.average_rating
+                    },
+                    location: {
+                        address: r.address,
+                        city: r.city,
+                        state: r.state
+                    }
+                };
+            });
+            resolve(mapped_results);
+        })
+    });
+}
+
+
 module.exports.accept_client_data_layer = accept_client_data_layer;
 module.exports.request_coach_data_layer = request_coach_data_layer;
 module.exports.login_data_layer = login_data_layer;
@@ -713,3 +788,4 @@ module.exports.check_state_exists = check_state_exists;
 module.exports.remove_unused_locations_data_layer = remove_unused_locations_data_layer;
 module.exports.unset_user_address_data_layer = unset_user_address_data_layer;
 module.exports.alter_account_info_data_layer = alter_account_info_data_layer;
+module.exports.search_coaches_data_layer = search_coaches_data_layer;
