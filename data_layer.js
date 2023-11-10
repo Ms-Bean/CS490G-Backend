@@ -734,7 +734,6 @@ function search_coaches_data_layer({filter_options}) {
     return new Promise((resolve, reject) => {
         con.query(sql, values, (results, err) => {
             if (err) {
-                console.log(err);
                 reject(err);
             }
 
