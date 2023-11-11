@@ -598,6 +598,13 @@ async function request_coach_data_layer(coach_id, client_id, comment)
     });
 }
 
+
+/**
+ * 
+ * @param {number} coach_id 
+ * @param {number} client_id 
+ * @returns {Promise<boolean>}
+ */
 function check_if_client_coach_request_exists(coach_id, client_id) {
     const sql = "SELECT coach_id FROM Coach_Requests WHERE coach_id = ? AND client_id = ?";
     return new Promise((resolve, reject) => {
@@ -613,6 +620,12 @@ function check_if_client_coach_request_exists(coach_id, client_id) {
 }
 
 // TODO: Change schema to reflect one-to-many relationship between client and coach
+/**
+ * 
+ * @param {number} coach_id 
+ * @param {number} client_id 
+ * @returns {Promise<boolean>}
+ */
 function check_if_client_has_hired_coach(coach_id, client_id) {
     const sql = "SELECT * FROM Client_Coach WHERE coach_id = ? AND client_id = ?";
     return new Promise((resolve, reject) => {
@@ -629,7 +642,7 @@ function check_if_client_has_hired_coach(coach_id, client_id) {
 
 function accept_client_data_layer2(coach_id, client_id) {
     const insert_sql = "INSERT INTO Client_Coach (coach_id, client_id) VALUES (?, ?)";
-    const delete_sql = "DELETE FROM Client_Requests WHERE client_id = ? AND coach_id = ?";
+    const delete_sql = "DELETE FROM Coach_Requests WHERE client_id = ? AND coach_id = ?";
 
     return new Promise((resolve, reject) => {
         con.beginTransaction(err => {
