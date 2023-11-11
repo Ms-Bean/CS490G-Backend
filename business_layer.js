@@ -217,7 +217,7 @@ async function accept_client_business_layer2(user_id, client_id) {
         return Promise.reject(new Error("Invalid client id"));
     }
 
-    if (!await data_layer.check_if_client_coach_request_exists(user, client_id)) {
+    if (!await data_layer.check_if_client_coach_request_exists(user_id, client_id)) {
         return Promise.reject(new Error("Request from client to coach does not exist"));
     } else if (await data_layer.check_if_client_has_hired_coach(user_id, client_id)) {
         return Promise.reject(new Error("Coach cannot accept request from one of their current clients"));

@@ -659,7 +659,7 @@ function accept_client_data_layer2(coach_id, client_id) {
                 console.log("Inserted Client and Coach into Client_Coach table");
             });
 
-            con.query(delete_sql, [coach_id, client_id], (err, results) => {
+            con.query(delete_sql, [client_id, coach_id], (err, results) => {
                 if (err) {
                     return con.rollback(() => {
                         reject(err);
