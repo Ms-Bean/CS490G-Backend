@@ -206,28 +206,31 @@ async function request_coach_business_layer(coach_id, client_id, comment)
     })
 }
 
-async function accept_client_business_layer(coach_id, client_id)
-{
-    //TODO, check if coach_id and client_id belong to a coach and client, respectively
-    return new Promise((resolve, reject) => {
-        if(coach_id === undefined)
-        {
-            reject("User not logged in");
-        }
-        if(!/^[0-9]+$/.test(coach_id))
-        {
-            reject("Invalid coach id");
-        }
-        if(!/^[0-9]+$/.test(client_id))
-        {
-            reject("Invalid client id");
-        }
-        data_layer.accept_client_data_layer(coach_id, client_id).then(response =>{
-            resolve(response);
-        }).catch((error) =>{
-            reject(error);
-        });
-    })
+/**
+ * 
+ * @param {number} current_user_id 
+ * @param {number} client_id 
+ * @returns {Promise<string>}
+ */
+async function accept_client_business_layer(current_user_id, client_id) {
+    if (current_user_id === undefined || current_user_id === null) {
+        return Promise.reject(new Error("User is not logged in"));
+    }
+
+    if (!Number.isInteger(current_user_id)) {
+        return Promise.reject(new Error("Invalid user id"));
+    } else if (!Number.isInteger(client_id)) {
+        return Promise.reject(new Error("Invalid client id"));
+    }
+
+    if (!await data_layer.check_if_client_coach_request_exists(current_user_id, client_id)) {
+        return Promise.reject(new Error("Request from client to coach does not exist"));
+    } else if (await data_layer.check_if_client_has_hired_coach(current_user_id, client_id)) {
+        return Promise.reject(new Error("Coach cannot accept request from one of their current clients"));
+    }
+
+    await data_layer.accept_client_data_layer(current_user_id, client_id);
+    return Promise.resolve("You have accepted the client");  // TODO: Return name of client
 }
 
 /**
@@ -360,12 +363,29 @@ async function set_user_address_business_layer(user_id, address, city, state, zi
     })
 }
 async function alter_account_info_business_layer(user_id, first_name, last_name, username, email, password, phone_number, address, city, state, zip_code)
-{    
-    console.log("Business layer");
+{          
+    let hashed_password = undefined;
+    let salted_password = undefined;
+    if(password !== undefined)
+    {
+        var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+        var salt = '';
+        for (var i = 0; i < 10; i++ )
+        salt += chars.charAt(Math.floor(Math.random() * chars.length));
+
+        salted_password = password + salt;
+        hashed_password = await new Promise((resolve, reject) => {
+            bcrypt.hash(salted_password, 10, function(err, hash) {
+                if(err) reject(err)
+                resolve(hash)
+            });
+        })   
+    }
     return new Promise((resolve, reject) => {
         console.log("Phone number:");
         console.log(phone_number);
-        data_layer.alter_account_info_data_layer(user_id, first_name, last_name, username, email, password, phone_number).then(response =>{
+  
+        data_layer.alter_account_info_data_layer(user_id, first_name, last_name, username, email, hashed_password, salt, phone_number).then(response =>{
             if(address && city && state && zip_code)
             {
                 data_layer.unset_user_address_data_layer(user_id).then(response =>{
