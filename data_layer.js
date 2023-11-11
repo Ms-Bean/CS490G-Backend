@@ -408,7 +408,7 @@ async function set_user_address_data_layer(user_id, address, city, state, zip_co
 async function alter_account_info_data_layer(user_id, first_name, last_name, username, email, password_hash, password_salt, phone_number)
 {
     return new Promise((resolve, reject) =>{
-        if(first_name === undefined && last_name === undefined && username === undefined && email === undefined && password === undefined && phone_number === undefined)
+        if(first_name === undefined && last_name === undefined && username === undefined && email === undefined && (password_hash === undefined || password_salt == undefined) && phone_number === undefined)
         {
             console.log("Resolved");
             resolve("Information updated.");
