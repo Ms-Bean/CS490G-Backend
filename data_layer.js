@@ -405,7 +405,7 @@ async function set_user_address_data_layer(user_id, address, city, state, zip_co
         });
     })
 }
-async function alter_account_info_data_layer(user_id, first_name, last_name, username, email, password, phone_number)
+async function alter_account_info_data_layer(user_id, first_name, last_name, username, email, password_hash, password_salt, phone_number)
 {
     return new Promise((resolve, reject) =>{
         if(first_name === undefined && last_name === undefined && username === undefined && email === undefined && password === undefined && phone_number === undefined)
@@ -435,10 +435,12 @@ async function alter_account_info_data_layer(user_id, first_name, last_name, use
             params.push(email);
             sql += "email=?, ";
         }
-        if(password !== undefined)
+        if(password_hash !== undefined && password_salt !== undefined)
         {
-            params.push(password);
-            sql += "password=?, ";
+            params.push(password_hash);
+            sql += "password_hash=?, ";
+            params.push(password_salt);
+            sql += "password_salt=?, ";
         }
         if(phone_number !== undefined)
         {
@@ -448,6 +450,8 @@ async function alter_account_info_data_layer(user_id, first_name, last_name, use
         sql = sql.substring(0, sql.length - 2); 
         sql += " WHERE user_id = ?"
         params.push(user_id);
+        console.log(sql);
+        console.log(params);
         con.query(sql, params, function(err, result){
             if(err)
             {

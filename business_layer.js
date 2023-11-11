@@ -363,12 +363,29 @@ async function set_user_address_business_layer(user_id, address, city, state, zi
     })
 }
 async function alter_account_info_business_layer(user_id, first_name, last_name, username, email, password, phone_number, address, city, state, zip_code)
-{    
-    console.log("Business layer");
+{          
+    let hashed_password = undefined;
+    let salted_password = undefined;
+    if(password !== undefined)
+    {
+        var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+        var salt = '';
+        for (var i = 0; i < 10; i++ )
+        salt += chars.charAt(Math.floor(Math.random() * chars.length));
+
+        salted_password = password + salt;
+        hashed_password = await new Promise((resolve, reject) => {
+            bcrypt.hash(salted_password, 10, function(err, hash) {
+                if(err) reject(err)
+                resolve(hash)
+            });
+        })   
+    }
     return new Promise((resolve, reject) => {
         console.log("Phone number:");
         console.log(phone_number);
-        data_layer.alter_account_info_data_layer(user_id, first_name, last_name, username, email, password, phone_number).then(response =>{
+  
+        data_layer.alter_account_info_data_layer(user_id, first_name, last_name, username, email, hashed_password, salt, phone_number).then(response =>{
             if(address && city && state && zip_code)
             {
                 data_layer.unset_user_address_data_layer(user_id).then(response =>{

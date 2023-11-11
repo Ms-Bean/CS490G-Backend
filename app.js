@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const controller = require("./rest_controller");
 
 const data_layer = require("./data_layer");
+const business_layer = require("./business_layer");
 const PORT = 3500 || process.env.PORT;
 
 const corsOptions = {
