@@ -640,7 +640,7 @@ function check_if_client_has_hired_coach(coach_id, client_id) {
     });
 }
 
-function accept_client_data_layer2(coach_id, client_id) {
+function accept_client_data_layer(coach_id, client_id) {
     const insert_sql = "INSERT INTO Client_Coach (coach_id, client_id) VALUES (?, ?)";
     const delete_sql = "DELETE FROM Coach_Requests WHERE client_id = ? AND coach_id = ?";
 
@@ -681,60 +681,6 @@ function accept_client_data_layer2(coach_id, client_id) {
     });
 }
 
-// TODO split into smaller functions
-// TODO function crashes if it's unable to find a request_id
-async function accept_client_data_layer(coach_id, client_id)
-{    
-    return new Promise((resolve, reject) => {
-        // Check if request from client to coach exists
-        let sql = "SELECT request_id FROM Coach_Requests WHERE coach_id = ? AND client_id = ?";
-        con.query(sql, [coach_id, client_id], function(err, results){
-            if(err)
-            {
-                console.log(err);
-                reject("Something went wrong in our database");
-            }
-            if(results.length == 0)
-                reject("The client has not requested you to be their coach.");
-            const request_id = results[0].request_id;
-
-            // Check if coach is already hired by client
-            sql = "SELECT coach_id FROM Clients WHERE user_id = ?";
-            con.query(sql, [client_id], function(err, results){
-                if(err)
-                {
-                    console.log(err);
-                    reject("Something went wrong in our database.");
-                }
-                if(typeof(results[0].coach_id) == "number")
-                {
-                    reject("This client already has a coach.");
-                }
-
-                // Assign Coach to Client
-                sql = "UPDATE Clients SET coach_id = ? WHERE user_id = ?";
-                con.query(sql, [coach_id, client_id], function(err, results){
-                    if(err)
-                    {
-                        console.log(err);
-                        reject("Something went wrong in our database.");
-                    }
-
-                    // Remove request from Coach to Client
-                    sql = "DELETE FROM Coach_Requests WHERE request_id = ?";
-                    con.query(sql, [request_id], function(err, results){
-                        if(err)
-                        {
-                            console.log(err);
-                            reject("Something went wrong in our database.");
-                        }
-                        resolve("You now have a new client");
-                    });
-                });
-            });
-        });
-    });
-}
 async function get_user_account_info_data_layer(user_id)
 {
     let return_data = {
@@ -781,7 +727,7 @@ async function get_user_account_info_data_layer(user_id)
     })
 }
 
-module.exports.accept_client_data_layer = accept_client_data_layer2;
+module.exports.accept_client_data_layer = accept_client_data_layer;
 module.exports.check_if_client_coach_request_exists = check_if_client_coach_request_exists;
 module.exports.check_if_client_has_hired_coach = check_if_client_has_hired_coach;
 
