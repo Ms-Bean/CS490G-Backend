@@ -830,7 +830,7 @@ function search_coaches_data_layer({filter_options}) {
                         coaching_history: r.coaching_history,
                         accepting_new_clients: r.accepting_new_clients,
                         experience_level: r.experience_level,
-                        goals: r.goals.split(','),
+                        goals: r.goals?.split(','),
                         rating: r.average_rating
                     },
                     location: {
