@@ -453,9 +453,13 @@ async function get_user_account_info_business_layer(user_id)
  * @param {Object} [search_options.sort_options]
  * @param {"name"|"rating"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
  * @param {boolean} search_options.sort_options.is_descending 
+ * 
+ * @param {Object} search_options.page_info 
+ * @param {number} search_options.page_info.page_size 
+ * @param {number} search_options.page_info.page_num 
  * @returns {Promise<Object>} 
  */
-async function search_coaches_business_layer({filter_options, sort_options}) {
+async function search_coaches_business_layer({filter_options, sort_options, page_info}) {
     /* Fill missing properties with defaults */
     const MAX_HOURLY_RATE = 1_000_000;  // TODO: determine max hourly rate
     const MAX_EXPERIENCE_LEVEL = 100;
@@ -467,6 +471,11 @@ async function search_coaches_business_layer({filter_options, sort_options}) {
         } else if (!sort_options.is_descending) {
             return Promise.reject(new Error("sort_options property missing sort direction"));
         }
+    }
+    if (!page_info) {
+        return Promise.reject(new Error("Search request missing `page_info` property"));
+    } else if (!Number.isInteger(page_info.page_num) || !Number.isInteger(page_info.page_size) || page_info.page_size < 1 || page_info.page_num < 1) {
+        return Promise.reject(new Error("Invalid page info"));
     }
 
     const default_filter_options = {
@@ -481,9 +490,9 @@ async function search_coaches_business_layer({filter_options, sort_options}) {
         const merged = {};
         for (const [key, val] of Object.entries(def)) {
             if (typeof val === "object") {
-                merged[key] = obj[key] ? merge_properties(obj[key], val) : null;
+                merged[key] = obj?.[key] ? merge_properties(obj[key], val) : null;
             } else {
-                merged[key] = obj[key] ?? val;
+                merged[key] = obj?.[key] ?? val;
             }
         }
         return merged;
@@ -502,11 +511,25 @@ async function search_coaches_business_layer({filter_options, sort_options}) {
 
     const formatted_search_options = {
         filter_options: formatted_filter_options,
-        sort_options: sort_options
+        sort_options: sort_options,
+        page_info: page_info
     };
 
+    const result_count = await data_layer.count_coach_search_results(formatted_search_options);
+    const page_count = Math.ceil(result_count / page_info.page_size) || 1;
+    page_info.page_num = Math.min(page_info.page_num, page_count);
+
     const coaches = await data_layer.search_coaches_data_layer(formatted_search_options);
-    return coaches;
+    return {
+        page_info: {
+            page_num: page_info.page_num,
+            page_size: page_info.page_size,
+            page_count: page_count,
+            has_next: page_info.page_num < page_count,
+            has_prev: page_info.page_num > 1
+        },
+        coaches: coaches
+    };
 }
 
 module.exports.accept_client_business_layer = accept_client_business_layer;
