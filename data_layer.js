@@ -815,7 +815,7 @@ function search_coaches_data_layer({filter_options, sort_options}) {
     const {where, having, args} = _build_search_coach_filter_clauses(filter_options);
     const order_by = sort_options ? _build_search_coach_sort_options(sort_options) : "";
     const sql = `SELECT coaches.user_id, coaches.hourly_rate, coaches.coaching_history, coaches.accepting_new_clients, coaches.experience_level,
-                    users.first_name, users.last_name, user_profile.about_me, GROUP_CONCAT(coaches_goals.goal SEPARATOR ',') AS goals, addresses.address, cities.name AS city, states.name AS state,
+                    users.first_name, users.last_name, user_profile.about_me, user_profile.profile_picture, GROUP_CONCAT(coaches_goals.goal SEPARATOR ',') AS goals, addresses.address, cities.name AS city, states.name AS state,
                     AVG(ratings.rating) AS average_rating
                 FROM coaches
                     INNER JOIN users ON coaches.user_id = users.user_id
@@ -846,7 +846,8 @@ function search_coaches_data_layer({filter_options, sort_options}) {
                     personal_info: {
                         first_name: r.first_name,
                         last_name: r.last_name,
-                        about_me: r.about_me
+                        about_me: r.about_me,
+                        profile_picture: r.profile_picture
                     },
                     professional_info: {
                         hourly_rate: r.hourly_rate,
