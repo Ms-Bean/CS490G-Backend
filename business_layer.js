@@ -449,12 +449,25 @@ async function get_user_account_info_business_layer(user_id)
  * @param {Object} [search_options.filter_options.experience_level] 
  * @param {number} [search_options.filter_options.experience_level.min] 
  * @param {number} [search_options.filter_options.experience_level.max] 
+ * 
+ * @param {Object} [search_options.sort_options]
+ * @param {"name"|"rating"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
+ * @param {boolean} search_options.sort_options.is_descending 
  * @returns {Promise<Object>} 
  */
-async function search_coaches_business_layer({filter_options}) {
+async function search_coaches_business_layer({filter_options, sort_options}) {
     /* Fill missing properties with defaults */
     const MAX_HOURLY_RATE = 1_000_000;  // TODO: determine max hourly rate
     const MAX_EXPERIENCE_LEVEL = 100;
+
+    const valid_sort_keys = ["name", "rating", "hourly_rate", "experience_level"];
+    if (sort_options) {
+        if (!valid_sort_keys.includes(sort_options.key)) {
+            return Promise.reject(new Error(`'${sort_options.key}' is an invalid sort key`));
+        } else if (!sort_options.is_descending) {
+            return Promise.reject(new Error("sort_options property missing sort direction"));
+        }
+    }
 
     const default_filter_options = {
         name: "",
@@ -488,7 +501,8 @@ async function search_coaches_business_layer({filter_options}) {
     }
 
     const formatted_search_options = {
-        filter_options: formatted_filter_options
+        filter_options: formatted_filter_options,
+        sort_options: sort_options
     };
 
     const coaches = await data_layer.search_coaches_data_layer(formatted_search_options);

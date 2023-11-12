@@ -773,6 +773,23 @@ function _build_search_coach_filter_clauses({name, rating, hourly_rate, experien
     };
 }
 
+/**
+ * 
+ * @param {Object} sort_options 
+ * @param {"name"|"rating"|"hourly_rate"|"experience_level"} sort_options.key 
+ * @param {boolean} sort_options.is_descending 
+ */
+function _build_search_coach_sort_options({key, is_descending}) {
+    const order = is_descending ? "DESC" : "ASC";
+    const key_to_sql_map = new Map([
+        ["name", `users.first_name ${order}, users.last_name ${order}`],
+        ["rating", `average_rating ${order}`],
+        ["hourly_rate", `coaches.hourly_rate ${order}`],
+        ["experience_level", `coaches.experience_level ${order}`]
+    ]);
+
+    return `ORDER BY ${key_to_sql_map.get(key)}`;
+}
 
 /**
  * 
@@ -788,10 +805,15 @@ function _build_search_coach_filter_clauses({name, rating, hourly_rate, experien
  * @param {Object} search_options.filter_options.location 
  * @param {string} search_options.filter_options.location.city 
  * @param {string} search_options.filter_options.location.state
+ * 
+ * @param {Object} [search_options.sort_options] 
+ * @param {"name"|"rating"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
+ * @param {boolean} search_options.sort_options.is_descending 
  * @returns {Promise<Object>} 
  */
-function search_coaches_data_layer({filter_options}) {
+function search_coaches_data_layer({filter_options, sort_options}) {
     const {where, having, args} = _build_search_coach_filter_clauses(filter_options);
+    const order_by = sort_options ? _build_search_coach_sort_options(sort_options) : "";
     const sql = `SELECT coaches.user_id, coaches.hourly_rate, coaches.coaching_history, coaches.accepting_new_clients, coaches.experience_level,
                     users.first_name, users.last_name, user_profile.about_me, GROUP_CONCAT(coaches_goals.goal SEPARATOR ',') AS goals, addresses.address, cities.name AS city, states.name AS state,
                     AVG(ratings.rating) AS average_rating
@@ -808,7 +830,8 @@ function search_coaches_data_layer({filter_options}) {
                     LEFT JOIN states ON city_state.state_id = states.state_id
                 ${where}
                 GROUP BY coaches.user_id
-                ${having}`;
+                ${having}
+                ${order_by}`;
 
     return new Promise((resolve, reject) => {
         con.query(sql, args, (err, results) => {
