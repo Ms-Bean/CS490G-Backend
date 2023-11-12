@@ -446,29 +446,45 @@ async function get_user_account_info_business_layer(user_id)
  * @param {Object} [search_options.filter_options.location] 
  * @param {string} [search_options.filter_options.location.city] 
  * @param {string} [search_options.filter_options.location.state] 
+ * @param {Object} [search_options.filter_options.experience_level] 
+ * @param {number} [search_options.filter_options.experience_level.min] 
+ * @param {number} [search_options.filter_options.experience_level.max] 
  * @returns {Promise<Object>} 
  */
 async function search_coaches_business_layer({filter_options}) {
     /* Fill missing properties with defaults */
     const MAX_HOURLY_RATE = 1_000_000;  // TODO: determine max hourly rate
+    const MAX_EXPERIENCE_LEVEL = 100;
     const name = filter_options?.name ?? "";
-    const rating = {
+    let rating = {
         min: filter_options?.rating?.min ?? 1,
         max: filter_options?.rating?.max ?? 5
     };
-    const hourly_rate = {
+    rating = filter_options.rating ? rating : null;
+    
+    let hourly_rate = {
         min: filter_options?.hourly_rate?.min ?? 0,
         max: filter_options?.hourly_rate?.max ?? MAX_HOURLY_RATE,
     };
+    hourly_rate = filter_options.hourly_rate ? hourly_rate : null;
+
+    let experience_level = {
+        min: filter_options?.experience_level?.min ?? 0,
+        max: filter_options?.experience_level?.max ?? MAX_EXPERIENCE_LEVEL
+    };
+    experience_level = filter_options.experience_level ? experience_level : null;
+
     const location = {
         city: filter_options?.location?.city ?? "",
         state: filter_options?.location?.state ?? ""
     };
 
     /* Catch invalid properties */
-    if (rating.min < 1 || rating.max > 5 || rating.min > rating.max) {
+    if (rating && (rating.min < 1 || rating.max > 5 || rating.min > rating.max)) {
         return Promise.reject(new Error("Invalid ratings"));
-    } else if (hourly_rate.min < 0 || hourly_rate.max > MAX_HOURLY_RATE || hourly_rate.min > hourly_rate.max) {
+    } else if (experience_level && (experience_level.min < 0 || experience_level.max > MAX_EXPERIENCE_LEVEL || experience_level.min > experience_level.max)) {
+        return Promise.reject(new Error("Invalid experience level"));
+    } else if (hourly_rate && (hourly_rate.min < 0 || hourly_rate.max > MAX_HOURLY_RATE || hourly_rate.min > hourly_rate.max)) {
         return Promise.reject(new Error("Invalid hourly rate"));
     }
 
@@ -477,6 +493,7 @@ async function search_coaches_business_layer({filter_options}) {
             name: name,
             rating: rating,
             hourly_rate: hourly_rate,
+            experience_level: experience_level,
             location: location
         }
     };

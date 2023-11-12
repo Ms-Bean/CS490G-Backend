@@ -306,6 +306,7 @@ async function search_coaches_controller(req, res) {
     res.status(500).json({  // TODO: Handle Error codes better
       message: "Sorry, something went wrong on our end"
     });
+    return;
   }
 
   res.json({
