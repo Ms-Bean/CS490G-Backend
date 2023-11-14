@@ -1,0 +1,101 @@
+city	addresss
+Karangtalun	0285 American Parkway
+Daireaux	94746 Mockingbird Alley
+Jagabaya Dua	46 Knutson Parkway
+Zhangping	44 Oakridge Terrace
+Plérin	91 Sutteridge Terrace
+Mingfeng	43746 Longview Terrace
+Cigintung	0 Village Way
+Bordeaux	54 Elgar Parkway
+Rochester	50 Scofield Junction
+Néa Magnisía	779 Magdeline Crossing
+Durham	354 Cordelia Drive
+Chişinău	3 Dawn Circle
+Aughrim	313 Arizona Crossing
+Skała	927 Springview Junction
+Ogden	82827 Hintze Avenue
+Shouchun	7 Ilene Terrace
+Sokolac	235 Delaware Crossing
+Burgersfort	3270 Graceland Pass
+Shajia’ao	1968 La Follette Street
+Tlogoagung	35 Mccormick Lane
+Conner	97 Doe Crossing Way
+Salinas	30691 Manley Parkway
+Janja	362 Manley Way
+Neqāb	151 Fuller Center
+Tbilisskaya	91 American Circle
+Yanjiang	1989 Mosinee Parkway
+Malandag	4394 Charing Cross Way
+Tsu-shi	32621 Loeprich Parkway
+Valle de Guanape	2753 Luster Terrace
+Tayirove	1 Cascade Way
+Perepravnaya	9 Cardinal Park
+Hejia	8 Gerald Junction
+Shuyuan	43317 Briar Crest Place
+Pereyaslovskaya	5 Cambridge Alley
+Imotski	239 Bartillon Drive
+Langchuan	0 Gulseth Alley
+Ndom	7714 Schiller Alley
+Oborniki Śląskie	93 Rieder Park
+Dukuhbadag	0 Eastwood Center
+Masachapa	154 Oxford Crossing
+Itajuípe	8 Bonner Trail
+Faeanak Dua	007 Cody Avenue
+Wufeng	1 Oneill Center
+Jatisari	283 Westport Center
+Blizne	77895 Cherokee Alley
+Guojiaba	41 Harper Drive
+Karafao	6 Main Circle
+Mūdīyah	043 Crowley Terrace
+Santa Elena	62 Merrick Alley
+Pidvolochys’k	4 South Hill
+Nankengzi	5 Delaware Parkway
+Murakami	659 Dryden Junction
+Zhanggongmiao	9 Stoughton Center
+Pingkai	34 Huxley Road
+Sydney	141 Garrison Crossing
+Tai Po	5 Clove Junction
+Abashiri	226 Norway Maple Terrace
+Sanlifan	5864 Lukken Parkway
+Masākin	78885 Mayer Park
+La Curva	09 Schurz Drive
+Mernek	77581 Waubesa Lane
+Mosquée	86443 Florence Crossing
+Motala	985 Doe Crossing Way
+Río Pico	35237 Little Fleur Street
+Claremorris	0422 Walton Road
+Dadaha	791 Lighthouse Bay Avenue
+Aghajari	00 Kingsford Avenue
+Lutomiersk	2 Sunfield Crossing
+Pedraza La Vieja	6 Delaware Trail
+Monte da Boavista	3 Mayfield Junction
+Lushnjë	12 Bobwhite Center
+Mališevo	1 David Pass
+Qiaolin	622 Roth Lane
+Lipník nad Bečvou	36030 Maple Court
+Golacir	8 Sunbrook Alley
+Jiangtou	4541 Vera Drive
+Nanyang	0752 Pond Street
+Babakankadu	0 Cody Plaza
+Kaliningrad	57364 Bay Park
+Ikeda	1 Wayridge Avenue
+Saint Pierre	98416 Golden Leaf Drive
+Lapai	04119 Division Terrace
+Chenjiahe	762 Del Sol Hill
+São Sebastião	11648 Mayfield Avenue
+Toulouse	68694 Prentice Alley
+Huangcun	57 Badeau Drive
+Lauro de Freitas	6 Esch Crossing
+Sotouboua	58 Charing Cross Lane
+Paiçandu	0 Sloan Circle
+Xinming	29 Hansons Terrace
+Yudai	36399 Lakeland Center
+Belo	61 Everett Court
+Nioki	11864 Warbler Hill
+Penambangan	5996 Northwestern Park
+Al ‘Ulá	00767 Upham Parkway
+Topeka	156 Anniversary Parkway
+Pećigrad	94253 Wayridge Lane
+Guaranda	057 Nevada Court
+Gwanda	6 Melvin Circle
+Piedra del Águila	839 Milwaukee Circle
