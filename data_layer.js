@@ -732,6 +732,41 @@ async function get_user_account_info_data_layer(user_id)
 }
 
 
+
+async function remove_coach_data_layer(client_id, coach_id)
+{
+    let sql = "DELETE FROM Client_Coach WHERE coach_id = ? AND client_id = ?";
+    console.log(coach_id);
+    console.log(client_id);
+    console.log("");
+    return new Promise((resolve, reject) =>{
+        con.query(sql, [coach_id, client_id], function(err, results){
+            if(err)
+            {
+                console.log(err);
+                reject("sql failure");
+            }
+            let sql = "DELETE FROM Messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)";
+            con.query(sql, [coach_id, client_id, client_id, coach_id], function(err, results){
+                if(err)
+                {
+                    console.log(err);
+                    reject("sql failure");
+                }
+                let sql = "DELETE FROM Appointments WHERE (client_id = ? AND coach_id = ?)";
+                con.query(sql, [client_id, coach_id], function(err, results){
+                    if(err)
+                    {
+                        console.log(err);
+                        reject("sql failure");
+                    }
+                    resolve("Removed");
+                });
+            });
+    
+        });
+    });
+}
 /**
  * 
  * @param {Object} filter_options
@@ -948,3 +983,4 @@ module.exports.unset_user_address_data_layer = unset_user_address_data_layer;
 module.exports.alter_account_info_data_layer = alter_account_info_data_layer;
 module.exports.search_coaches_data_layer = search_coaches_data_layer;
 module.exports.count_coach_search_results = count_coach_search_results;
+module.exports.remove_coach_data_layer = remove_coach_data_layer;
