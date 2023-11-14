@@ -300,7 +300,6 @@ async function search_coaches_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   let coach_data;
   try {
-    console.log('Request Body: ', req.body);
     coach_data = await business_layer.search_coaches_business_layer(req.body);
   } catch (e) {
     console.log(e);
@@ -310,7 +309,6 @@ async function search_coaches_controller(req, res) {
     return;
   }
 
-  console.log(coach_data);
   res.json(coach_data);
 }
 
