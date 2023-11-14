@@ -298,9 +298,10 @@ async function alter_account_info_controller(req, res)
 
 async function search_coaches_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-  let coaches;
+  let coach_data;
   try {
-    coaches = await business_layer.search_coaches_business_layer(req.body);
+    console.log('Request Body: ', req.body);
+    coach_data = await business_layer.search_coaches_business_layer(req.body);
   } catch (e) {
     console.log(e);
     res.status(500).json({  // TODO: Handle Error codes better
@@ -309,9 +310,8 @@ async function search_coaches_controller(req, res) {
     return;
   }
 
-  res.json({
-    coaches: coaches
-  });
+  console.log(coach_data);
+  res.json(coach_data);
 }
 
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
