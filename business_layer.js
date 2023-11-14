@@ -431,6 +431,107 @@ async function get_user_account_info_business_layer(user_id)
     });
 }
 
+
+/**
+ * 
+ * @param {Object} search_options
+ * @param {Object} [search_options.filter_options]
+ * @param {string} [search_options.filter_options.name] 
+ * @param {Object} [search_options.filter_options.rating] 
+ * @param {number} [search_options.filter_options.rating.min] 
+ * @param {number} [search_options.filter_options.rating.max] 
+ * @param {Object} [search_options.filter_options.hourly_rate] 
+ * @param {number} [search_options.filter_options.hourly_rate.min] 
+ * @param {number} [search_options.filter_options.hourly_rate.max] 
+ * @param {Object} [search_options.filter_options.location] 
+ * @param {string} [search_options.filter_options.location.city] 
+ * @param {string} [search_options.filter_options.location.state] 
+ * @param {Object} [search_options.filter_options.experience_level] 
+ * @param {number} [search_options.filter_options.experience_level.min] 
+ * @param {number} [search_options.filter_options.experience_level.max] 
+ * 
+ * @param {Object} [search_options.sort_options]
+ * @param {"name"|"rating"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
+ * @param {boolean} search_options.sort_options.is_descending 
+ * 
+ * @param {Object} search_options.page_info 
+ * @param {number} search_options.page_info.page_size 
+ * @param {number} search_options.page_info.page_num 
+ * @returns {Promise<Object>} 
+ */
+async function search_coaches_business_layer({filter_options, sort_options, page_info}) {
+    /* Fill missing properties with defaults */
+    const MAX_HOURLY_RATE = 1_000_000;  // TODO: determine max hourly rate
+    const MAX_EXPERIENCE_LEVEL = 100;
+
+    const valid_sort_keys = ["name", "rating", "hourly_rate", "experience_level"];
+    if (sort_options) {
+        if (!valid_sort_keys.includes(sort_options.key)) {
+            return Promise.reject(new Error(`'${sort_options.key}' is an invalid sort key`));
+        } else if (!sort_options.is_descending) {
+            return Promise.reject(new Error("sort_options property missing sort direction"));
+        }
+    }
+    if (!page_info) {
+        return Promise.reject(new Error("Search request missing `page_info` property"));
+    } else if (!Number.isInteger(page_info.page_num) || !Number.isInteger(page_info.page_size) || page_info.page_size < 1 || page_info.page_num < 1) {
+        return Promise.reject(new Error("Invalid page info"));
+    }
+
+    const default_filter_options = {
+        name: "",
+        rating: {min: 1, max: 5},
+        hourly_rate: {min: 0, max: MAX_HOURLY_RATE},
+        experience_level: {min: 0, max: MAX_EXPERIENCE_LEVEL},
+        location: {city: "", state: ""}
+    };
+
+    const merge_properties = (obj, def) => {
+        const merged = {};
+        for (const [key, val] of Object.entries(def)) {
+            if (typeof val === "object") {
+                merged[key] = obj?.[key] ? merge_properties(obj[key], val) : null;
+            } else {
+                merged[key] = obj?.[key] ?? val;
+            }
+        }
+        return merged;
+    };
+
+    const formatted_filter_options = merge_properties(filter_options, default_filter_options);
+
+    /* Catch invalid properties */
+    if (formatted_filter_options.rating && (formatted_filter_options.rating.min < 1 || formatted_filter_options.rating.max > 5 || formatted_filter_options.rating.min > formatted_filter_options.rating.max)) {
+        return Promise.reject(new Error("Invalid ratings"));
+    } else if (formatted_filter_options.experience_level && (formatted_filter_options.experience_level.min < 0 || formatted_filter_options.experience_level.max > MAX_EXPERIENCE_LEVEL || formatted_filter_options.experience_level.min > formatted_filter_options.experience_level.max)) {
+        return Promise.reject(new Error("Invalid experience level"));
+    } else if (formatted_filter_options.hourly_rate && (formatted_filter_options.hourly_rate.min < 0 || formatted_filter_options.hourly_rate.max > MAX_HOURLY_RATE || formatted_filter_options.hourly_rate.min > formatted_filter_options.hourly_rate.max)) {
+        return Promise.reject(new Error("Invalid hourly rate"));
+    }
+
+    const formatted_search_options = {
+        filter_options: formatted_filter_options,
+        sort_options: sort_options,
+        page_info: page_info
+    };
+
+    const result_count = await data_layer.count_coach_search_results(formatted_search_options);
+    const page_count = Math.ceil(result_count / page_info.page_size) || 1;
+    page_info.page_num = Math.min(page_info.page_num, page_count);
+
+    const coaches = await data_layer.search_coaches_data_layer(formatted_search_options);
+    return {
+        page_info: {
+            page_num: page_info.page_num,
+            page_size: page_info.page_size,
+            page_count: page_count,
+            has_next: page_info.page_num < page_count,
+            has_prev: page_info.page_num > 1
+        },
+        coaches: coaches
+    };
+}
+
 module.exports.accept_client_business_layer = accept_client_business_layer;
 module.exports.login_business_layer = login_business_layer;
 module.exports.insert_user_business_layer = insert_user_business_layer;
@@ -443,3 +544,4 @@ module.exports.get_client_coach_messages_business_layer = get_client_coach_messa
 module.exports.set_user_address_business_layer = set_user_address_business_layer;
 module.exports.get_user_account_info_business_layer = get_user_account_info_business_layer;
 module.exports.alter_account_info_business_layer = alter_account_info_business_layer;
+module.exports.search_coaches_business_layer = search_coaches_business_layer;

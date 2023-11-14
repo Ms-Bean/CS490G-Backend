@@ -49,6 +49,7 @@ app.post("/alter_account_info", controller.alter_account_info_controller);
 app.route('/messages')
     .post(controller.insert_message_controller)
     .get(controller.get_client_coach_messages_controller);
+app.get('/coaches/search', controller.search_coaches_controller);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {

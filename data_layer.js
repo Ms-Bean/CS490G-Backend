@@ -731,6 +731,196 @@ async function get_user_account_info_data_layer(user_id)
     })
 }
 
+
+/**
+ * 
+ * @param {Object} filter_options
+ * @param {string} [filter_options.name] 
+ * @param {Object} [filter_options.rating] 
+ * @param {number} filter_options.rating.min 
+ * @param {number} filter_options.rating.max 
+ * @param {Object} [filter_options.hourly_rate] 
+ * @param {number} filter_options.hourly_rate.min 
+ * @param {number} filter_options.hourly_rate.max 
+ * @param {Object} [filter_options.experience_level] 
+ * @param {number} filter_options.experience_level.min 
+ * @param {number} filter_options.experience_level.max 
+ * @param {Object} [filter_options.location] 
+ * @param {string} [filter_options.location.city] 
+ * @param {string} [filter_options.location.state] 
+ */
+function _build_search_coach_filter_clauses({name, rating, hourly_rate, experience_level, location}) {
+    const name_cond = name ? `CONCAT(users.first_name, ' ', users.last_name) LIKE ?` : "";
+    const rating_cond = rating ? "average_rating BETWEEN ? AND ?" : "";
+    const hourly_rate_cond = hourly_rate ? "coaches.hourly_rate BETWEEN ? AND ?" : "";
+    const experience_level_cond = experience_level ? "coaches.experience_level BETWEEN ? AND ?" : "";
+    const cities_cond = location?.city ? "cities.name LIKE ?" : "";
+    const states_cond = location?.state ? "states.name LIKE ?" : "";
+    const where_conds = [name_cond, hourly_rate_cond, experience_level_cond, cities_cond, states_cond].filter(s => s).join(" AND ");
+
+    const sql_args = [];
+    if (name_cond) sql_args.push(`${name}%`);
+    if (rating_cond) sql_args.push(...[rating.min, rating.max]);
+    if (hourly_rate_cond) sql_args.push(...[hourly_rate.min, hourly_rate.max]);
+    if (experience_level_cond) sql_args.push(...[experience_level.min, experience_level.max]);
+    if (cities_cond) sql_args.push(`${location.city}%`);
+    if (states_cond) sql_args.push(`${location.state}%`);
+
+    return {
+        where: where_conds ? "WHERE " + where_conds : "",
+        having: rating_cond ? "HAVING " + rating_cond : "",
+        args: sql_args
+    };
+}
+
+/**
+ * 
+ * @param {Object} sort_options 
+ * @param {"name"|"rating"|"hourly_rate"|"experience_level"} sort_options.key 
+ * @param {boolean} sort_options.is_descending 
+ */
+function _build_search_coach_sort_options({key, is_descending}) {
+    const order = is_descending ? "DESC" : "ASC";
+    const key_to_sql_map = new Map([
+        ["name", `users.first_name ${order}, users.last_name ${order}`],
+        ["rating", `average_rating ${order}`],
+        ["hourly_rate", `coaches.hourly_rate ${order}`],
+        ["experience_level", `coaches.experience_level ${order}`]
+    ]);
+
+    return `ORDER BY ${key_to_sql_map.get(key)}`;
+}
+
+/**
+ * 
+ * @param {Object} search_options
+ * @param {Object} search_options.filter_options
+ * @param {string} search_options.filter_options.name 
+ * @param {Object} search_options.filter_options.rating 
+ * @param {number} search_options.filter_options.rating.min 
+ * @param {number} search_options.filter_options.rating.max 
+ * @param {Object} search_options.filter_options.hourly_rate 
+ * @param {number} search_options.filter_options.hourly_rate.min 
+ * @param {number} search_options.filter_options.hourly_rate.max 
+ * @param {Object} search_options.filter_options.location 
+ * @param {string} search_options.filter_options.location.city 
+ * @param {string} search_options.filter_options.location.state
+ * 
+ * @param {Object} [search_options.sort_options] 
+ * @param {"name"|"rating"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
+ * @param {boolean} search_options.sort_options.is_descending 
+ * 
+ * @param {Object} search_options.page_info 
+ * @param {number} search_options.page_info.page_size 
+ * @param {number} search_options.page_info.page_num 
+ * @returns {Promise<Object>} 
+ */
+function search_coaches_data_layer({filter_options, sort_options, page_info}) {
+    const {where, having, args} = _build_search_coach_filter_clauses(filter_options);
+    const order_by = sort_options ? _build_search_coach_sort_options(sort_options) : "";
+    const next_entry = (page_info.page_num - 1) * page_info.page_size;
+    args.push(...[page_info.page_size, next_entry]);
+    const sql = `SELECT coaches.user_id, coaches.hourly_rate, coaches.coaching_history, coaches.accepting_new_clients, coaches.experience_level,
+                    users.first_name, users.last_name, user_profile.about_me, user_profile.profile_picture, GROUP_CONCAT(coaches_goals.goal SEPARATOR ',') AS goals, addresses.address, cities.name AS city, states.name AS state,
+                    AVG(ratings.rating) AS average_rating
+                FROM coaches
+                    INNER JOIN users ON coaches.user_id = users.user_id
+                    INNER JOIN user_profile ON coaches.user_id = user_profile.user_id
+                    LEFT JOIN coaches_goals ON coaches.user_id = coaches_goals.coach_id
+                    LEFT JOIN ratings ON coaches.user_id = ratings.coach_id
+                    LEFT JOIN user_location ON coaches.user_id = user_location.user_id
+                    LEFT JOIN addresses ON user_location.address_id = addresses.address_id
+                    LEFT JOIN address_city ON addresses.address_id = address_city.address_id
+                    LEFT JOIN cities ON address_city.city_id = cities.city_id
+                    LEFT JOIN city_state ON cities.city_id = city_state.city_id
+                    LEFT JOIN states ON city_state.state_id = states.state_id
+                ${where}
+                GROUP BY coaches.user_id
+                ${having}
+                ${order_by}
+                LIMIT ? OFFSET ?`;
+
+    return new Promise((resolve, reject) => {
+        con.query(sql, args, (err, results) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+
+            const mapped_results = results.map(r => {
+                return {
+                    coach_id: r.user_id,
+                    personal_info: {
+                        first_name: r.first_name,
+                        last_name: r.last_name,
+                        about_me: r.about_me,
+                        profile_picture: r.profile_picture
+                    },
+                    professional_info: {
+                        hourly_rate: r.hourly_rate,
+                        coaching_history: r.coaching_history,
+                        accepting_new_clients: r.accepting_new_clients,
+                        experience_level: r.experience_level,
+                        goals: r.goals?.split(','),
+                        rating: r.average_rating
+                    },
+                    location: {
+                        address: r.address,
+                        city: r.city,
+                        state: r.state
+                    }
+                };
+            });
+            resolve(mapped_results);
+        });
+    });
+}
+
+/**
+ * 
+ * @param {Object} search_options
+ * @param {Object} search_options.filter_options
+ * @param {string} search_options.filter_options.name 
+ * @param {Object} search_options.filter_options.rating 
+ * @param {number} search_options.filter_options.rating.min 
+ * @param {number} search_options.filter_options.rating.max 
+ * @param {Object} search_options.filter_options.hourly_rate 
+ * @param {number} search_options.filter_options.hourly_rate.min 
+ * @param {number} search_options.filter_options.hourly_rate.max 
+ * @param {Object} search_options.filter_options.location 
+ * @param {string} search_options.filter_options.location.city 
+ * @param {string} search_options.filter_options.location.state
+ * @returns {Promise<number>} 
+ */
+function count_coach_search_results({filter_options}) {
+    const {where, having, args} = _build_search_coach_filter_clauses(filter_options);
+    const sql = `SELECT coaches.user_id
+                FROM coaches
+                    INNER JOIN users ON coaches.user_id = users.user_id
+                    INNER JOIN user_profile ON coaches.user_id = user_profile.user_id
+                    LEFT JOIN coaches_goals ON coaches.user_id = coaches_goals.coach_id
+                    LEFT JOIN ratings ON coaches.user_id = ratings.coach_id
+                    LEFT JOIN user_location ON coaches.user_id = user_location.user_id
+                    LEFT JOIN addresses ON user_location.address_id = addresses.address_id
+                    LEFT JOIN address_city ON addresses.address_id = address_city.address_id
+                    LEFT JOIN cities ON address_city.city_id = cities.city_id
+                    LEFT JOIN city_state ON cities.city_id = city_state.city_id
+                    LEFT JOIN states ON city_state.state_id = states.state_id
+                ${where}
+                GROUP BY coaches.user_id
+                ${having}`;
+                return new Promise((resolve, reject) => {
+                    con.query(sql, args, (err, results) => {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        resolve(results.length);
+                    });
+                });
+}
+
+
 module.exports.accept_client_data_layer = accept_client_data_layer;
 module.exports.check_if_client_coach_request_exists = check_if_client_coach_request_exists;
 module.exports.check_if_client_has_hired_coach = check_if_client_has_hired_coach;
@@ -756,3 +946,5 @@ module.exports.check_state_exists = check_state_exists;
 module.exports.remove_unused_locations_data_layer = remove_unused_locations_data_layer;
 module.exports.unset_user_address_data_layer = unset_user_address_data_layer;
 module.exports.alter_account_info_data_layer = alter_account_info_data_layer;
+module.exports.search_coaches_data_layer = search_coaches_data_layer;
+module.exports.count_coach_search_results = count_coach_search_results;

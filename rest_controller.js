@@ -294,6 +294,26 @@ async function alter_account_info_controller(req, res)
       })
   }
 }
+
+
+async function search_coaches_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  let coaches;
+  try {
+    coaches = await business_layer.search_coaches_business_layer(req.body);
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({  // TODO: Handle Error codes better
+      message: e.message
+    });
+    return;
+  }
+
+  res.json({
+    coaches: coaches
+  });
+}
+
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
 module.exports.accept_client_controller = accept_client_controller;
 module.exports.logout_controller = logout_controller;
@@ -307,3 +327,4 @@ module.exports.get_role_controller = get_role_controller;
 module.exports.insert_message_controller = insert_message_controller;
 module.exports.get_client_coach_messages_controller = get_client_coach_messages_controller;
 module.exports.alter_account_info_controller = alter_account_info_controller;
+module.exports.search_coaches_controller = search_coaches_controller;
