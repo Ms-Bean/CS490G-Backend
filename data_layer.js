@@ -1,4 +1,4 @@
-mysql = require("mysql");
+const mysql = require("mysql");
 
 let database_name = "cs490_database" //Replace with your database name
 var con = mysql.createConnection({ 
@@ -795,11 +795,11 @@ function _build_search_coach_filter_clauses({name, rating, hourly_rate, experien
 
     const sql_args = [];
     if (name_cond) sql_args.push(`${name}%`);
-    if (rating_cond) sql_args.push(...[rating.min, rating.max]);
     if (hourly_rate_cond) sql_args.push(...[hourly_rate.min, hourly_rate.max]);
     if (experience_level_cond) sql_args.push(...[experience_level.min, experience_level.max]);
     if (cities_cond) sql_args.push(`${location.city}%`);
     if (states_cond) sql_args.push(`${location.state}%`);
+    if (rating_cond) sql_args.push(...[rating.min, rating.max]);
 
     return {
         where: where_conds ? "WHERE " + where_conds : "",
@@ -929,7 +929,7 @@ function search_coaches_data_layer({filter_options, sort_options, page_info}) {
  */
 function count_coach_search_results({filter_options}) {
     const {where, having, args} = _build_search_coach_filter_clauses(filter_options);
-    const sql = `SELECT coaches.user_id
+    const sql = `SELECT coaches.user_id, AVG(ratings.rating) AS average_rating
                 FROM coaches
                     INNER JOIN users ON coaches.user_id = users.user_id
                     INNER JOIN user_profile ON coaches.user_id = user_profile.user_id
