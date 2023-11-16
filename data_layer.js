@@ -1,7 +1,7 @@
 const mysql = require("mysql");
 
 let database_name = "cs490_database" //Replace with your database name
-var con = mysql.createConnection({ 
+const con = mysql.createConnection({ 
     host: "localhost",
     user: "root", //Replace with your user
     password: "cactusgreen", //Replace with your password
@@ -515,7 +515,7 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
 }
 
 async function login_data_layer(username) {
-    var sql = "SELECT password_hash, password_salt, user_id FROM Users WHERE username = ?";
+    const sql = "SELECT password_hash, password_salt, user_id FROM Users WHERE username = ?";
     return new Promise((resolve, reject) => {
         con.query(sql, [username], function(err, result) {
             if(err)

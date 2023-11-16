@@ -33,9 +33,9 @@ async function insert_user_business_layer(first_name, last_name, username, email
     if(role != "client" && role != "coach")
         return Promise.reject("Role must be client or coach");
         
-    var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
-    var salt = '';
-    for (var i = 0; i < 10; i++ )
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+    let salt = '';
+    for (let i = 0; i < 10; i++ )
        salt += chars.charAt(Math.floor(Math.random() * chars.length));
 
     const salted_password = password + salt;
@@ -364,13 +364,12 @@ async function set_user_address_business_layer(user_id, address, city, state, zi
 }
 async function alter_account_info_business_layer(user_id, first_name, last_name, username, email, password, phone_number, address, city, state, zip_code)
 {          
-    let hashed_password = undefined;
-    let salted_password = undefined;
+    let salt, salted_password, hashed_password;
     if(password !== undefined)
     {
-        var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
-        var salt = '';
-        for (var i = 0; i < 10; i++ )
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+        salt = '';
+        for (let i = 0; i < 10; i++ )
         salt += chars.charAt(Math.floor(Math.random() * chars.length));
 
         salted_password = password + salt;
