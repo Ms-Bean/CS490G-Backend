@@ -32,6 +32,8 @@ function check_if_username_exists_data_layer(username) {
   });
 }
 
+//function to get the role of the user i.e coach or client
+
 async function get_role_data_layer(user_id) {
     return new Promise((resolve, reject) => {
       con.query('SELECT role FROM Users WHERE user_id = ?', [user_id], (error, results) => {
@@ -54,7 +56,7 @@ async function check_state_exists(iso_code) {
           reject(error);
         } else {
           if (results.length > 0) {
-            resolve("State found.");
+            resolve("State found.");    // User found with the specified user_id
           } else {
             reject("State not found.");  // User not found with the specified user_id
           }
@@ -174,9 +176,9 @@ function insert_message_data_layer(coach_id, client_id, content) {
     });
 }
 
-async function get_state_id_data_layer(state)
+async function get_state_id_data_layer(state)               /*Gets the state id, rejects if the state does not exist*/
 {
-    /*Gets the state id, rejects if the state does not exist*/
+    
     return new Promise((resolve, reject) =>{
         let get_state_id_sql = "SELECT state_id FROM States WHERE name = ?";
         con.query(get_state_id_sql, [state], function (err, result){

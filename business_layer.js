@@ -1,6 +1,7 @@
 const data_layer = require("./data_layer");
 const bcrypt = require('bcrypt');
 
+// Function to handle user registration
 async function insert_user_business_layer(first_name, last_name, username, email, password, role)
 {
     const username_Exists_Flag = await data_layer.check_if_username_exists_data_layer(username); //checking check_if_username_exists 
@@ -62,6 +63,13 @@ async function insert_user_business_layer(first_name, last_name, username, email
     });
 }
 
+// Function to handle user login
+/**
+ * @param {string} username - User's username.
+ * @param {string} password - User's password.
+ * @returns {Promise<Object>} - Resolves with success message and user_id if login is successful.
+ * @throws {Promise<string>} - Rejects with an error message if login fails.
+ */
 async function login_business_layer(username, password) {
     return new Promise((resolve, reject) => {
         data_layer.login_data_layer(username).then((data) => {
@@ -81,6 +89,16 @@ async function login_business_layer(username, password) {
     });
 }
 
+// Function to handle accepting client survey responses
+/**
+ * @param {number} user_id - User's ID.
+ * @param {number} weight - Client's weight.
+ * @param {number} height - Client's height.
+ * @param {string} experience_level - Client's fitness experience level.
+ * @param {string} budget - Client's budget range.
+ * @returns {Promise<Object>} - Resolves with success message if survey acceptance is successful.
+ * @throws {Promise<string>} - Rejects with an error message if acceptance fails.
+ */
 async function accept_client_survey_business_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
 {
     const role = await data_layer.get_role_data_layer(user_id); //checking if user is a client
@@ -135,6 +153,16 @@ async function accept_client_survey_business_layer(user_id, weight=undefined, he
         return Promise.reject("User is not a client.");
     }
 }
+
+// Function to handle accepting coach survey responses
+/**
+ * @param {number} user_id - User's ID.
+ * @param {number} cost_per_session - Coach's cost per session.
+ * @param {string} availability - Coach's availability.
+ * @param {string} experience - Coach's experience details.
+ * @returns {Promise<Object>} - Resolves with success message if survey acceptance is successful.
+ * @throws {Promise<string>} - Rejects with an error message if acceptance fails.
+ */
 async function accept_coach_survey_business_layer(user_id, cost_per_session, availability, experience)
 {
     const role = await data_layer.get_role_data_layer(user_id); //checking if user is a coach
@@ -180,6 +208,15 @@ async function accept_coach_survey_business_layer(user_id, cost_per_session, ava
         return Promise.reject("User is not a coach.");
     }
 }
+
+// Function to handle client requesting a coach
+/**
+ * @param {number} coach_id - ID of the requested coach.
+ * @param {number} client_id - ID of the requesting client.
+ * @param {string} comment - Additional comment from the client.
+ * @returns {Promise<Object>} - Resolves with success message if the request is successful.
+ * @throws {Promise<string>} - Rejects with an error message if the request fails.
+ */
 async function request_coach_business_layer(coach_id, client_id, comment)
 {
     //TODO, Check if coach_id and client_id belong to a coach and a client, respectively
@@ -206,11 +243,12 @@ async function request_coach_business_layer(coach_id, client_id, comment)
     })
 }
 
+// Function to handle accepting a client by a coach
 /**
- * 
- * @param {number} current_user_id 
- * @param {number} client_id 
- * @returns {Promise<string>}
+ * @param {number} current_user_id - ID of the coach receiving the request.
+ * @param {number} client_id - ID of the client being accepted.
+ * @returns {Promise<string>} - Resolves with a success message if acceptance is successful.
+ * @throws {Promise<string>} - Rejects with an error message if acceptance fails.
  */
 async function accept_client_business_layer(current_user_id, client_id) {
     if (current_user_id === undefined || current_user_id === null) {
@@ -233,11 +271,11 @@ async function accept_client_business_layer(current_user_id, client_id) {
     return Promise.resolve("You have accepted the client");  // TODO: Return name of client
 }
 
+// Function to check if one user is the coach of another
 /**
- * 
- * @param {number} user_id1 
- * @param {number} user_id2 
- * @returns {Promise<boolean>} True if user 1 is coach of user 2; otherwise, False
+ * @param {number} user_id1 - ID of the first user.
+ * @param {number} user_id2 - ID of the second user.
+ * @returns {Promise<boolean>} - Resolves with true if user 1 is the coach of user 2; otherwise, resolves with false.
  */
 async function _check_if_coach_of(user_id1, user_id2) {
     const role1 = await data_layer.get_role_data_layer(user_id1);
@@ -249,12 +287,13 @@ async function _check_if_coach_of(user_id1, user_id2) {
     return user1_clients.includes(user_id2);
 }
 
+// Function to insert a message between a client and a coach
 /**
- * 
- * @param {number} current_user_id 
- * @param {number} recipient_id 
- * @param {string} content 
- * @returns {Promise<string>} 
+ * @param {number} current_user_id - ID of the user sending the message.
+ * @param {number} recipient_id - ID of the user receiving the message.
+ * @param {string} content - Content of the message.
+ * @returns {Promise<string>} - Resolves with a success message if the message is sent successfully.
+ * @throws {Promise<string>} - Rejects with an error message if message insertion fails.
  */
 async function insert_message_business_layer(current_user_id, recipient_id, content) {
     if (!Number.isInteger(current_user_id)) {
@@ -279,8 +318,17 @@ async function insert_message_business_layer(current_user_id, recipient_id, cont
     }
     return data_layer.insert_message_data_layer(coach_id, client_id, content);
 }
-
 // TODO rename other_user_id to a more descriptive name
+
+// Function to retrieve client-coach messages
+/**
+ * @param {number} current_user_id - ID of the user making the request.
+ * @param {number} other_user_id - ID of the other user in the conversation.
+ * @param {number} page_size - Number of messages per page.
+ * @param {number} page_num - Page number.
+ * @returns {Promise<Object>} - Resolves with an object containing page information and messages.
+ * @throws {Promise<string>} - Rejects with an error message if message retrieval fails.
+ */
 async function get_client_coach_messages_business_layer(current_user_id, other_user_id, page_size, page_num) {
     if (!Number.isInteger(current_user_id)) {
         return Promise.reject("Invalid user id");
@@ -323,6 +371,12 @@ async function get_client_coach_messages_business_layer(current_user_id, other_u
     return messages_dto;
 } 
 
+// Function to get the user's role
+/**
+ * @param {number} user_id - ID of the user.
+ * @returns {Promise<string>} - Resolves with the user's role.
+ * @throws {Promise<string>} - Rejects with an error message if role retrieval fails.
+ */
 async function get_role_business_layer(user_id) { // Remove reject calls, not valid in async function (use throw instead)
     if (!/^[0-9]+$/.test(user_id)) {
       throw new Error("Invalid user id");
@@ -335,6 +389,16 @@ async function get_role_business_layer(user_id) { // Remove reject calls, not va
     }
 }
 
+// Function to set the user's address
+/**
+ * @param {number} user_id - ID of the user.
+ * @param {string} address - User's address.
+ * @param {string} city - User's city.
+ * @param {string} state - User's state.
+ * @param {string} zip_code - User's ZIP code.
+ * @returns {Promise<string>} - Resolves with a success message if the address is set successfully.
+ * @throws {Promise<string>} - Rejects with an error message if address setting fails.
+ */
 async function set_user_address_business_layer(user_id, address, city, state, zip_code)
 {
     if(!/^[0-9]{5}$/.test(zip_code))
@@ -362,6 +426,23 @@ async function set_user_address_business_layer(user_id, address, city, state, zi
         }); 
     })
 }
+
+// Function to alter user account information
+/**
+ * @param {number} user_id - ID of the user.
+ * @param {string} first_name - User's new first name.
+ * @param {string} last_name - User's new last name.
+ * @param {string} username - User's new username.
+ * @param {string} email - User's new email address.
+ * @param {string} password - User's new password.
+ * @param {string} phone_number - User's new phone number.
+ * @param {string} address - User's new address.
+ * @param {string} city - User's new city.
+ * @param {string} state - User's new state.
+ * @param {string} zip_code - User's new ZIP code.
+ * @returns {Promise<string>} - Resolves with a success message if account information is altered successfully.
+ * @throws {Promise<string>} - Rejects with an error message if alteration fails.
+ */
 async function alter_account_info_business_layer(user_id, first_name, last_name, username, email, password, phone_number, address, city, state, zip_code)
 {          
     let hashed_password = undefined;
@@ -416,6 +497,13 @@ async function alter_account_info_business_layer(user_id, first_name, last_name,
         });
     });
 }
+
+// Function to get user account information
+/**
+ * @param {number} user_id - ID of the user.
+ * @returns {Promise<Object>} - Resolves with user account information.
+ * @throws {Promise<string>} - Rejects with an error message if retrieval fails.
+ */
 async function get_user_account_info_business_layer(user_id)
 {
     return new Promise((resolve, reject) =>{
@@ -431,7 +519,7 @@ async function get_user_account_info_business_layer(user_id)
     });
 }
 
-
+// Function to search for coaches based on various criteria
 /**
  * 
  * @param {Object} search_options
@@ -532,6 +620,7 @@ async function search_coaches_business_layer({filter_options, sort_options, page
     };
 }
 
+// Exporting the functions for use in other modules
 module.exports.accept_client_business_layer = accept_client_business_layer;
 module.exports.login_business_layer = login_business_layer;
 module.exports.insert_user_business_layer = insert_user_business_layer;

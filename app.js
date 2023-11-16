@@ -1,3 +1,4 @@
+// neccessary modules and packages
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -8,6 +9,8 @@ const controller = require("./rest_controller");
 
 const data_layer = require("./data_layer");
 const business_layer = require("./business_layer");
+
+// set server port
 const PORT = 3500 || process.env.PORT;
 
 const corsOptions = {
@@ -22,6 +25,7 @@ app.options('*', cors(corsOptions));
 
 app.use(bodyParser.json());
 
+// session handling
 app.use(
   session({
     secret: "JMH@jaf.erq_ucd6vbt",
@@ -35,6 +39,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Define API endpoints
 app.post("/insert_user", controller.insert_user_controller);
 app.get("/health_check", controller.health_check);
 app.post("/login", controller.login_controller);
