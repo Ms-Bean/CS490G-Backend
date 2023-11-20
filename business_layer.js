@@ -407,24 +407,17 @@ async function set_user_address_business_layer(user_id, address, city, state, zi
     }
     return new Promise((resolve, reject) =>{    
         data_layer.get_role_data_layer(user_id).then((response) =>{ //Check that the user exists
-            data_layer.check_state_exists(state).then((response) =>{
-                data_layer.unset_user_address_data_layer(user_id).then((response) =>{ //This should have no effect if the user does not already have an address.
-                    data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
-                        resolve(response);
-                    }).catch((err) =>{
-                        console.log("ERROR");
-                        reject(err);
-                    });
-                }).catch((err) =>{
-                    reject(err);
-                })
+            data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
+                resolve(response);
             }).catch((err) =>{
+                console.log("ERROR");
                 reject(err);
             });
         }).catch((err) =>{
-            reject("User not found");
-        }); 
-    })
+            console.log("ERROR");
+            reject(err);   
+        });
+    });
 }
 
 // Function to alter user account information
@@ -466,16 +459,12 @@ async function alter_account_info_business_layer(user_id, first_name, last_name,
         console.log(phone_number);
   
         data_layer.alter_account_info_data_layer(user_id, first_name, last_name, username, email, hashed_password, salt, phone_number).then(response =>{
+            console.log("Hooloo");
             if(address && city && state && zip_code)
             {
-                data_layer.unset_user_address_data_layer(user_id).then(response =>{
-                    data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
-                        console.log(response);
-                        resolve(response);
-                    }).catch((err) =>{
-                        console.log(err);
-                        reject(err);
-                    });
+                console.log("Hello");
+                data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
+                    resolve(response);
                 }).catch((err) =>{
                     console.log(err);
                     reject(err);
