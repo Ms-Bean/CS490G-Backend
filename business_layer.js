@@ -507,15 +507,103 @@ async function get_user_account_info_business_layer(user_id)
     });
 }
 
+
+function _get_filter_options_constants() {
+    return {
+        min_experience_level: 0,
+        max_experience_level: 1000,
+        min_hourly_rate: 0,
+        max_hourly_rate: 1_000_000
+    };
+}
+
+/**
+ * 
+ * @param {Array<number>} nums 
+ * @returns {boolean}
+ */
+function _assert_is_sorted(nums) {
+    for (let i = 0; i < nums.length - 1; i++) {
+        if (nums[i] > nums[i + 1]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// TODO: Finish validation of filter options
+function _validate_ranges_of_filter_options(normalized_filter_options) {
+    const {experience_level, hourly_rate} = normalized_filter_options;
+    const errors = [];
+    const {min_experience_level, max_experience_level, min_hourly_rate, max_hourly_rate} = _get_filter_options_constants();
+    if (!_assert_is_sorted([min_experience_level, experience_level.min, experience_level.max, max_experience_level])) {
+        errors.push(`Invalid range for experience level. Should fit ${min_experience_level} <= min exp level <= max exp level <= ${max_experience_level}`);
+    }
+    if (!_assert_is_sorted([min_hourly_rate, hourly_rate.min, hourly_rate.max, max_hourly_rate])) {
+        errors.push(`Invalid range for hourly rate. Should fit ${min_hourly_rate} <= min hourly rate <= max hourly rate <= ${max_hourly_rate}`);
+    }
+
+    return errors;
+}
+
+
+function _check_types_of_filter_options(normalized_filter_options) {
+    const errors = [];
+    if (typeof normalized_filter_options.name !== 'string') {
+        errors.push(`Name filter must be of type 'string' not ${typeof normalized_filter_options.name}`);
+    }
+    if (typeof normalized_filter_options.location.city !== 'string') {
+        errors.push(`City filter must be of type 'string' not ${typeof normalized_filter_options.location.city}`);
+    }
+    if (typeof normalized_filter_options.location.state !== 'string') {
+        errors.push(`State filter must be of type 'string' not ${typeof normalized_filter_options.location.state}`);
+    }
+    if (!Number.isInteger(normalized_filter_options.experience_level.min)) {
+        errors.push(`Min experience level must be an integer`);
+    }
+    if (!Number.isInteger(normalized_filter_options.experience_level.max)) {
+        errors.push(`Max experience level must be an integer`);
+    }
+    if (!Number.isInteger(normalized_filter_options.hourly_rate.min)) {
+        errors.push(`Min hourly rate must be an integer`);
+    }
+    if (!Number.isInteger(normalized_filter_options.hourly_rate.max)) {
+        errors.push(`Max hourly rate must be an integer`);
+    }
+
+    return errors;
+}
+
+
+function _normalize_filter_options(filter_options) {
+    const constants = _get_filter_options_constants();
+    const normalized = {};
+
+    normalized.name = filter_options.name ?? "";
+    normalized.hourly_rate = {
+        min: filter_options?.hourly_rate?.min ?? constants.min_hourly_rate,
+        max: filter_options?.hourly_rate?.max ?? constants.max_hourly_rate
+    };
+    normalized.experience_level = {
+        min: filter_options?.experience_level?.min ?? constants.min_experience_level,
+        max: filter_options?.experience_level?.max ?? constants.max_experience_level
+    };
+    normalized.location = {
+        city: filter_options?.location?.city ?? "",
+        state: filter_options?.location?.state ?? ""
+    };
+
+    return normalized;
+}
+
+
 // Function to search for coaches based on various criteria
 /**
  * 
  * @param {Object} search_options
  * @param {Object} [search_options.filter_options]
  * @param {string} [search_options.filter_options.name] 
- * @param {Object} [search_options.filter_options.rating] 
- * @param {number} [search_options.filter_options.rating.min] 
- * @param {number} [search_options.filter_options.rating.max] 
  * @param {Object} [search_options.filter_options.hourly_rate] 
  * @param {number} [search_options.filter_options.hourly_rate.min] 
  * @param {number} [search_options.filter_options.hourly_rate.max] 
@@ -527,7 +615,7 @@ async function get_user_account_info_business_layer(user_id)
  * @param {number} [search_options.filter_options.experience_level.max] 
  * 
  * @param {Object} [search_options.sort_options]
- * @param {"name"|"rating"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
+ * @param {"name"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
  * @param {boolean} search_options.sort_options.is_descending 
  * 
  * @param {Object} search_options.page_info 
@@ -536,11 +624,17 @@ async function get_user_account_info_business_layer(user_id)
  * @returns {Promise<Object>} 
  */
 async function search_coaches_business_layer({filter_options, sort_options, page_info}) {
-    /* Fill missing properties with defaults */
-    const MAX_HOURLY_RATE = 1_000_000;  // TODO: determine max hourly rate
-    const MAX_EXPERIENCE_LEVEL = 100;
+    const norm_filter_options = _normalize_filter_options(filter_options);
+    const type_errors = _check_types_of_filter_options(norm_filter_options);
+    if (type_errors.length > 0) {
+        return Promise.reject(new Error(type_errors.join(', ')));
+    }
+    const range_errors = _validate_ranges_of_filter_options(norm_filter_options);
+    if (range_errors.length > 0) {
+        return Promise.reject(new Error(range_errors.join(', ')));
+    }
 
-    const valid_sort_keys = ["name", "rating", "hourly_rate", "experience_level"];
+    const valid_sort_keys = ["name", "hourly_rate", "experience_level"];
     if (sort_options) {
         if (!valid_sort_keys.includes(sort_options.key)) {
             return Promise.reject(new Error(`'${sort_options.key}' is an invalid sort key`));
@@ -554,39 +648,8 @@ async function search_coaches_business_layer({filter_options, sort_options, page
         return Promise.reject(new Error("Invalid page info"));
     }
 
-    const default_filter_options = {
-        name: "",
-        rating: {min: 1, max: 5},
-        hourly_rate: {min: 0, max: MAX_HOURLY_RATE},
-        experience_level: {min: 0, max: MAX_EXPERIENCE_LEVEL},
-        location: {city: "", state: ""}
-    };
-
-    const merge_properties = (obj, def) => {
-        const merged = {};
-        for (const [key, val] of Object.entries(def)) {
-            if (typeof val === "object") {
-                merged[key] = obj?.[key] ? merge_properties(obj[key], val) : null;
-            } else {
-                merged[key] = obj?.[key] ?? val;
-            }
-        }
-        return merged;
-    };
-
-    const formatted_filter_options = merge_properties(filter_options, default_filter_options);
-
-    /* Catch invalid properties */
-    if (formatted_filter_options.rating && (formatted_filter_options.rating.min < 1 || formatted_filter_options.rating.max > 5 || formatted_filter_options.rating.min > formatted_filter_options.rating.max)) {
-        return Promise.reject(new Error("Invalid ratings"));
-    } else if (formatted_filter_options.experience_level && (formatted_filter_options.experience_level.min < 0 || formatted_filter_options.experience_level.max > MAX_EXPERIENCE_LEVEL || formatted_filter_options.experience_level.min > formatted_filter_options.experience_level.max)) {
-        return Promise.reject(new Error("Invalid experience level"));
-    } else if (formatted_filter_options.hourly_rate && (formatted_filter_options.hourly_rate.min < 0 || formatted_filter_options.hourly_rate.max > MAX_HOURLY_RATE || formatted_filter_options.hourly_rate.min > formatted_filter_options.hourly_rate.max)) {
-        return Promise.reject(new Error("Invalid hourly rate"));
-    }
-
     const formatted_search_options = {
-        filter_options: formatted_filter_options,
+        filter_options: norm_filter_options,
         sort_options: sort_options,
         page_info: page_info
     };

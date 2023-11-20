@@ -540,9 +540,6 @@ async function remove_coach_data_layer(client_id, coach_id)
  * 
  * @param {Object} filter_options
  * @param {string} [filter_options.name] 
- * @param {Object} [filter_options.rating] 
- * @param {number} filter_options.rating.min 
- * @param {number} filter_options.rating.max 
  * @param {Object} [filter_options.hourly_rate] 
  * @param {number} filter_options.hourly_rate.min 
  * @param {number} filter_options.hourly_rate.max 
@@ -553,13 +550,12 @@ async function remove_coach_data_layer(client_id, coach_id)
  * @param {string} [filter_options.location.city] 
  * @param {string} [filter_options.location.state] 
  */
-function _build_search_coach_filter_clauses({name, rating, hourly_rate, experience_level, location}) {
+function _build_search_coach_filter_clauses({name, hourly_rate, experience_level, location}) {
     const name_cond = name ? `CONCAT(Users.first_name, ' ', Users.last_name) LIKE ?` : "";
-    const rating_cond = rating ? "average_rating BETWEEN ? AND ?" : "";
     const hourly_rate_cond = hourly_rate ? "Coaches.hourly_rate BETWEEN ? AND ?" : "";
     const experience_level_cond = experience_level ? "Coaches.experience_level BETWEEN ? AND ?" : "";
-    const cities_cond = location?.city ? "Cities.name LIKE ?" : "";
-    const states_cond = location?.state ? "States.name LIKE ?" : "";
+    const cities_cond = location?.city ? "Addresses.city LIKE ?" : "";
+    const states_cond = location?.state ? "Addresses.state LIKE ?" : "";
     const where_conds = [name_cond, hourly_rate_cond, experience_level_cond, cities_cond, states_cond].filter(s => s).join(" AND ");
 
     const sql_args = [];
@@ -568,11 +564,9 @@ function _build_search_coach_filter_clauses({name, rating, hourly_rate, experien
     if (experience_level_cond) sql_args.push(...[experience_level.min, experience_level.max]);
     if (cities_cond) sql_args.push(`${location.city}%`);
     if (states_cond) sql_args.push(`${location.state}%`);
-    if (rating_cond) sql_args.push(...[rating.min, rating.max]);
 
     return {
         where: where_conds ? "WHERE " + where_conds : "",
-        having: rating_cond ? "HAVING " + rating_cond : "",
         args: sql_args
     };
 }
@@ -580,14 +574,13 @@ function _build_search_coach_filter_clauses({name, rating, hourly_rate, experien
 /**
  * 
  * @param {Object} sort_options 
- * @param {"name"|"rating"|"hourly_rate"|"experience_level"} sort_options.key 
+ * @param {"name"|"hourly_rate"|"experience_level"} sort_options.key 
  * @param {boolean} sort_options.is_descending 
  */
 function _build_search_coach_sort_options({key, is_descending}) {
     const order = is_descending ? "DESC" : "ASC";
     const key_to_sql_map = new Map([
         ["name", `Users.first_name ${order}, Users.last_name ${order}`],
-        ["rating", `Average_Rating ${order}`],
         ["hourly_rate", `Coaches.hourly_rate ${order}`],
         ["experience_level", `Coaches.experience_level ${order}`]
     ]);
@@ -600,9 +593,6 @@ function _build_search_coach_sort_options({key, is_descending}) {
  * @param {Object} search_options
  * @param {Object} search_options.filter_options
  * @param {string} search_options.filter_options.name 
- * @param {Object} search_options.filter_options.rating 
- * @param {number} search_options.filter_options.rating.min 
- * @param {number} search_options.filter_options.rating.max 
  * @param {Object} search_options.filter_options.hourly_rate 
  * @param {number} search_options.filter_options.hourly_rate.min 
  * @param {number} search_options.filter_options.hourly_rate.max 
@@ -611,7 +601,7 @@ function _build_search_coach_sort_options({key, is_descending}) {
  * @param {string} search_options.filter_options.location.state
  * 
  * @param {Object} [search_options.sort_options] 
- * @param {"name"|"rating"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
+ * @param {"name"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
  * @param {boolean} search_options.sort_options.is_descending 
  * 
  * @param {Object} search_options.page_info 
@@ -620,27 +610,20 @@ function _build_search_coach_sort_options({key, is_descending}) {
  * @returns {Promise<Object>} 
  */
 function search_coaches_data_layer({filter_options, sort_options, page_info}) {
-    const {where, having, args} = _build_search_coach_filter_clauses(filter_options);
+    const {where, args} = _build_search_coach_filter_clauses(filter_options);
     const order_by = sort_options ? _build_search_coach_sort_options(sort_options) : "";
     const next_entry = (page_info.page_num - 1) * page_info.page_size;
     args.push(...[page_info.page_size, next_entry]);
     const sql = `SELECT Coaches.user_id, Coaches.hourly_rate, Coaches.coaching_history, Coaches.accepting_new_clients, Coaches.experience_level,
-                    Users.first_name, Users.last_name, User_Profile.about_me, User_Profile.profile_picture, GROUP_CONCAT(Coaches_Goals.goal_id SEPARATOR ',') AS goals, Addresses.address, Cities.name AS city, States.name AS state,
-                    AVG(Ratings.rating) AS average_rating
+                    Users.first_name, Users.last_name, User_Profile.about_me, User_Profile.profile_picture, GROUP_CONCAT(Goals.name SEPARATOR ',') AS goals, Addresses.address, Addresses.city, Addresses.state
                 FROM Coaches
                     INNER JOIN Users ON Coaches.user_id = Users.user_id
                     INNER JOIN User_Profile ON Coaches.user_id = User_Profile.user_id
                     LEFT JOIN Coaches_Goals ON Coaches.user_id = Coaches_Goals.coach_id
-                    LEFT JOIN Ratings ON Coaches.user_id = Ratings.coach_id
-                    LEFT JOIN User_Location ON Coaches.user_id = User_Location.user_id
-                    LEFT JOIN Addresses ON User_Location.address_id = Addresses.address_id
-                    LEFT JOIN Address_City ON Addresses.address_id = Address_City.address_id
-                    LEFT JOIN Cities ON Address_City.city_id = Cities.city_id
-                    LEFT JOIN City_State ON Cities.city_id = City_State.city_id
-                    LEFT JOIN States ON City_State.state_id = States.state_id
+                    LEFT JOIN Goals ON Coaches_Goals.goal_id = Goals.goal_id
+                    LEFT JOIN Addresses ON Coaches.user_id = Addresses.user_id
                 ${where}
                 GROUP BY Coaches.user_id
-                ${having}
                 ${order_by}
                 LIMIT ? OFFSET ?`;
 
@@ -666,7 +649,6 @@ function search_coaches_data_layer({filter_options, sort_options, page_info}) {
                         accepting_new_clients: r.accepting_new_clients,
                         experience_level: r.experience_level,
                         goals: r.goals?.split(','),
-                        rating: r.average_rating
                     },
                     location: {
                         address: r.address,
@@ -685,9 +667,6 @@ function search_coaches_data_layer({filter_options, sort_options, page_info}) {
  * @param {Object} search_options
  * @param {Object} search_options.filter_options
  * @param {string} search_options.filter_options.name 
- * @param {Object} search_options.filter_options.rating 
- * @param {number} search_options.filter_options.rating.min 
- * @param {number} search_options.filter_options.rating.max 
  * @param {Object} search_options.filter_options.hourly_rate 
  * @param {number} search_options.filter_options.hourly_rate.min 
  * @param {number} search_options.filter_options.hourly_rate.max 
@@ -697,22 +676,16 @@ function search_coaches_data_layer({filter_options, sort_options, page_info}) {
  * @returns {Promise<number>} 
  */
 function count_coach_search_results({filter_options}) {
-    const {where, having, args} = _build_search_coach_filter_clauses(filter_options);
-    const sql = `SELECT Coaches.user_id, AVG(Ratings.rating) AS average_rating
+    const {where, args} = _build_search_coach_filter_clauses(filter_options);
+    const sql = `SELECT Coaches.user_id
                 FROM Coaches
                     INNER JOIN Users ON Coaches.user_id = Users.user_id
                     INNER JOIN User_Profile ON Coaches.user_id = User_Profile.user_id
                     LEFT JOIN Coaches_Goals ON Coaches.user_id = Coaches_Goals.coach_id
-                    LEFT JOIN Ratings ON Coaches.user_id = Ratings.coach_id
-                    LEFT JOIN User_Location ON Coaches.user_id = User_Location.user_id
-                    LEFT JOIN Addresses ON User_Location.address_id = Addresses.address_id
-                    LEFT JOIN Address_City ON Addresses.address_id = Address_City.address_id
-                    LEFT JOIN Cities ON Address_City.city_id = Cities.city_id
-                    LEFT JOIN City_State ON Cities.city_id = City_State.city_id
-                    LEFT JOIN States ON City_State.state_id = States.state_id
+                    LEFT JOIN Goals ON Coaches_Goals.goal_id = Goals.goal_id
+                    LEFT JOIN Addresses ON Coaches.user_id = Addresses.user_id
                 ${where}
-                GROUP BY Coaches.user_id
-                ${having}`;
+                GROUP BY Coaches.user_id`;
                 return new Promise((resolve, reject) => {
                     con.query(sql, args, (err, results) => {
                         if (err) {
