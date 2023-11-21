@@ -282,8 +282,8 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
         });
     });
 }
-
-
+//Note: The if the daily survey should not be taken more than once during the same day.
+//TODO: The duplicate date error function
 async function insert_daily_survey_data_layer({ calories_consumed, weight, calories_burned, created, modified, date, user_id, water_intake, mood, }) {
     const formattedCreatedDatetime = new Date(created).toISOString().slice(0, 19).replace('T', ' ');
     const formattedModifiedDatetime = new Date(modified).toISOString().slice(0, 19).replace('T', ' ');
