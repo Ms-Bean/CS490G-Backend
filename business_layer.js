@@ -306,7 +306,7 @@ async function insert_message_business_layer(current_user_id, recipient_id, cont
         return Promise.reject(new Error("Cannot send empty message"));
     }
 
-    if (!(await _check_if_coach_of(current_user_id, recipient_id) || await _check_if_coach_of(other_user_id, recipient_id))) {
+    if (!(await _check_if_coach_of(current_user_id, recipient_id) || await _check_if_coach_of(recipient_id, current_user_id))) {
         return Promise.reject(new Error("Current user cannot message another user that's neither their coach nor client"));
     }
     return data_layer.insert_message_data_layer(current_user_id, recipient_id, content);
