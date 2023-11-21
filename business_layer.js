@@ -306,17 +306,10 @@ async function insert_message_business_layer(current_user_id, recipient_id, cont
         return Promise.reject(new Error("Cannot send empty message"));
     }
 
-    let coach_id, client_id;
-    if (await _check_if_coach_of(current_user_id, recipient_id)) {
-        coach_id = current_user_id;
-        client_id = recipient_id;
-    } else if (await _check_if_coach_of(recipient_id, current_user_id)) {
-        coach_id = recipient_id;
-        client_id = current_user_id;
-    } else {
-        return Promise.reject(new Error("User cannot send message to recipient that's not their coach or client"));
+    if (!(await _check_if_coach_of(current_user_id, recipient_id) || await _check_if_coach_of(other_user_id, recipient_id))) {
+        return Promise.reject(new Error("Current user cannot message another user that's neither their coach nor client"));
     }
-    return data_layer.insert_message_data_layer(coach_id, client_id, content);
+    return data_layer.insert_message_data_layer(current_user_id, recipient_id, content);
 }
 // TODO rename other_user_id to a more descriptive name
 
@@ -343,21 +336,15 @@ async function get_client_coach_messages_business_layer(current_user_id, other_u
         return Promise.reject(new Error("Invalid page number"));
     }
 
-    let coach_id, client_id;
-    if (await _check_if_coach_of(current_user_id, other_user_id)) {
-        coach_id = current_user_id;
-        client_id = other_user_id;
-    } else if (await _check_if_coach_of(other_user_id, current_user_id)) {
-        coach_id = other_user_id;
-        client_id = current_user_id;
-    } else {
-        return Promise.reject(new Error("User cannot view messages from user that's not their coach or client"));
+    if (!(await _check_if_coach_of(current_user_id, other_user_id) || await _check_if_coach_of(other_user_id, current_user_id))) {
+        return Promise.reject(new Error("Current user cannot view messages from another user that's neither their coach nor client"));
     }
 
-    const message_count = await data_layer.count_client_coach_messages(client_id, coach_id);
+    const message_count = await data_layer.count_client_coach_messages(current_user_id, other_user_id);
     const page_count = Math.ceil(message_count / page_size);
+    page_num = Math.min(page_num, page_count);
     
-    const messages = await data_layer.get_client_coach_message_page_data_layer(client_id, coach_id, page_size, page_num);
+    const messages = await data_layer.get_client_coach_message_page_data_layer(current_user_id, other_user_id, page_size, page_num);
     const messages_dto = {
         page_info: {
             page_num: page_num,
