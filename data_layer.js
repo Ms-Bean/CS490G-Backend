@@ -70,7 +70,7 @@ module.exports = { check_if_username_exists_data_layer };
  * @returns {Promise<number>}
  */
 function get_clients_of_coach(coach_id) {
-    const sql = "SELECT user_id FROM CLIENTS WHERE coach_id = ?";
+    const sql = "SELECT client_id FROM Client_Coach WHERE coach_id = ?";
     return new Promise((resolve, reject) => {
         con.query(sql, [coach_id], (err, results) => {
             if (err) {
@@ -123,7 +123,7 @@ function get_client_coach_message_page_data_layer(client_id, coach_id, page_size
         con.query(sql, [coach_id, client_id, page_size, next_entry], (err, results) => {
             if (err) {
                 console.log(err);
-                return reject(err);
+                reject(err)
             } else {
                 resolve(results.map(m => _convert_to_message(m)));
             }

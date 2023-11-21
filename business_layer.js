@@ -297,13 +297,13 @@ async function _check_if_coach_of(user_id1, user_id2) {
  */
 async function insert_message_business_layer(current_user_id, recipient_id, content) {
     if (!Number.isInteger(current_user_id)) {
-        return Promise.reject("Invalid user id");
+        return Promise.reject(new Error("Invalid user id"));
     }
     if (!Number.isInteger(recipient_id)) {
-        return Promise.reject("Invalid recipient id");
+        return Promise.reject(new Error("Invalid recipient id"));
     }
     if (!content) {
-        return Promise.reject("Cannot send empty message");
+        return Promise.reject(new Error("Cannot send empty message"));
     }
 
     let coach_id, client_id;
@@ -314,7 +314,7 @@ async function insert_message_business_layer(current_user_id, recipient_id, cont
         coach_id = recipient_id;
         client_id = current_user_id;
     } else {
-        return Promise.reject("User cannot send message to recipient that's not their coach or client");
+        return Promise.reject(new Error("User cannot send message to recipient that's not their coach or client"));
     }
     return data_layer.insert_message_data_layer(coach_id, client_id, content);
 }
@@ -331,16 +331,16 @@ async function insert_message_business_layer(current_user_id, recipient_id, cont
  */
 async function get_client_coach_messages_business_layer(current_user_id, other_user_id, page_size, page_num) {
     if (!Number.isInteger(current_user_id)) {
-        return Promise.reject("Invalid user id");
+        return Promise.reject(new Error("Invalid user id"));
     }
     if (!Number.isInteger(other_user_id)) {
-        return Promise.reject("Invalid other user id");
+        return Promise.reject(new Error("Invalid other user id"));
     }
     if (!Number.isInteger(page_size) || page_size <= 0) {
-        return Promise.reject("Invalid page size");
+        return Promise.reject(new Error("Invalid page size"));
     }
     if (!Number.isInteger(page_num) || page_num <= 0) {
-        return Promise.reject("Invalid page number");
+        return Promise.reject(new Error("Invalid page number"));
     }
 
     let coach_id, client_id;
@@ -351,7 +351,7 @@ async function get_client_coach_messages_business_layer(current_user_id, other_u
         coach_id = other_user_id;
         client_id = current_user_id;
     } else {
-        return Promise.reject("User cannot view messages from user that's not their coach or client");
+        return Promise.reject(new Error("User cannot view messages from user that's not their coach or client"));
     }
 
     const message_count = await data_layer.count_client_coach_messages(client_id, coach_id);

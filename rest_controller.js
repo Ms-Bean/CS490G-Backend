@@ -210,7 +210,7 @@ async function insert_message_controller(req, res) {
     req.body.recipient_id,
     req.body.content
   ).then((success_message) => res.json({message: success_message}))
-   .catch((err_message) => res.status(400).json({message: err_message}));
+   .catch((err) => res.status(400).json({message: err.message}));
 }
 
 async function get_client_coach_messages_controller(req, res) {
@@ -223,7 +223,7 @@ async function get_client_coach_messages_controller(req, res) {
   ).then((message_dto) => {
     res.json(message_dto);
   })
-  .catch((err_message) => res.status(400).json({message: err_message}));
+  .catch((err) => res.status(400).json({message: err.message}));
 }
 async function get_user_account_info_controller(req, res)
 {  
