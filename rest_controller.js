@@ -312,6 +312,30 @@ async function search_coaches_controller(req, res) {
   res.json(coach_data);
 }
 
+async function insert_daily_survey_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  try {
+    const { calories_consumed,  weight, calories_burned, created, modified, date, user_id, water_intake, mood,} = req.body;
+
+    const result = await business_layer.insert_daily_survey_business_layer({
+      calories_consumed,
+      weight,
+      calories_burned,
+      created,
+      modified,
+      date,
+      user_id,
+      water_intake,
+      mood,
+    });
+
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message || "An error occurred" });
+  }
+}
+module.exports.insert_daily_survey_controller = insert_daily_survey_controller;
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
 module.exports.accept_client_controller = accept_client_controller;
 module.exports.logout_controller = logout_controller;

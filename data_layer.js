@@ -283,6 +283,41 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
     });
 }
 
+
+async function insert_daily_survey_data_layer({ calories_consumed, weight, calories_burned, created, modified, date, user_id, water_intake, mood, }) {
+    const formattedCreatedDatetime = new Date(created).toISOString().slice(0, 19).replace('T', ' ');
+    const formattedModifiedDatetime = new Date(modified).toISOString().slice(0, 19).replace('T', ' ');
+  
+    let sql = `
+      INSERT INTO user_daily_survey (calories_consumed, weight, calories_burned, created, modified, date, user_id, water_intake, mood ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+  
+    return new Promise((resolve, reject) => {
+      con.query(
+        sql,
+        [calories_consumed, weight, calories_burned, formattedCreatedDatetime, formattedModifiedDatetime, date, user_id, water_intake, mood],
+        (err, result) => {
+          if (err) {
+            console.error(err);
+            reject("Failed to insert daily survey into the database.");
+          } else {
+            if (result.affectedRows > 0) {
+              resolve("Information inserted");
+            } else {
+              resolve("No data found");
+            }
+          }
+        }
+      );
+    });
+  }
+  
+  
+  
+  
+  
+
+
 async function login_data_layer(username) {
     const sql = "SELECT password_hash, password_salt, user_id FROM Users WHERE username = ?";
     return new Promise((resolve, reject) => {
@@ -697,7 +732,7 @@ function count_coach_search_results({filter_options}) {
                 });
 }
 
-
+module.exports.insert_daily_survey_data_layer = insert_daily_survey_data_layer;
 module.exports.accept_client_data_layer = accept_client_data_layer;
 module.exports.check_if_client_coach_request_exists = check_if_client_coach_request_exists;
 module.exports.check_if_client_has_hired_coach = check_if_client_has_hired_coach;

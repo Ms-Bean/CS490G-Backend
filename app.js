@@ -55,6 +55,7 @@ app.route('/messages')
     .post(controller.insert_message_controller)
     .get(controller.get_client_coach_messages_controller);
 app.post('/coaches/search', controller.search_coaches_controller);
+app.post('/daily_survey', controller.insert_daily_survey_controller);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {

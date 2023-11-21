@@ -507,6 +507,19 @@ async function get_user_account_info_business_layer(user_id)
     });
 }
 
+async function insert_daily_survey_business_layer({user_id,calories_consumed,weight,calories_burned,created,modified,date,water_intake,mood,}) {
+  
+    return new Promise((resolve, reject) => {
+        data_layer.insert_daily_survey_data_layer(user_id,calories_consumed,weight,calories_burned,created,modified,date,water_intake,mood)
+        .then((data_layer_response) => {
+          resolve(data_layer_response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
+
 
 function _get_filter_options_constants() {
     return {
@@ -598,6 +611,10 @@ function _normalize_filter_options(filter_options) {
 }
 
 
+
+
+
+
 // Function to search for coaches based on various criteria
 /**
  * 
@@ -685,3 +702,4 @@ module.exports.set_user_address_business_layer = set_user_address_business_layer
 module.exports.get_user_account_info_business_layer = get_user_account_info_business_layer;
 module.exports.alter_account_info_business_layer = alter_account_info_business_layer;
 module.exports.search_coaches_business_layer = search_coaches_business_layer;
+module.exports.insert_daily_survey_business_layer = insert_daily_survey_business_layer;
