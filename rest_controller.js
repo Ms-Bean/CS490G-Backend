@@ -217,9 +217,9 @@ async function get_client_coach_messages_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   business_layer.get_client_coach_messages_business_layer(
     req.session.user['user_id'],
-    req.body.other_user_id,
-    req.body.page_size,
-    req.body.page_num
+    Number(req.query.other_user_id),
+    Number(req.query.page_size),
+    Number(req.query.page_num)
   ).then((message_dto) => {
     res.json(message_dto);
   })
