@@ -580,7 +580,7 @@ function _normalize_filter_options(filter_options) {
     const constants = _get_filter_options_constants();
     const normalized = {};
 
-    normalized.name = filter_options.name ?? "";
+    normalized.name = filter_options?.name ?? "";
     normalized.hourly_rate = {
         min: filter_options?.hourly_rate?.min ?? constants.min_hourly_rate,
         max: filter_options?.hourly_rate?.max ?? constants.max_hourly_rate
@@ -596,10 +596,6 @@ function _normalize_filter_options(filter_options) {
 
     return normalized;
 }
-
-
-
-
 
 
 // Function to search for coaches based on various criteria
