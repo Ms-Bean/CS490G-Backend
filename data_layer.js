@@ -577,6 +577,7 @@ async function remove_coach_data_layer(client_id, coach_id)
  * 
  * @param {Object} filter_options
  * @param {string} [filter_options.name] 
+ * @param {boolean|null} filter_options.accepting_new_clients 
  * @param {Object} [filter_options.hourly_rate] 
  * @param {number} filter_options.hourly_rate.min 
  * @param {number} filter_options.hourly_rate.max 
@@ -587,16 +588,18 @@ async function remove_coach_data_layer(client_id, coach_id)
  * @param {string} [filter_options.location.city] 
  * @param {string} [filter_options.location.state] 
  */
-function _build_search_coach_filter_clauses({name, hourly_rate, experience_level, location}) {
+function _build_search_coach_filter_clauses({name, accepting_new_clients, hourly_rate, experience_level, location}) {
     const name_cond = name ? `CONCAT(Users.first_name, ' ', Users.last_name) LIKE ?` : "";
+    const accepting_new_clients_cond = accepting_new_clients !== null ? "Coaches.accepting_new_clients = ?" : "";
     const hourly_rate_cond = hourly_rate ? "Coaches.hourly_rate BETWEEN ? AND ?" : "";
     const experience_level_cond = experience_level ? "Coaches.experience_level BETWEEN ? AND ?" : "";
     const cities_cond = location?.city ? "Addresses.city LIKE ?" : "";
     const states_cond = location?.state ? "Addresses.state LIKE ?" : "";
-    const where_conds = [name_cond, hourly_rate_cond, experience_level_cond, cities_cond, states_cond].filter(s => s).join(" AND ");
+    const where_conds = [name_cond, accepting_new_clients_cond, hourly_rate_cond, experience_level_cond, cities_cond, states_cond].filter(s => s).join(" AND ");
 
     const sql_args = [];
     if (name_cond) sql_args.push(`${name}%`);
+    if (accepting_new_clients_cond) sql_args.push(accepting_new_clients);
     if (hourly_rate_cond) sql_args.push(...[hourly_rate.min, hourly_rate.max]);
     if (experience_level_cond) sql_args.push(...[experience_level.min, experience_level.max]);
     if (cities_cond) sql_args.push(`${location.city}%`);
@@ -630,6 +633,7 @@ function _build_search_coach_sort_options({key, is_descending}) {
  * @param {Object} search_options
  * @param {Object} search_options.filter_options
  * @param {string} search_options.filter_options.name 
+ * @param {boolean} search_options.filter_options.accepting_new_clients 
  * @param {Object} search_options.filter_options.hourly_rate 
  * @param {number} search_options.filter_options.hourly_rate.min 
  * @param {number} search_options.filter_options.hourly_rate.max 
@@ -704,6 +708,7 @@ function search_coaches_data_layer({filter_options, sort_options, page_info}) {
  * @param {Object} search_options
  * @param {Object} search_options.filter_options
  * @param {string} search_options.filter_options.name 
+ * @param {boolean} search_options.filter_options.accepting_new_clients 
  * @param {Object} search_options.filter_options.hourly_rate 
  * @param {number} search_options.filter_options.hourly_rate.min 
  * @param {number} search_options.filter_options.hourly_rate.max 
