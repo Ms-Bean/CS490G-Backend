@@ -642,7 +642,7 @@ async function search_coaches_business_layer({filter_options, sort_options, page
     if (sort_options) {
         if (!valid_sort_keys.includes(sort_options.key)) {
             return Promise.reject(new Error(`'${sort_options.key}' is an invalid sort key`));
-        } else if (!sort_options.is_descending) {
+        } else if (typeof sort_options.is_descending !== 'boolean') {
             return Promise.reject(new Error("sort_options property missing sort direction"));
         }
     }
