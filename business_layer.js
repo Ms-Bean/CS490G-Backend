@@ -553,6 +553,9 @@ function _check_types_of_filter_options(normalized_filter_options) {
     if (typeof normalized_filter_options.name !== 'string') {
         errors.push(`Name filter must be of type 'string' not ${typeof normalized_filter_options.name}`);
     }
+    if (normalized_filter_options.accepting_new_clients !== null && typeof normalized_filter_options.accepting_new_clients !== "boolean") {
+        errors.push(`Accepting new clients filter must be of type 'boolean' not ${typeof normalized_filter_options.name}`);
+    }
     if (typeof normalized_filter_options.location.city !== 'string') {
         errors.push(`City filter must be of type 'string' not ${typeof normalized_filter_options.location.city}`);
     }
@@ -593,6 +596,7 @@ function _normalize_filter_options(filter_options) {
         city: filter_options?.location?.city ?? "",
         state: filter_options?.location?.state ?? ""
     };
+    normalized.accepting_new_clients = filter_options?.accepting_new_clients ?? null;
 
     return normalized;
 }
@@ -604,6 +608,7 @@ function _normalize_filter_options(filter_options) {
  * @param {Object} search_options
  * @param {Object} [search_options.filter_options]
  * @param {string} [search_options.filter_options.name] 
+ * @param {boolean} [search_options.filter_options.accepting_new_clients] 
  * @param {Object} [search_options.filter_options.hourly_rate] 
  * @param {number} [search_options.filter_options.hourly_rate.min] 
  * @param {number} [search_options.filter_options.hourly_rate.max] 
