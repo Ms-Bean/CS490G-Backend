@@ -1,6 +1,7 @@
 const data_layer = require("./data_layer");
 const bcrypt = require('bcrypt');
 
+// Function to handle user registration
 async function insert_user_business_layer(first_name, last_name, username, email, password, role)
 {
     const username_Exists_Flag = await data_layer.check_if_username_exists_data_layer(username); //checking check_if_username_exists 
@@ -33,9 +34,9 @@ async function insert_user_business_layer(first_name, last_name, username, email
     if(role != "client" && role != "coach")
         return Promise.reject("Role must be client or coach");
         
-    var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
-    var salt = '';
-    for (var i = 0; i < 10; i++ )
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+    let salt = '';
+    for (let i = 0; i < 10; i++ )
        salt += chars.charAt(Math.floor(Math.random() * chars.length));
 
     const salted_password = password + salt;
@@ -62,6 +63,13 @@ async function insert_user_business_layer(first_name, last_name, username, email
     });
 }
 
+// Function to handle user login
+/**
+ * @param {string} username - User's username.
+ * @param {string} password - User's password.
+ * @returns {Promise<Object>} - Resolves with success message and user_id if login is successful.
+ * @throws {Promise<string>} - Rejects with an error message if login fails.
+ */
 async function login_business_layer(username, password) {
     return new Promise((resolve, reject) => {
         data_layer.login_data_layer(username).then((data) => {
@@ -81,6 +89,16 @@ async function login_business_layer(username, password) {
     });
 }
 
+// Function to handle accepting client survey responses
+/**
+ * @param {number} user_id - User's ID.
+ * @param {number} weight - Client's weight.
+ * @param {number} height - Client's height.
+ * @param {string} experience_level - Client's fitness experience level.
+ * @param {string} budget - Client's budget range.
+ * @returns {Promise<Object>} - Resolves with success message if survey acceptance is successful.
+ * @throws {Promise<string>} - Rejects with an error message if acceptance fails.
+ */
 async function accept_client_survey_business_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
 {
     const role = await data_layer.get_role_data_layer(user_id); //checking if user is a client
@@ -135,6 +153,16 @@ async function accept_client_survey_business_layer(user_id, weight=undefined, he
         return Promise.reject("User is not a client.");
     }
 }
+
+// Function to handle accepting coach survey responses
+/**
+ * @param {number} user_id - User's ID.
+ * @param {number} cost_per_session - Coach's cost per session.
+ * @param {string} availability - Coach's availability.
+ * @param {string} experience - Coach's experience details.
+ * @returns {Promise<Object>} - Resolves with success message if survey acceptance is successful.
+ * @throws {Promise<string>} - Rejects with an error message if acceptance fails.
+ */
 async function accept_coach_survey_business_layer(user_id, cost_per_session, availability, experience)
 {
     const role = await data_layer.get_role_data_layer(user_id); //checking if user is a coach
@@ -180,6 +208,15 @@ async function accept_coach_survey_business_layer(user_id, cost_per_session, ava
         return Promise.reject("User is not a coach.");
     }
 }
+
+// Function to handle client requesting a coach
+/**
+ * @param {number} coach_id - ID of the requested coach.
+ * @param {number} client_id - ID of the requesting client.
+ * @param {string} comment - Additional comment from the client.
+ * @returns {Promise<Object>} - Resolves with success message if the request is successful.
+ * @throws {Promise<string>} - Rejects with an error message if the request fails.
+ */
 async function request_coach_business_layer(coach_id, client_id, comment)
 {
     //TODO, Check if coach_id and client_id belong to a coach and a client, respectively
@@ -206,11 +243,12 @@ async function request_coach_business_layer(coach_id, client_id, comment)
     })
 }
 
+// Function to handle accepting a client by a coach
 /**
- * 
- * @param {number} current_user_id 
- * @param {number} client_id 
- * @returns {Promise<string>}
+ * @param {number} current_user_id - ID of the coach receiving the request.
+ * @param {number} client_id - ID of the client being accepted.
+ * @returns {Promise<string>} - Resolves with a success message if acceptance is successful.
+ * @throws {Promise<string>} - Rejects with an error message if acceptance fails.
  */
 async function accept_client_business_layer(current_user_id, client_id) {
     if (current_user_id === undefined || current_user_id === null) {
@@ -233,11 +271,11 @@ async function accept_client_business_layer(current_user_id, client_id) {
     return Promise.resolve("You have accepted the client");  // TODO: Return name of client
 }
 
+// Function to check if one user is the coach of another
 /**
- * 
- * @param {number} user_id1 
- * @param {number} user_id2 
- * @returns {Promise<boolean>} True if user 1 is coach of user 2; otherwise, False
+ * @param {number} user_id1 - ID of the first user.
+ * @param {number} user_id2 - ID of the second user.
+ * @returns {Promise<boolean>} - Resolves with true if user 1 is the coach of user 2; otherwise, resolves with false.
  */
 async function _check_if_coach_of(user_id1, user_id2) {
     const role1 = await data_layer.get_role_data_layer(user_id1);
@@ -249,67 +287,64 @@ async function _check_if_coach_of(user_id1, user_id2) {
     return user1_clients.includes(user_id2);
 }
 
+// Function to insert a message between a client and a coach
 /**
- * 
- * @param {number} current_user_id 
- * @param {number} recipient_id 
- * @param {string} content 
- * @returns {Promise<string>} 
+ * @param {number} current_user_id - ID of the user sending the message.
+ * @param {number} recipient_id - ID of the user receiving the message.
+ * @param {string} content - Content of the message.
+ * @returns {Promise<string>} - Resolves with a success message if the message is sent successfully.
+ * @throws {Promise<string>} - Rejects with an error message if message insertion fails.
  */
 async function insert_message_business_layer(current_user_id, recipient_id, content) {
     if (!Number.isInteger(current_user_id)) {
-        return Promise.reject("Invalid user id");
+        return Promise.reject(new Error("Invalid user id"));
     }
     if (!Number.isInteger(recipient_id)) {
-        return Promise.reject("Invalid recipient id");
+        return Promise.reject(new Error("Invalid recipient id"));
     }
     if (!content) {
-        return Promise.reject("Cannot send empty message");
+        return Promise.reject(new Error("Cannot send empty message"));
     }
 
-    let coach_id, client_id;
-    if (await _check_if_coach_of(current_user_id, recipient_id)) {
-        coach_id = current_user_id;
-        client_id = recipient_id;
-    } else if (await _check_if_coach_of(recipient_id, current_user_id)) {
-        coach_id = recipient_id;
-        client_id = current_user_id;
-    } else {
-        return Promise.reject("User cannot send message to recipient that's not their coach or client");
+    if (!(await _check_if_coach_of(current_user_id, recipient_id) || await _check_if_coach_of(recipient_id, current_user_id))) {
+        return Promise.reject(new Error("Current user cannot message another user that's neither their coach nor client"));
     }
-    return data_layer.insert_message_data_layer(coach_id, client_id, content);
+    return data_layer.insert_message_data_layer(current_user_id, recipient_id, content);
 }
-
 // TODO rename other_user_id to a more descriptive name
+
+// Function to retrieve client-coach messages
+/**
+ * @param {number} current_user_id - ID of the user making the request.
+ * @param {number} other_user_id - ID of the other user in the conversation.
+ * @param {number} page_size - Number of messages per page.
+ * @param {number} page_num - Page number.
+ * @returns {Promise<Object>} - Resolves with an object containing page information and messages.
+ * @throws {Promise<string>} - Rejects with an error message if message retrieval fails.
+ */
 async function get_client_coach_messages_business_layer(current_user_id, other_user_id, page_size, page_num) {
     if (!Number.isInteger(current_user_id)) {
-        return Promise.reject("Invalid user id");
+        return Promise.reject(new Error("Invalid user id"));
     }
     if (!Number.isInteger(other_user_id)) {
-        return Promise.reject("Invalid other user id");
+        return Promise.reject(new Error("Invalid other user id"));
     }
     if (!Number.isInteger(page_size) || page_size <= 0) {
-        return Promise.reject("Invalid page size");
+        return Promise.reject(new Error("Invalid page size"));
     }
     if (!Number.isInteger(page_num) || page_num <= 0) {
-        return Promise.reject("Invalid page number");
+        return Promise.reject(new Error("Invalid page number"));
     }
 
-    let coach_id, client_id;
-    if (await _check_if_coach_of(current_user_id, other_user_id)) {
-        coach_id = current_user_id;
-        client_id = other_user_id;
-    } else if (await _check_if_coach_of(other_user_id, current_user_id)) {
-        coach_id = other_user_id;
-        client_id = current_user_id;
-    } else {
-        return Promise.reject("User cannot view messages from user that's not their coach or client");
+    if (!(await _check_if_coach_of(current_user_id, other_user_id) || await _check_if_coach_of(other_user_id, current_user_id))) {
+        return Promise.reject(new Error("Current user cannot view messages from another user that's neither their coach nor client"));
     }
 
-    const message_count = await data_layer.count_client_coach_messages(client_id, coach_id);
+    const message_count = await data_layer.count_client_coach_messages(current_user_id, other_user_id);
     const page_count = Math.ceil(message_count / page_size);
+    page_num = Math.min(page_num, page_count);
     
-    const messages = await data_layer.get_client_coach_message_page_data_layer(client_id, coach_id, page_size, page_num);
+    const messages = await data_layer.get_client_coach_message_page_data_layer(current_user_id, other_user_id, page_size, page_num);
     const messages_dto = {
         page_info: {
             page_num: page_num,
@@ -323,6 +358,12 @@ async function get_client_coach_messages_business_layer(current_user_id, other_u
     return messages_dto;
 } 
 
+// Function to get the user's role
+/**
+ * @param {number} user_id - ID of the user.
+ * @returns {Promise<string>} - Resolves with the user's role.
+ * @throws {Promise<string>} - Rejects with an error message if role retrieval fails.
+ */
 async function get_role_business_layer(user_id) { // Remove reject calls, not valid in async function (use throw instead)
     if (!/^[0-9]+$/.test(user_id)) {
       throw new Error("Invalid user id");
@@ -335,6 +376,16 @@ async function get_role_business_layer(user_id) { // Remove reject calls, not va
     }
 }
 
+// Function to set the user's address
+/**
+ * @param {number} user_id - ID of the user.
+ * @param {string} address - User's address.
+ * @param {string} city - User's city.
+ * @param {string} state - User's state.
+ * @param {string} zip_code - User's ZIP code.
+ * @returns {Promise<string>} - Resolves with a success message if the address is set successfully.
+ * @throws {Promise<string>} - Rejects with an error message if address setting fails.
+ */
 async function set_user_address_business_layer(user_id, address, city, state, zip_code)
 {
     if(!/^[0-9]{5}$/.test(zip_code))
@@ -343,34 +394,43 @@ async function set_user_address_business_layer(user_id, address, city, state, zi
     }
     return new Promise((resolve, reject) =>{    
         data_layer.get_role_data_layer(user_id).then((response) =>{ //Check that the user exists
-            data_layer.check_state_exists(state).then((response) =>{
-                data_layer.unset_user_address_data_layer(user_id).then((response) =>{ //This should have no effect if the user does not already have an address.
-                    data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
-                        resolve(response);
-                    }).catch((err) =>{
-                        console.log("ERROR");
-                        reject(err);
-                    });
-                }).catch((err) =>{
-                    reject(err);
-                })
+            data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
+                resolve(response);
             }).catch((err) =>{
+                console.log("ERROR");
                 reject(err);
             });
         }).catch((err) =>{
-            reject("User not found");
-        }); 
-    })
+            console.log("ERROR");
+            reject(err);   
+        });
+    });
 }
+
+// Function to alter user account information
+/**
+ * @param {number} user_id - ID of the user.
+ * @param {string} first_name - User's new first name.
+ * @param {string} last_name - User's new last name.
+ * @param {string} username - User's new username.
+ * @param {string} email - User's new email address.
+ * @param {string} password - User's new password.
+ * @param {string} phone_number - User's new phone number.
+ * @param {string} address - User's new address.
+ * @param {string} city - User's new city.
+ * @param {string} state - User's new state.
+ * @param {string} zip_code - User's new ZIP code.
+ * @returns {Promise<string>} - Resolves with a success message if account information is altered successfully.
+ * @throws {Promise<string>} - Rejects with an error message if alteration fails.
+ */
 async function alter_account_info_business_layer(user_id, first_name, last_name, username, email, password, phone_number, address, city, state, zip_code)
 {          
-    let hashed_password = undefined;
-    let salted_password = undefined;
+    let salt, salted_password, hashed_password;
     if(password !== undefined)
     {
-        var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
-        var salt = '';
-        for (var i = 0; i < 10; i++ )
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+        salt = '';
+        for (let i = 0; i < 10; i++ )
         salt += chars.charAt(Math.floor(Math.random() * chars.length));
 
         salted_password = password + salt;
@@ -386,16 +446,12 @@ async function alter_account_info_business_layer(user_id, first_name, last_name,
         console.log(phone_number);
   
         data_layer.alter_account_info_data_layer(user_id, first_name, last_name, username, email, hashed_password, salt, phone_number).then(response =>{
+            console.log("Hooloo");
             if(address && city && state && zip_code)
             {
-                data_layer.unset_user_address_data_layer(user_id).then(response =>{
-                    data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
-                        console.log(response);
-                        resolve(response);
-                    }).catch((err) =>{
-                        console.log(err);
-                        reject(err);
-                    });
+                console.log("Hello");
+                data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
+                    resolve(response);
                 }).catch((err) =>{
                     console.log(err);
                     reject(err);
@@ -416,6 +472,13 @@ async function alter_account_info_business_layer(user_id, first_name, last_name,
         });
     });
 }
+
+// Function to get user account information
+/**
+ * @param {number} user_id - ID of the user.
+ * @returns {Promise<Object>} - Resolves with user account information.
+ * @throws {Promise<string>} - Rejects with an error message if retrieval fails.
+ */
 async function get_user_account_info_business_layer(user_id)
 {
     return new Promise((resolve, reject) =>{
@@ -431,15 +494,121 @@ async function get_user_account_info_business_layer(user_id)
     });
 }
 
+async function insert_daily_survey_business_layer({user_id,calories_consumed,weight,calories_burned,created,modified,date,water_intake,mood,}) {
+  
+    return new Promise((resolve, reject) => {
+        data_layer.insert_daily_survey_data_layer(user_id,calories_consumed,weight,calories_burned,created,modified,date,water_intake,mood)
+        .then((data_layer_response) => {
+          resolve(data_layer_response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
 
+
+function _get_filter_options_constants() {
+    return {
+        min_experience_level: 0,
+        max_experience_level: 1000,
+        min_hourly_rate: 0,
+        max_hourly_rate: 1_000_000
+    };
+}
+
+/**
+ * 
+ * @param {Array<number>} nums 
+ * @returns {boolean}
+ */
+function _assert_is_sorted(nums) {
+    for (let i = 0; i < nums.length - 1; i++) {
+        if (nums[i] > nums[i + 1]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// TODO: Finish validation of filter options
+function _validate_ranges_of_filter_options(normalized_filter_options) {
+    const {experience_level, hourly_rate} = normalized_filter_options;
+    const errors = [];
+    const {min_experience_level, max_experience_level, min_hourly_rate, max_hourly_rate} = _get_filter_options_constants();
+    if (!_assert_is_sorted([min_experience_level, experience_level.min, experience_level.max, max_experience_level])) {
+        errors.push(`Invalid range for experience level. Should fit ${min_experience_level} <= min exp level <= max exp level <= ${max_experience_level}`);
+    }
+    if (!_assert_is_sorted([min_hourly_rate, hourly_rate.min, hourly_rate.max, max_hourly_rate])) {
+        errors.push(`Invalid range for hourly rate. Should fit ${min_hourly_rate} <= min hourly rate <= max hourly rate <= ${max_hourly_rate}`);
+    }
+
+    return errors;
+}
+
+
+function _check_types_of_filter_options(normalized_filter_options) {
+    const errors = [];
+    if (typeof normalized_filter_options.name !== 'string') {
+        errors.push(`Name filter must be of type 'string' not ${typeof normalized_filter_options.name}`);
+    }
+    if (normalized_filter_options.accepting_new_clients !== null && typeof normalized_filter_options.accepting_new_clients !== "boolean") {
+        errors.push(`Accepting new clients filter must be of type 'boolean' not ${typeof normalized_filter_options.name}`);
+    }
+    if (typeof normalized_filter_options.location.city !== 'string') {
+        errors.push(`City filter must be of type 'string' not ${typeof normalized_filter_options.location.city}`);
+    }
+    if (typeof normalized_filter_options.location.state !== 'string') {
+        errors.push(`State filter must be of type 'string' not ${typeof normalized_filter_options.location.state}`);
+    }
+    if (!Number.isInteger(normalized_filter_options.experience_level.min)) {
+        errors.push(`Min experience level must be an integer`);
+    }
+    if (!Number.isInteger(normalized_filter_options.experience_level.max)) {
+        errors.push(`Max experience level must be an integer`);
+    }
+    if (!Number.isInteger(normalized_filter_options.hourly_rate.min)) {
+        errors.push(`Min hourly rate must be an integer`);
+    }
+    if (!Number.isInteger(normalized_filter_options.hourly_rate.max)) {
+        errors.push(`Max hourly rate must be an integer`);
+    }
+
+    return errors;
+}
+
+
+function _normalize_filter_options(filter_options) {
+    const constants = _get_filter_options_constants();
+    const normalized = {};
+
+    normalized.name = filter_options?.name ?? "";
+    normalized.hourly_rate = {
+        min: filter_options?.hourly_rate?.min ?? constants.min_hourly_rate,
+        max: filter_options?.hourly_rate?.max ?? constants.max_hourly_rate
+    };
+    normalized.experience_level = {
+        min: filter_options?.experience_level?.min ?? constants.min_experience_level,
+        max: filter_options?.experience_level?.max ?? constants.max_experience_level
+    };
+    normalized.location = {
+        city: filter_options?.location?.city ?? "",
+        state: filter_options?.location?.state ?? ""
+    };
+    normalized.accepting_new_clients = filter_options?.accepting_new_clients ?? null;
+
+    return normalized;
+}
+
+
+// Function to search for coaches based on various criteria
 /**
  * 
  * @param {Object} search_options
  * @param {Object} [search_options.filter_options]
  * @param {string} [search_options.filter_options.name] 
- * @param {Object} [search_options.filter_options.rating] 
- * @param {number} [search_options.filter_options.rating.min] 
- * @param {number} [search_options.filter_options.rating.max] 
+ * @param {boolean} [search_options.filter_options.accepting_new_clients] 
  * @param {Object} [search_options.filter_options.hourly_rate] 
  * @param {number} [search_options.filter_options.hourly_rate.min] 
  * @param {number} [search_options.filter_options.hourly_rate.max] 
@@ -451,7 +620,7 @@ async function get_user_account_info_business_layer(user_id)
  * @param {number} [search_options.filter_options.experience_level.max] 
  * 
  * @param {Object} [search_options.sort_options]
- * @param {"name"|"rating"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
+ * @param {"name"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
  * @param {boolean} search_options.sort_options.is_descending 
  * 
  * @param {Object} search_options.page_info 
@@ -460,15 +629,21 @@ async function get_user_account_info_business_layer(user_id)
  * @returns {Promise<Object>} 
  */
 async function search_coaches_business_layer({filter_options, sort_options, page_info}) {
-    /* Fill missing properties with defaults */
-    const MAX_HOURLY_RATE = 1_000_000;  // TODO: determine max hourly rate
-    const MAX_EXPERIENCE_LEVEL = 100;
+    const norm_filter_options = _normalize_filter_options(filter_options);
+    const type_errors = _check_types_of_filter_options(norm_filter_options);
+    if (type_errors.length > 0) {
+        return Promise.reject(new Error(type_errors.join(', ')));
+    }
+    const range_errors = _validate_ranges_of_filter_options(norm_filter_options);
+    if (range_errors.length > 0) {
+        return Promise.reject(new Error(range_errors.join(', ')));
+    }
 
-    const valid_sort_keys = ["name", "rating", "hourly_rate", "experience_level"];
+    const valid_sort_keys = ["name", "hourly_rate", "experience_level"];
     if (sort_options) {
         if (!valid_sort_keys.includes(sort_options.key)) {
             return Promise.reject(new Error(`'${sort_options.key}' is an invalid sort key`));
-        } else if (!sort_options.is_descending) {
+        } else if (typeof sort_options.is_descending !== 'boolean') {
             return Promise.reject(new Error("sort_options property missing sort direction"));
         }
     }
@@ -478,39 +653,8 @@ async function search_coaches_business_layer({filter_options, sort_options, page
         return Promise.reject(new Error("Invalid page info"));
     }
 
-    const default_filter_options = {
-        name: "",
-        rating: {min: 1, max: 5},
-        hourly_rate: {min: 0, max: MAX_HOURLY_RATE},
-        experience_level: {min: 0, max: MAX_EXPERIENCE_LEVEL},
-        location: {city: "", state: ""}
-    };
-
-    const merge_properties = (obj, def) => {
-        const merged = {};
-        for (const [key, val] of Object.entries(def)) {
-            if (typeof val === "object") {
-                merged[key] = obj?.[key] ? merge_properties(obj[key], val) : null;
-            } else {
-                merged[key] = obj?.[key] ?? val;
-            }
-        }
-        return merged;
-    };
-
-    const formatted_filter_options = merge_properties(filter_options, default_filter_options);
-
-    /* Catch invalid properties */
-    if (formatted_filter_options.rating && (formatted_filter_options.rating.min < 1 || formatted_filter_options.rating.max > 5 || formatted_filter_options.rating.min > formatted_filter_options.rating.max)) {
-        return Promise.reject(new Error("Invalid ratings"));
-    } else if (formatted_filter_options.experience_level && (formatted_filter_options.experience_level.min < 0 || formatted_filter_options.experience_level.max > MAX_EXPERIENCE_LEVEL || formatted_filter_options.experience_level.min > formatted_filter_options.experience_level.max)) {
-        return Promise.reject(new Error("Invalid experience level"));
-    } else if (formatted_filter_options.hourly_rate && (formatted_filter_options.hourly_rate.min < 0 || formatted_filter_options.hourly_rate.max > MAX_HOURLY_RATE || formatted_filter_options.hourly_rate.min > formatted_filter_options.hourly_rate.max)) {
-        return Promise.reject(new Error("Invalid hourly rate"));
-    }
-
     const formatted_search_options = {
-        filter_options: formatted_filter_options,
+        filter_options: norm_filter_options,
         sort_options: sort_options,
         page_info: page_info
     };
@@ -532,6 +676,7 @@ async function search_coaches_business_layer({filter_options, sort_options, page
     };
 }
 
+// Exporting the functions for use in other modules
 module.exports.accept_client_business_layer = accept_client_business_layer;
 module.exports.login_business_layer = login_business_layer;
 module.exports.insert_user_business_layer = insert_user_business_layer;
@@ -545,3 +690,4 @@ module.exports.set_user_address_business_layer = set_user_address_business_layer
 module.exports.get_user_account_info_business_layer = get_user_account_info_business_layer;
 module.exports.alter_account_info_business_layer = alter_account_info_business_layer;
 module.exports.search_coaches_business_layer = search_coaches_business_layer;
+module.exports.insert_daily_survey_business_layer = insert_daily_survey_business_layer;

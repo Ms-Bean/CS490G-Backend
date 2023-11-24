@@ -1,7 +1,7 @@
 const mysql = require("mysql");
 
 let database_name = "cs490_database" //Replace with your database name
-var con = mysql.createConnection({ 
+const con = mysql.createConnection({ 
     host: "localhost",
     user: "root", //Replace with your user
     password: "Bigben70!?@@@", //Replace with your password
@@ -31,6 +31,21 @@ function check_if_username_exists_data_layer(username) {
     });
   });
 }
+async function set_user_address_data_layer(user_id, address, city, state, zip_code)
+{
+    return new Promise((resolve, reject) =>{
+        con.query("INSERT INTO Addresses (user_id, address, city, state, zip_code) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE address=?, city=?, state=?, zip_code = ?", 
+        [user_id, address, city, state, zip_code, address, city, state, zip_code], (error, results) =>{
+            if(error){
+                reject(error);
+            }
+            else{
+                resolve("Address updated.");
+            }
+        });
+    });
+}
+//function to get the role of the user i.e coach or client
 
 async function get_role_data_layer(user_id) {
     return new Promise((resolve, reject) => {
@@ -47,21 +62,6 @@ async function get_role_data_layer(user_id) {
       });
   });
 }
-async function check_state_exists(iso_code) {
-    return new Promise((resolve, reject) => {
-      con.query('SELECT * FROM States WHERE name = ?', [iso_code], (error, results) => {
-        if (error) {
-          reject(error);
-        } else {
-          if (results.length > 0) {
-            resolve("State found.");
-          } else {
-            reject("State not found.");  // User not found with the specified user_id
-          }
-        }
-      });
-  });
-}
 module.exports = { check_if_username_exists_data_layer };
 
 /**
@@ -70,7 +70,7 @@ module.exports = { check_if_username_exists_data_layer };
  * @returns {Promise<number>}
  */
 function get_clients_of_coach(coach_id) {
-    const sql = "SELECT user_id FROM CLIENTS WHERE coach_id = ?";
+    const sql = "SELECT client_id FROM Client_Coach WHERE coach_id = ?";
     return new Promise((resolve, reject) => {
         con.query(sql, [coach_id], (err, results) => {
             if (err) {
@@ -87,10 +87,11 @@ function get_clients_of_coach(coach_id) {
 /**
  * @typedef {Object} Message
  * @property {number} message_id 
- * @property {number} client_id 
- * @property {number} coach_id 
- * @property {number} content
- * @property {Date} timestamp 
+ * @property {number} sender_id 
+ * @property {number} receiver_id 
+ * @property {string} content
+ * @property {Date} created
+ * @property {Date} modified 
  */
 /**
  * 
@@ -100,30 +101,31 @@ function get_clients_of_coach(coach_id) {
 function _convert_to_message(message) {
     return {
         message_id: message.message_id,
-        client_id: message.client_id,
-        coach_id: message.coach_id,
+        sender_id: message.sender_id,
+        receiver_id: message.receiver_id,
         content: message.content,
-        timestamp: message.timestamp
+        created: message.created,
+        modified: message.modified
     };
 }
 
 /**
  * 
- * @param {number} client_id 
- * @param {number} coach_id 
+ * @param {number} user_id 
+ * @param {number} other_user_id 
  * @param {number} page_size 
  * @param {number} page_num 
  * @returns {Promise<Message[]>}
  */
-function get_client_coach_message_page_data_layer(client_id, coach_id, page_size, page_num) {
+function get_client_coach_message_page_data_layer(user_id, other_user_id, page_size, page_num) {
     // order by clause is descending to ensure that latest messages appear first
-    const sql = "SELECT message_id, coach_id, client_id, content, timestamp FROM messages WHERE coach_id = ? AND client_id = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?";
+    const sql = "SELECT message_id, sender_id, receiver_id, content, created, modified FROM Messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) ORDER BY created DESC LIMIT ? OFFSET ?";
     const next_entry = (page_num - 1) * page_size;
     return new Promise((resolve, reject) => {
-        con.query(sql, [coach_id, client_id, page_size, next_entry], (err, results) => {
+        con.query(sql, [other_user_id, user_id, user_id, other_user_id, page_size, next_entry], (err, results) => {
             if (err) {
                 console.log(err);
-                return reject(err);
+                reject(err)
             } else {
                 resolve(results.map(m => _convert_to_message(m)));
             }
@@ -132,15 +134,15 @@ function get_client_coach_message_page_data_layer(client_id, coach_id, page_size
 }
 
 /**
- * 
- * @param {number} client_id 
- * @param {number} coach_id 
+ * Returns the messages between `user` and `other_user`. It's expected that either `user` is the client of the `other_user` or vice versa
+ * @param {number} user_id 
+ * @param {number} other_user_id 
  * @returns {Promise<number>}
  */
-function count_client_coach_messages(client_id, coach_id) {
-    const sql = "SELECT COUNT(message_id) AS message_count FROM messages WHERE coach_id = ? AND client_id = ?";
+function count_client_coach_messages(user_id, other_user_id) {
+    const sql = "SELECT COUNT(message_id) AS message_count FROM Messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)";
     return new Promise((resolve, reject) => {
-        con.query(sql, [coach_id, client_id], (err, results) => {
+        con.query(sql, [other_user_id, user_id, user_id, other_user_id], (err, results) => {
             if (err) {
                 console.log(err);
                 reject(err);
@@ -153,15 +155,15 @@ function count_client_coach_messages(client_id, coach_id) {
 
 /**
  * 
- * @param {number} coach_id 
- * @param {number} client_id 
+ * @param {number} sender_id 
+ * @param {number} receiver_id 
  * @param {string} content 
  * @returns {Promise<string>}
  */
-function insert_message_data_layer(coach_id, client_id, content) {
-    const sql = "INSERT INTO messages (coach_id, client_id, content) VALUES (?, ?, ?)";
+function insert_message_data_layer(sender_id, receiver_id, content) {
+    const sql = "INSERT INTO Messages (sender_id, receiver_id, content) VALUES (?, ?, ?)";
     return new Promise((resolve, reject) => {
-        con.query(sql, [coach_id, client_id, content], (err, results) => {
+        con.query(sql, [sender_id, receiver_id, content], (err, results) => {
             if (err) {
                 console.log(err);
                 reject(err);
@@ -174,237 +176,6 @@ function insert_message_data_layer(coach_id, client_id, content) {
     });
 }
 
-async function get_state_id_data_layer(state)
-{
-    /*Gets the state id, rejects if the state does not exist*/
-    return new Promise((resolve, reject) =>{
-        let get_state_id_sql = "SELECT state_id FROM States WHERE name = ?";
-        con.query(get_state_id_sql, [state], function (err, result){
-            if(err)
-            {
-                console.log(err);
-                reject("sql failure");
-            }
-            else
-            {
-                if(result.length > 0)
-                {
-                    resolve(result[0].state_id);
-                }
-                else
-                {
-                    reject("State does not exist");
-                }
-            }
-        });
-    });
-}
-async function get_city_id_data_layer(city, state)
-{
-    /*Inserts the city and state if the pair does not exist, then gets the city id.*/
-    return new Promise((resolve, reject) =>{
-        get_state_id_data_layer(state).then((state_id) =>{
-            let get_city_id_sql = "SELECT Cities.city_id, City_State.state_id FROM Cities INNER JOIN City_State WHERE Cities.name = ? AND City_State.state_id = ?";
-            con.query(get_city_id_sql, [city, state_id], function (err, result){
-                if(err)
-                {
-                    console.log(err);
-                    reject("sql failure");
-                }
-                else
-                {
-                    if(result.length > 0)
-                    {
-                        resolve(result[0]["city_id"]);
-                    }
-                    else
-                    {
-                        let insert_city_sql = "INSERT INTO Cities (name) VALUES (?)";
-                        con.query(insert_city_sql, [city], function(err, result){
-                            if(err)
-                            {
-                                console.log(err);
-                                reject("sql failure");
-                            }
-                            let get_last_insert_id_sql = "SELECT LAST_INSERT_ID()";
-                            con.query(get_last_insert_id_sql, function(err, result)
-                            {
-                                if(err)
-                                {
-                                    console.log(err);
-                                    reject("sql failure");
-                                }
-                                let city_id = result[0]["LAST_INSERT_ID()"];
-    
-                                let insert_city_state_relation_sql = "INSERT INTO City_State (city_id, state_id) VALUES (?, ?)";
-                                con.query(insert_city_state_relation_sql, [city_id, state_id], function(err, result){
-                                    if(err)
-                                    {
-                                        console.log(err);
-                                        reject("sql failure");
-                                    }
-                                    else
-                                    {
-                                        resolve(city_id);
-                                    }
-                                })
-                            });
-                        });
-                    }
-                }
-            });
-        }).catch((err) =>{
-            reject(err);
-        })
-        
-    });
-}
-async function get_address_id_data_layer(address, city, state, zip_code)
-{
-    return new Promise((resolve, reject) =>{
-        get_city_id_data_layer(city, state).then((city_id) =>{
-            let get_address_id_sql = "SELECT Addresses.address_id, Address_City.city_id FROM Addresses INNER JOIN Address_City ON Addresses.address_id = Address_City.address_id WHERE Addresses.address = ? AND Addresses.zip_code = ? AND Address_City.city_id = ?";
-            con.query(get_address_id_sql, [address, zip_code, city_id], function (err, result){
-                if(err)
-                {
-                    console.log(err);
-                    reject("sql failure");
-                }
-                else
-                {
-                    if(result.length > 0)
-                    {
-                        resolve(result[0]["address_id"]);
-                    }
-                    else
-                    {
-                        let insert_address_sql = "INSERT INTO Addresses (address, zip_code) VALUES (?, ?)";
-                        con.query(insert_address_sql, [address, zip_code], function(err, result){
-                            if(err)
-                            {
-                                console.log(err);
-                                reject("sql failure");
-                            }
-                            let get_last_insert_id_sql = "SELECT LAST_INSERT_ID()";
-                            con.query(get_last_insert_id_sql, function(err, result)
-                            {
-                                if(err)
-                                {
-                                    console.log(err);
-                                    reject("sql failure");
-                                }
-                                let address_id = result[0]["LAST_INSERT_ID()"];
-    
-                                let insert_address_city_relation_sql = "INSERT INTO Address_City (address_id, city_id) VALUES (?, ?)";
-                                con.query(insert_address_city_relation_sql, [address_id, city_id], function(err, result){
-                                    if(err)
-                                    {
-                                        console.log(err);
-                                        reject("sql failure");
-                                    }
-                                    else
-                                    {
-                                        resolve(address_id);
-                                    }
-                                })
-                            });
-                        });
-                    }
-                }
-            });
-        }).catch((err) => {
-            reject(err);
-        });
-    });
-}
-
-async function remove_unused_locations_data_layer()
-{
-    return new Promise((resolve, reject) =>{
-        let remove_from_address_city = "DELETE FROM Address_City WHERE address_id IN (SELECT address_id FROM (SELECT SUM(CASE WHEN User_Location.user_id IS NOT NULL THEN 1 ELSE 0 END) AS user_count, Addresses.address_id FROM Addresses LEFT JOIN User_Location ON Addresses.address_id = User_Location.address_id GROUP BY Addresses.address_id) T1 WHERE T1.user_count = 0)";
-        con.query(remove_from_address_city, function(err, results){
-            if(err)
-            {
-                console.log(err);
-                reject("sql failure");
-            }
-            let remove_from_addresses = "DELETE FROM Addresses WHERE address_id IN (SELECT address_id FROM (SELECT SUM(CASE WHEN User_Location.user_id IS NOT NULL THEN 1 ELSE 0 END) AS user_count, Addresses.address_id FROM Addresses LEFT JOIN User_Location ON Addresses.address_id = User_Location.address_id GROUP BY Addresses.address_id) T1 WHERE T1.user_count = 0)";
-            con.query(remove_from_addresses, function(err, results){
-                if(err)
-                {
-                    console.log(err);
-                    reject("sql failure");
-                }
-                let remove_from_city_state = "DELETE FROM City_State WHERE city_id IN (SELECT city_id FROM (SELECT SUM(CASE WHEN Address_City.city_id IS NOT NULL THEN 1 ELSE 0 END) AS address_count, Cities.city_id FROM Cities LEFT JOIN Address_City ON Cities.city_id = Address_City.city_id GROUP BY Cities.city_id) T1 WHERE address_count = 0)";
-                con.query(remove_from_city_state, function(err, results){
-                    if(err)
-                    {
-                        console.log(err);
-                        reject("sql failure");
-                    }
-                    let remove_from_cities = "DELETE FROM Cities WHERE city_id IN (SELECT city_id FROM (SELECT SUM(CASE WHEN Address_City.city_id IS NOT NULL THEN 1 ELSE 0 END) AS address_count, Cities.city_id FROM Cities LEFT JOIN Address_City ON Cities.city_id = Address_City.city_id GROUP BY Cities.city_id) T1 WHERE address_count = 0)";
-                    con.query(remove_from_cities, function(err, results){
-                        if(err)
-                        {
-                            console.log(err);
-                            reject("sql failure");
-                        }
-                        console.log("remove_unused_locations_data_layer: resolved");
-                        resolve("Unused locations removed");
-                    });
-                });
-            });
-        });
-    })
-}
-
-async function unset_user_address_data_layer(user_id)
-{
-    console.log("unset_user_address_data_layer");
-    let sql = "DELETE FROM User_Location WHERE user_id = ?";
-    return new Promise((resolve, reject) =>{
-        con.query(sql, [user_id], function(err, result){
-            if(err)
-            {
-                reject("sql failure");
-            }
-            remove_unused_locations_data_layer().then((response) =>{ //This will remove the address/city if nobody else is using them.
-                console.log("unset_user_address_data_layer: resolving");
-                resolve("Address removed.");
-            }).catch((err) => {
-                console.log("remove_unused_locations failure");
-                console.log(err);
-                reject(err);
-            });
-        });
-    })
-}
-async function set_user_address_data_layer(user_id, address, city, state, zip_code)
-{
-    return new Promise((resolve, reject) => {
-        get_address_id_data_layer(address, city, state, zip_code).then((address_id) =>{ //This will create the new address/city if they dont already exist and return their id.
-            let sql = "INSERT INTO User_Location (user_id, address_id) VALUES (?, ?)";
-            console.log("setting user address");
-            console.log(user_id);
-            console.log(address_id);
-            con.query(sql, [user_id, address_id], function(err, result){
-                if(err)
-                {
-                    console.log("failure");
-                    reject("sql failure");
-                }
-                else
-                {
-                    console.log("set_user_address_data_layer: resolved");
-                    resolve("Address updated.");
-                }
-            });
-        }).catch((err) => {
-            
-            reject(err);
-        });
-    })
-}
 async function alter_account_info_data_layer(user_id, first_name, last_name, username, email, password_hash, password_salt, phone_number)
 {
     return new Promise((resolve, reject) =>{
@@ -513,9 +284,44 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
         });
     });
 }
+//Note: The if the daily survey should not be taken more than once during the same day.
+//TODO: The duplicate date error function
+async function insert_daily_survey_data_layer({ calories_consumed, weight, calories_burned, created, modified, date, user_id, water_intake, mood, }) {
+    const formattedCreatedDatetime = new Date(created).toISOString().slice(0, 19).replace('T', ' ');
+    const formattedModifiedDatetime = new Date(modified).toISOString().slice(0, 19).replace('T', ' ');
+  
+    let sql = `
+      INSERT INTO user_daily_survey (calories_consumed, weight, calories_burned, created, modified, date, user_id, water_intake, mood ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+  
+    return new Promise((resolve, reject) => {
+      con.query(
+        sql,
+        [calories_consumed, weight, calories_burned, formattedCreatedDatetime, formattedModifiedDatetime, date, user_id, water_intake, mood],
+        (err, result) => {
+          if (err) {
+            console.error(err);
+            reject("Failed to insert daily survey into the database.");
+          } else {
+            if (result.affectedRows > 0) {
+              resolve("Information inserted");
+            } else {
+              resolve("No data found");
+            }
+          }
+        }
+      );
+    });
+  }
+  
+  
+  
+  
+  
+
 
 async function login_data_layer(username) {
-    var sql = "SELECT password_hash, password_salt, user_id FROM Users WHERE username = ?";
+    const sql = "SELECT password_hash, password_salt, user_id FROM Users WHERE username = ?";
     return new Promise((resolve, reject) => {
         con.query(sql, [username], function(err, result) {
             if(err)
@@ -698,7 +504,7 @@ async function get_user_account_info_data_layer(user_id)
         last_name: "",
         zip_code: ""
     };
-    let get_address_city_state_zip_sql = "SELECT T5.user_id, T5.zip_code, T5.address, T5.city_name, States.name AS state_name FROM (SELECT T4.user_id, T4.address_id, T4.address, T4.city_id, T4.zip_code, T4.name AS city_name, City_State.state_id FROM (SELECT T3.user_id, T3.address_id, T3.address, T3.city_id, T3.zip_code, Cities.name FROM (SELECT T2.user_id, T2.address_id, T2.address, T2.zip_code, Address_City.city_id FROM (SELECT T1.user_id, Addresses.address_id, Addresses.address, Addresses.zip_code FROM (SELECT Users.user_id, User_Location.address_id FROM Users INNER JOIN User_Location ON Users.user_id = User_Location.user_id) T1 INNER JOIN Addresses ON T1.address_id = Addresses.address_id) T2 INNER JOIN Address_City ON T2.address_id = Address_City.address_id) T3 INNER JOIN Cities ON T3.city_id = Cities.city_id) T4 INNER JOIN City_State ON T4.city_id = City_State.city_id) T5 INNER JOIN States ON T5.state_id = States.state_id WHERE user_id = ?"
+    let get_address_city_state_zip_sql = "SELECT address, city, state, zip_code FROM Addresses WHERE user_id = ?"
     return new Promise((resolve, reject) =>{
         con.query(get_address_city_state_zip_sql, [user_id], function(err, results){
             if(err)
@@ -709,8 +515,8 @@ async function get_user_account_info_data_layer(user_id)
             if(results.length > 0) //The user may not have given an address
             {
                 return_data.street_address = results[0].address;
-                return_data.city = results[0].city_name;
-                return_data.state = results[0].state_name;
+                return_data.city = results[0].city;
+                return_data.state = results[0].state;
                 return_data.zip_code = results[0].zip_code;
             }
             let get_other_account_info_sql = "SELECT email, username, phone_number, first_name, last_name FROM Users WHERE user_id = ?";
@@ -771,9 +577,7 @@ async function remove_coach_data_layer(client_id, coach_id)
  * 
  * @param {Object} filter_options
  * @param {string} [filter_options.name] 
- * @param {Object} [filter_options.rating] 
- * @param {number} filter_options.rating.min 
- * @param {number} filter_options.rating.max 
+ * @param {boolean|null} filter_options.accepting_new_clients 
  * @param {Object} [filter_options.hourly_rate] 
  * @param {number} filter_options.hourly_rate.min 
  * @param {number} filter_options.hourly_rate.max 
@@ -784,26 +588,25 @@ async function remove_coach_data_layer(client_id, coach_id)
  * @param {string} [filter_options.location.city] 
  * @param {string} [filter_options.location.state] 
  */
-function _build_search_coach_filter_clauses({name, rating, hourly_rate, experience_level, location}) {
-    const name_cond = name ? `CONCAT(users.first_name, ' ', users.last_name) LIKE ?` : "";
-    const rating_cond = rating ? "average_rating BETWEEN ? AND ?" : "";
-    const hourly_rate_cond = hourly_rate ? "coaches.hourly_rate BETWEEN ? AND ?" : "";
-    const experience_level_cond = experience_level ? "coaches.experience_level BETWEEN ? AND ?" : "";
-    const cities_cond = location?.city ? "cities.name LIKE ?" : "";
-    const states_cond = location?.state ? "states.name LIKE ?" : "";
-    const where_conds = [name_cond, hourly_rate_cond, experience_level_cond, cities_cond, states_cond].filter(s => s).join(" AND ");
+function _build_search_coach_filter_clauses({name, accepting_new_clients, hourly_rate, experience_level, location}) {
+    const name_cond = name ? `CONCAT(Users.first_name, ' ', Users.last_name) LIKE ?` : "";
+    const accepting_new_clients_cond = accepting_new_clients !== null ? "Coaches.accepting_new_clients = ?" : "";
+    const hourly_rate_cond = hourly_rate ? "Coaches.hourly_rate BETWEEN ? AND ?" : "";
+    const experience_level_cond = experience_level ? "Coaches.experience_level BETWEEN ? AND ?" : "";
+    const cities_cond = location?.city ? "Addresses.city LIKE ?" : "";
+    const states_cond = location?.state ? "Addresses.state LIKE ?" : "";
+    const where_conds = [name_cond, accepting_new_clients_cond, hourly_rate_cond, experience_level_cond, cities_cond, states_cond].filter(s => s).join(" AND ");
 
     const sql_args = [];
     if (name_cond) sql_args.push(`${name}%`);
+    if (accepting_new_clients_cond) sql_args.push(accepting_new_clients);
     if (hourly_rate_cond) sql_args.push(...[hourly_rate.min, hourly_rate.max]);
     if (experience_level_cond) sql_args.push(...[experience_level.min, experience_level.max]);
     if (cities_cond) sql_args.push(`${location.city}%`);
     if (states_cond) sql_args.push(`${location.state}%`);
-    if (rating_cond) sql_args.push(...[rating.min, rating.max]);
 
     return {
         where: where_conds ? "WHERE " + where_conds : "",
-        having: rating_cond ? "HAVING " + rating_cond : "",
         args: sql_args
     };
 }
@@ -811,16 +614,15 @@ function _build_search_coach_filter_clauses({name, rating, hourly_rate, experien
 /**
  * 
  * @param {Object} sort_options 
- * @param {"name"|"rating"|"hourly_rate"|"experience_level"} sort_options.key 
+ * @param {"name"|"hourly_rate"|"experience_level"} sort_options.key 
  * @param {boolean} sort_options.is_descending 
  */
 function _build_search_coach_sort_options({key, is_descending}) {
     const order = is_descending ? "DESC" : "ASC";
     const key_to_sql_map = new Map([
-        ["name", `users.first_name ${order}, users.last_name ${order}`],
-        ["rating", `average_rating ${order}`],
-        ["hourly_rate", `coaches.hourly_rate ${order}`],
-        ["experience_level", `coaches.experience_level ${order}`]
+        ["name", `Users.first_name ${order}, Users.last_name ${order}`],
+        ["hourly_rate", `Coaches.hourly_rate ${order}`],
+        ["experience_level", `Coaches.experience_level ${order}`]
     ]);
 
     return `ORDER BY ${key_to_sql_map.get(key)}`;
@@ -831,9 +633,7 @@ function _build_search_coach_sort_options({key, is_descending}) {
  * @param {Object} search_options
  * @param {Object} search_options.filter_options
  * @param {string} search_options.filter_options.name 
- * @param {Object} search_options.filter_options.rating 
- * @param {number} search_options.filter_options.rating.min 
- * @param {number} search_options.filter_options.rating.max 
+ * @param {boolean} search_options.filter_options.accepting_new_clients 
  * @param {Object} search_options.filter_options.hourly_rate 
  * @param {number} search_options.filter_options.hourly_rate.min 
  * @param {number} search_options.filter_options.hourly_rate.max 
@@ -842,7 +642,7 @@ function _build_search_coach_sort_options({key, is_descending}) {
  * @param {string} search_options.filter_options.location.state
  * 
  * @param {Object} [search_options.sort_options] 
- * @param {"name"|"rating"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
+ * @param {"name"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
  * @param {boolean} search_options.sort_options.is_descending 
  * 
  * @param {Object} search_options.page_info 
@@ -851,27 +651,20 @@ function _build_search_coach_sort_options({key, is_descending}) {
  * @returns {Promise<Object>} 
  */
 function search_coaches_data_layer({filter_options, sort_options, page_info}) {
-    const {where, having, args} = _build_search_coach_filter_clauses(filter_options);
+    const {where, args} = _build_search_coach_filter_clauses(filter_options);
     const order_by = sort_options ? _build_search_coach_sort_options(sort_options) : "";
     const next_entry = (page_info.page_num - 1) * page_info.page_size;
     args.push(...[page_info.page_size, next_entry]);
-    const sql = `SELECT coaches.user_id, coaches.hourly_rate, coaches.coaching_history, coaches.accepting_new_clients, coaches.experience_level,
-                    users.first_name, users.last_name, user_profile.about_me, user_profile.profile_picture, GROUP_CONCAT(coaches_goals.goal SEPARATOR ',') AS goals, addresses.address, cities.name AS city, states.name AS state,
-                    AVG(ratings.rating) AS average_rating
-                FROM coaches
-                    INNER JOIN users ON coaches.user_id = users.user_id
-                    INNER JOIN user_profile ON coaches.user_id = user_profile.user_id
-                    LEFT JOIN coaches_goals ON coaches.user_id = coaches_goals.coach_id
-                    LEFT JOIN ratings ON coaches.user_id = ratings.coach_id
-                    LEFT JOIN user_location ON coaches.user_id = user_location.user_id
-                    LEFT JOIN addresses ON user_location.address_id = addresses.address_id
-                    LEFT JOIN address_city ON addresses.address_id = address_city.address_id
-                    LEFT JOIN cities ON address_city.city_id = cities.city_id
-                    LEFT JOIN city_state ON cities.city_id = city_state.city_id
-                    LEFT JOIN states ON city_state.state_id = states.state_id
+    const sql = `SELECT Coaches.user_id, Coaches.hourly_rate, Coaches.coaching_history, Coaches.accepting_new_clients, Coaches.experience_level,
+                    Users.first_name, Users.last_name, User_Profile.about_me, User_Profile.profile_picture, GROUP_CONCAT(Goals.name SEPARATOR ',') AS goals, Addresses.address, Addresses.city, Addresses.state
+                FROM Coaches
+                    INNER JOIN Users ON Coaches.user_id = Users.user_id
+                    INNER JOIN User_Profile ON Coaches.user_id = User_Profile.user_id
+                    LEFT JOIN Coaches_Goals ON Coaches.user_id = Coaches_Goals.coach_id
+                    LEFT JOIN Goals ON Coaches_Goals.goal_id = Goals.goal_id
+                    LEFT JOIN Addresses ON Coaches.user_id = Addresses.user_id
                 ${where}
-                GROUP BY coaches.user_id
-                ${having}
+                GROUP BY Coaches.user_id
                 ${order_by}
                 LIMIT ? OFFSET ?`;
 
@@ -897,7 +690,6 @@ function search_coaches_data_layer({filter_options, sort_options, page_info}) {
                         accepting_new_clients: r.accepting_new_clients,
                         experience_level: r.experience_level,
                         goals: r.goals?.split(','),
-                        rating: r.average_rating
                     },
                     location: {
                         address: r.address,
@@ -916,9 +708,7 @@ function search_coaches_data_layer({filter_options, sort_options, page_info}) {
  * @param {Object} search_options
  * @param {Object} search_options.filter_options
  * @param {string} search_options.filter_options.name 
- * @param {Object} search_options.filter_options.rating 
- * @param {number} search_options.filter_options.rating.min 
- * @param {number} search_options.filter_options.rating.max 
+ * @param {boolean} search_options.filter_options.accepting_new_clients 
  * @param {Object} search_options.filter_options.hourly_rate 
  * @param {number} search_options.filter_options.hourly_rate.min 
  * @param {number} search_options.filter_options.hourly_rate.max 
@@ -928,22 +718,16 @@ function search_coaches_data_layer({filter_options, sort_options, page_info}) {
  * @returns {Promise<number>} 
  */
 function count_coach_search_results({filter_options}) {
-    const {where, having, args} = _build_search_coach_filter_clauses(filter_options);
-    const sql = `SELECT coaches.user_id, AVG(ratings.rating) AS average_rating
-                FROM coaches
-                    INNER JOIN users ON coaches.user_id = users.user_id
-                    INNER JOIN user_profile ON coaches.user_id = user_profile.user_id
-                    LEFT JOIN coaches_goals ON coaches.user_id = coaches_goals.coach_id
-                    LEFT JOIN ratings ON coaches.user_id = ratings.coach_id
-                    LEFT JOIN user_location ON coaches.user_id = user_location.user_id
-                    LEFT JOIN addresses ON user_location.address_id = addresses.address_id
-                    LEFT JOIN address_city ON addresses.address_id = address_city.address_id
-                    LEFT JOIN cities ON address_city.city_id = cities.city_id
-                    LEFT JOIN city_state ON cities.city_id = city_state.city_id
-                    LEFT JOIN states ON city_state.state_id = states.state_id
+    const {where, args} = _build_search_coach_filter_clauses(filter_options);
+    const sql = `SELECT Coaches.user_id
+                FROM Coaches
+                    INNER JOIN Users ON Coaches.user_id = Users.user_id
+                    INNER JOIN User_Profile ON Coaches.user_id = User_Profile.user_id
+                    LEFT JOIN Coaches_Goals ON Coaches.user_id = Coaches_Goals.coach_id
+                    LEFT JOIN Goals ON Coaches_Goals.goal_id = Goals.goal_id
+                    LEFT JOIN Addresses ON Coaches.user_id = Addresses.user_id
                 ${where}
-                GROUP BY coaches.user_id
-                ${having}`;
+                GROUP BY Coaches.user_id`;
                 return new Promise((resolve, reject) => {
                     con.query(sql, args, (err, results) => {
                         if (err) {
@@ -955,7 +739,7 @@ function count_coach_search_results({filter_options}) {
                 });
 }
 
-
+module.exports.insert_daily_survey_data_layer = insert_daily_survey_data_layer;
 module.exports.accept_client_data_layer = accept_client_data_layer;
 module.exports.check_if_client_coach_request_exists = check_if_client_coach_request_exists;
 module.exports.check_if_client_has_hired_coach = check_if_client_has_hired_coach;
@@ -972,15 +756,10 @@ module.exports.login_data_layer = login_data_layer;
 module.exports.insert_user_data_layer = insert_user_data_layer;
 module.exports.accept_client_survey_data_layer = accept_client_survey_data_layer;
 module.exports.accept_coach_survey_data_layer = accept_coach_survey_data_layer;
-module.exports.get_city_id_data_layer = get_city_id_data_layer;
-module.exports.get_state_id_data_layer = get_state_id_data_layer;
-module.exports.get_address_id_data_layer = get_address_id_data_layer;
-module.exports.set_user_address_data_layer = set_user_address_data_layer;
 module.exports.get_user_account_info_data_layer = get_user_account_info_data_layer;
-module.exports.check_state_exists = check_state_exists;
-module.exports.remove_unused_locations_data_layer = remove_unused_locations_data_layer;
-module.exports.unset_user_address_data_layer = unset_user_address_data_layer;
 module.exports.alter_account_info_data_layer = alter_account_info_data_layer;
 module.exports.search_coaches_data_layer = search_coaches_data_layer;
 module.exports.count_coach_search_results = count_coach_search_results;
 module.exports.remove_coach_data_layer = remove_coach_data_layer;
+
+module.exports.set_user_address_data_layer = set_user_address_data_layer;
