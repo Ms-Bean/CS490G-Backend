@@ -1,4 +1,4 @@
-let connection = require("./con");
+let connection = require("./conn");
 let con = connection.con;
 
 /**

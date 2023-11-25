@@ -1,4 +1,4 @@
-let connection = require("./con");
+let connection = require("./conn");
 let con = connection.con;
 
   //function to get the role of the user i.e coach or client

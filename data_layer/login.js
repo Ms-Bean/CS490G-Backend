@@ -1,6 +1,5 @@
-let connection = require("./con");
+let connection = require("./conn");
 let con = connection.con;
-const bcrypt = require('bcrypt');
 
 
 async function login_data_layer(username) {
