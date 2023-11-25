@@ -7,7 +7,7 @@ const bodyParser = require("body-parser");
 
 const controller = require("./rest_controller");
 
-const data_layer = require("./data_layer");
+const data_layer = require("./data_layer/data_layer");
 const business_layer = require("./business_layer");
 
 // set server port

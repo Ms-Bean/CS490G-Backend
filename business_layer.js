@@ -1,10 +1,17 @@
-const data_layer = require("./data_layer");
 const bcrypt = require('bcrypt');
+
+const login = require("./data_layer/login");
+const registration = require("./data_layer/registration");
+const user_info = require("./data_layer/user_info");
+const coach_search = require("./data_layer/coach_search");
+const daily_survey = require("./data_layer/daily_survey");
+const client_coach_interaction = require("./data_layer/client_coach_interaction");
+const messaging = require("./data_layer/messaging")
 
 // Function to handle user registration
 async function insert_user_business_layer(first_name, last_name, username, email, password, role)
 {
-    const username_Exists_Flag = await data_layer.check_if_username_exists_data_layer(username); //checking check_if_username_exists 
+    const username_Exists_Flag = await registration.check_if_username_exists_data_layer(username); //checking check_if_username_exists 
     if(username_Exists_Flag){
         return Promise.reject("That username is already taken.");
     } 
@@ -49,7 +56,7 @@ async function insert_user_business_layer(first_name, last_name, username, email
     return new Promise((resolve, reject) => {
 
     console.log("Going to insert");
-        data_layer.insert_user_data_layer(first_name, last_name, username, email, hashed_password, salt, role).then((data_layer_response) =>{
+        registration.insert_user_data_layer(first_name, last_name, username, email, hashed_password, salt, role).then((data_layer_response) =>{
         
       console.log("INserted");
             resolve({
@@ -72,7 +79,7 @@ async function insert_user_business_layer(first_name, last_name, username, email
  */
 async function login_business_layer(username, password) {
     return new Promise((resolve, reject) => {
-        data_layer.login_data_layer(username).then((data) => {
+        login.login_data_layer(username).then((data) => {
             const { password_hash, password_salt, user_id } = data;
             const salted_password = password + password_salt;
             bcrypt.compare(salted_password, password_hash, function(err, result) {
@@ -101,7 +108,7 @@ async function login_business_layer(username, password) {
  */
 async function accept_client_survey_business_layer(user_id, weight=undefined, height=undefined, experience_level=undefined, budget=undefined)
 {
-    const role = await data_layer.get_role_data_layer(user_id); //checking if user is a client
+    const role = await user_info.get_role(user_id); //checking if user is a client
     if(role == 'client'){
         return new Promise((resolve, reject) =>{
             if(user_id === undefined)
@@ -141,7 +148,7 @@ async function accept_client_survey_business_layer(user_id, weight=undefined, he
                     budget = 2
                 if(budget == "$$$")
                     budget = 3;
-                data_layer.accept_client_survey_data_layer(user_id, parseInt(weight), parseInt(height), experience_level, budget).then(response =>{
+                registration.accept_client_survey_data_layer(user_id, parseInt(weight), parseInt(height), experience_level, budget).then(response =>{
                     resolve(response);
                 }).catch((error) =>{
                     reject(error);
@@ -165,7 +172,7 @@ async function accept_client_survey_business_layer(user_id, weight=undefined, he
  */
 async function accept_coach_survey_business_layer(user_id, cost_per_session, availability, experience)
 {
-    const role = await data_layer.get_role_data_layer(user_id); //checking if user is a coach
+    const role = await user_info.get_role(user_id); //checking if user is a coach
     
     if(role == "coach"){
         return new Promise((resolve, reject) =>{
@@ -197,7 +204,7 @@ async function accept_coach_survey_business_layer(user_id, cost_per_session, ava
             {
                 reject("Experience cannot contain quotes");
             }
-            data_layer.accept_coach_survey_data_layer(user_id, cost_per_session, availability, experience).then(response =>{
+            registration.accept_coach_survey_data_layer(user_id, cost_per_session, availability, experience).then(response =>{
                 resolve(response);
             }).catch((error) =>{
                 reject(error);
@@ -235,7 +242,7 @@ async function request_coach_business_layer(coach_id, client_id, comment)
         {
             reject("Comment cannot contain quotes") //TODO allow comment to contain quotes without SQL injection
         }
-        data_layer.request_coach_data_layer(coach_id, client_id, comment).then(response =>{
+        client_coach_interaction.request_coach_data_layer(coach_id, client_id, comment).then(response =>{
             resolve(response);
         }).catch((error) =>{
             reject(error);
@@ -261,13 +268,13 @@ async function accept_client_business_layer(current_user_id, client_id) {
         return Promise.reject(new Error("Invalid client id"));
     }
 
-    if (!await data_layer.check_if_client_coach_request_exists(current_user_id, client_id)) {
+    if (!await client_coach_interaction.check_if_client_coach_request_exists(current_user_id, client_id)) {
         return Promise.reject(new Error("Request from client to coach does not exist"));
-    } else if (await data_layer.check_if_client_has_hired_coach(current_user_id, client_id)) {
+    } else if (await client_coach_interaction.check_if_client_has_hired_coach(current_user_id, client_id)) {
         return Promise.reject(new Error("Coach cannot accept request from one of their current clients"));
     }
 
-    await data_layer.accept_client_data_layer(current_user_id, client_id);
+    await client_coach_interaction.accept_client_data_layer(current_user_id, client_id);
     return Promise.resolve("You have accepted the client");  // TODO: Return name of client
 }
 
@@ -278,12 +285,12 @@ async function accept_client_business_layer(current_user_id, client_id) {
  * @returns {Promise<boolean>} - Resolves with true if user 1 is the coach of user 2; otherwise, resolves with false.
  */
 async function _check_if_coach_of(user_id1, user_id2) {
-    const role1 = await data_layer.get_role_data_layer(user_id1);
+    const role1 = await user_info.get_role(user_id1);
     if (role1 !== 'coach') {
         return false;
     }
 
-    const user1_clients = await data_layer.get_clients_of_coach(user_id1) || [];
+    const user1_clients = await client_coach_interaction.get_clients_of_coach(user_id1) || [];
     return user1_clients.includes(user_id2);
 }
 
@@ -309,7 +316,7 @@ async function insert_message_business_layer(current_user_id, recipient_id, cont
     if (!(await _check_if_coach_of(current_user_id, recipient_id) || await _check_if_coach_of(recipient_id, current_user_id))) {
         return Promise.reject(new Error("Current user cannot message another user that's neither their coach nor client"));
     }
-    return data_layer.insert_message_data_layer(current_user_id, recipient_id, content);
+    return messaging.insert_message_data_layer(current_user_id, recipient_id, content);
 }
 // TODO rename other_user_id to a more descriptive name
 
@@ -340,11 +347,11 @@ async function get_client_coach_messages_business_layer(current_user_id, other_u
         return Promise.reject(new Error("Current user cannot view messages from another user that's neither their coach nor client"));
     }
 
-    const message_count = await data_layer.count_client_coach_messages(current_user_id, other_user_id);
+    const message_count = await messaging.count_client_coach_messages(current_user_id, other_user_id);
     const page_count = Math.ceil(message_count / page_size);
     page_num = Math.min(page_num, page_count);
     
-    const messages = await data_layer.get_client_coach_message_page_data_layer(current_user_id, other_user_id, page_size, page_num);
+    const messages = await messaging.get_client_coach_message_page_data_layer(current_user_id, other_user_id, page_size, page_num);
     const messages_dto = {
         page_info: {
             page_num: page_num,
@@ -369,7 +376,7 @@ async function get_role_business_layer(user_id) { // Remove reject calls, not va
       throw new Error("Invalid user id");
     }
     try {
-      const response = await data_layer.get_role_data_layer(user_id);
+      const response = await user_info.get_role(user_id);
       return response; 
     } catch (error) {
       throw error;
@@ -393,8 +400,8 @@ async function set_user_address_business_layer(user_id, address, city, state, zi
         return Promise.reject("Invalid zip code");
     }
     return new Promise((resolve, reject) =>{    
-        data_layer.get_role_data_layer(user_id).then((response) =>{ //Check that the user exists
-            data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
+        user_info.get_role(user_id).then((response) =>{ //Check that the user exists
+            registration.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
                 resolve(response);
             }).catch((err) =>{
                 console.log("ERROR");
@@ -445,12 +452,12 @@ async function alter_account_info_business_layer(user_id, first_name, last_name,
         console.log("Phone number:");
         console.log(phone_number);
   
-        data_layer.alter_account_info_data_layer(user_id, first_name, last_name, username, email, hashed_password, salt, phone_number).then(response =>{
+        registration.alter_account_info_data_layer(user_id, first_name, last_name, username, email, hashed_password, salt, phone_number).then(response =>{
             console.log("Hooloo");
             if(address && city && state && zip_code)
             {
                 console.log("Hello");
-                data_layer.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
+                registration.set_user_address_data_layer(user_id, address, city, state, zip_code).then(response =>{
                     resolve(response);
                 }).catch((err) =>{
                     console.log(err);
@@ -482,8 +489,8 @@ async function alter_account_info_business_layer(user_id, first_name, last_name,
 async function get_user_account_info_business_layer(user_id)
 {
     return new Promise((resolve, reject) =>{
-        data_layer.get_role_data_layer(user_id).then(getrole_response =>{
-            data_layer.get_user_account_info_data_layer(user_id).then(response =>{
+        user_info.get_role(user_id).then(getrole_response =>{
+            user_info.get_user_account_info_data_layer(user_id).then(response =>{
                 resolve(response);
             }).catch((err) =>{
                 reject(err);
@@ -497,7 +504,7 @@ async function get_user_account_info_business_layer(user_id)
 async function insert_daily_survey_business_layer({user_id,calories_consumed,weight,calories_burned,created,modified,date,water_intake,mood,}) {
   
     return new Promise((resolve, reject) => {
-        data_layer.insert_daily_survey_data_layer(user_id,calories_consumed,weight,calories_burned,created,modified,date,water_intake,mood)
+        daily_survey.insert_daily_survey_data_layer(user_id,calories_consumed,weight,calories_burned,created,modified,date,water_intake,mood)
         .then((data_layer_response) => {
           resolve(data_layer_response);
         })
@@ -659,11 +666,11 @@ async function search_coaches_business_layer({filter_options, sort_options, page
         page_info: page_info
     };
 
-    const result_count = await data_layer.count_coach_search_results(formatted_search_options);
+    const result_count = await coach_search.count_coach_search_results(formatted_search_options);
     const page_count = Math.ceil(result_count / page_info.page_size) || 1;
     page_info.page_num = Math.min(page_info.page_num, page_count);
 
-    const coaches = await data_layer.search_coaches_data_layer(formatted_search_options);
+    const coaches = await coach_search.search_coaches_data_layer(formatted_search_options);
     return {
         page_info: {
             page_num: page_info.page_num,

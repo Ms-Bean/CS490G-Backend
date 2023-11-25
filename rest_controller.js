@@ -1,11 +1,20 @@
 const { request } = require("express");
 const business_layer = require("./business_layer");
+
+const login = require("./business_layer/login");
+const registration = require("./business_layer/registration");
+const user_info = require("./business_layer/user_info");
+const coach_search = require("./business_layer/coach_search");
+const daily_survey = require("./business_layer/daily_survey");
+const client_coach_interaction = require("./business_layer/client_coach_interaction");
+const messaging = require("./business_layer/messaging");
+
 async function health_check(req, res) {
   res.status(200).send("Hello, world!");
 }
 async function insert_user_controller(req, res) {
   try {
-    const userResponse = await business_layer.insert_user_business_layer(
+    const userResponse = await registration.insert_user_business_layer(
       req.body.first_name,
       req.body.last_name,
       req.body.username,
@@ -19,7 +28,7 @@ async function insert_user_controller(req, res) {
 
     // If address information is provided, set the address.
     if (req.body.state && req.body.city && req.body.street_address && req.body.zip_code) {
-      await business_layer.set_user_address_business_layer(
+      await registration.set_user_address_business_layer(
         userResponse.user_id,
         req.body.street_address,
         req.body.city,
@@ -42,7 +51,8 @@ async function insert_user_controller(req, res) {
 }
 
 async function login_controller(req, res) {
-    business_layer
+  console.log("Hello");
+    login
       .login_business_layer(req.body.username, req.body.password)
       .then((response) => {
         req.session.user = { username: req.body.username, user_id: response.user_id};
@@ -81,7 +91,7 @@ async function accept_client_survey_controller(req, res) {
   }
   else
   {
-    business_layer
+    registration
       .accept_client_survey_business_layer(
         req.session.user["user_id"],
         req.body.weight,
@@ -108,7 +118,7 @@ async function accept_client_survey_controller(req, res) {
 }
 
 async function accept_coach_survey_controller(req, res) {
-  business_layer
+  registration
     .accept_coach_survey_business_layer(
       req.session.user["user_id"],
       req.body.cost_per_session,
@@ -132,7 +142,7 @@ async function accept_coach_survey_controller(req, res) {
 
 async function request_coach_controller(req, res)
 {
-  business_layer
+  client_coach_interaction
     .request_coach_business_layer(
       req.body.coach_id,
       req.session.user["user_id"],
@@ -155,7 +165,7 @@ async function request_coach_controller(req, res)
 
 async function accept_client_controller(req, res)
 {
-  business_layer
+  client_coach_interaction
     .accept_client_business_layer(
       req.session.user["user_id"],
       req.body.client_id
@@ -183,7 +193,7 @@ async function get_role_controller(req, res)
     res.status(400).send({message: "You are not logged in."});
   else
   {
-    business_layer
+    user_info
       .get_role_business_layer(
         req.session.user["user_id"]
       )
@@ -205,7 +215,7 @@ async function get_role_controller(req, res)
 
 async function insert_message_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-  business_layer.insert_message_business_layer(
+  messaging.insert_message_business_layer(
     req.session.user['user_id'],
     req.body.recipient_id,
     req.body.content
@@ -215,7 +225,7 @@ async function insert_message_controller(req, res) {
 
 async function get_client_coach_messages_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-  business_layer.get_client_coach_messages_business_layer(
+  messaging.get_client_coach_messages_business_layer(
     req.session.user['user_id'],
     Number(req.query.other_user_id),
     Number(req.query.page_size),
@@ -235,7 +245,7 @@ async function get_user_account_info_controller(req, res)
   }
   else
   {
-    business_layer
+    user_info
     .get_user_account_info_business_layer(
       req.session.user["user_id"],
     )
@@ -265,7 +275,7 @@ async function alter_account_info_controller(req, res)
   }
   else
   {
-    business_layer
+    registration
       .alter_account_info_business_layer(
         req.session.user["user_id"],
         req.body.first_name,
@@ -300,7 +310,7 @@ async function search_coaches_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   let coach_data;
   try {
-    coach_data = await business_layer.search_coaches_business_layer(req.body);
+    coach_data = await coach_search.search_coaches_business_layer(req.body);
   } catch (e) {
     console.log(e);
     res.status(500).json({  // TODO: Handle Error codes better
@@ -318,7 +328,7 @@ async function insert_daily_survey_controller(req, res) {
   try {
     const { calories_consumed,  weight, calories_burned, created, modified, date, user_id, water_intake, mood,} = req.body;
 
-    const result = await business_layer.insert_daily_survey_business_layer({
+    const result = await daily_survey.insert_daily_survey_business_layer({
       calories_consumed,
       weight,
       calories_burned,
