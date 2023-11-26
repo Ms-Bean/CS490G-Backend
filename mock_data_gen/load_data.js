@@ -14,7 +14,7 @@ to elucidate our process of generating mock data.
 
 const exp = require("constants");
 const business_layer = require("../business_layer");
-const data_layer = require("../data_layer");
+const data_layer = require("../data_layer/data_layer");
 mysql = require("mysql");
 
 let database_name = "cs490_database" //Replace with your database name
@@ -162,21 +162,36 @@ async function load_locations(filename)
     'UT', 'VA', 'VT', 'WA', 'WI', 'WV', 'WY'];
     let data = fs.readFileSync(filename, 'utf8');
     let lines = data.split("\n");
+    let cities = [];
+    let addresses = [];
     for(let i = 1; i < lines.length; i++)
     {
         let line = lines[i].split("\t");
         let city = line[0];
         let address = line[1];
-        let state = states[Math.floor(Math.random() * states.length)]
+        cities.push(city);
+        addresses.push(address);
+    }
+    for(let i = 1; i <= 1000; i++)
+    {
+        let state = states[Math.floor(Math.random() * states.length)];
+        let city = cities[Math.floor(Math.random() * cities.length)]
+        let address = addresses[Math.floor(Math.random() * addresses.length)];
         let zip = "";
         for(let i = 0; i < 5; i++)
         {
             zip = zip + (Math.floor(Math.random() * 10)).toString();
         }
-        if(address == undefined || city == undefined || state == undefined)
-            continue;
-        await business_layer.set_user_address_business_layer(i, address, city, state, zip)
+        if(state !== undefined && city !== undefined && address !== undefined && zip !== undefined)
+        {
+            business_layer.set_user_address_business_layer(i, address, city, state, zip).then((response) =>{
+
+            }).catch((err) => {
+                console.log(err);
+            });
+        }
     }
+
 }
 async function load_exercise_bank(filename)
 {
@@ -517,4 +532,4 @@ async function load_coach_requests(filename)
         }
     });
 }
-load_coach_requests("messages.txt");
+load_locations("locations.txt");

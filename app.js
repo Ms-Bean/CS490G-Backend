@@ -6,9 +6,7 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 
 const controller = require("./rest_controller");
-
-const data_layer = require("./data_layer");
-const business_layer = require("./business_layer");
+const profile_management = require("./business_layer/profile_management")
 
 // set server port
 const PORT = 3500 || process.env.PORT;
@@ -56,6 +54,8 @@ app.route('/messages')
     .get(controller.get_client_coach_messages_controller);
 app.post('/coaches/search', controller.search_coaches_controller);
 app.post('/daily_survey', controller.insert_daily_survey_controller);
+app.get('/get_user_profile', controller.get_user_profile);
+app.post('/set_user_profile', controller.set_user_profile);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {
@@ -64,7 +64,12 @@ app.get("/check_session", (req, res) => {
     res.status(200).send({ isLoggedIn: false });
   }
 });
-
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT.toString());
+});
+
+profile_management.get_profile_info(996).then((response) =>{
+  console.log(response)
+}).catch((err) => {
+  console.log(err);
 });
