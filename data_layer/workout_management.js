@@ -273,7 +273,7 @@ const get_workouts_by_author_driver = async () => {
 }
 
 const get_workout_by_id_driver = async () => {
-    const id = 21;
+    const id = 22;
     const workout = await get_workout_by_id(id);
     console.log(workout);
 };
@@ -282,10 +282,18 @@ const update_workout_plan_driver = async () => {
     const new_name = "New Workout Name";
     const id = 21;
     await update_workout_plan(id, new_name);
+};
+
+const delete_workout_plan_driver = async () => {
+    const id = 22;
+    await delete_workout_plan(id);
 }
 
 const func = async () => {
+    await delete_workout_plan_driver();
     await get_workout_by_id_driver();
+    console.log()
+    await get_workouts_by_author_driver();
     con.end();
-}
+};
 func();
