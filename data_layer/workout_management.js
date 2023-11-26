@@ -1,10 +1,11 @@
 // TODO: Assign and Unassign workout plans
+// TODO: Test getting assigned workout plans
 // TODO: Wrap DELETE queries in transactions, due to effect of cascading
+// TODO: Learn how to deal with time without the date
 
-// const connection = require("./conn");
-// const con = connection.con;
 
-const mysql = require("mysql");
+const connection = require("./conn");
+const con = connection.con;
 
 function create_workout_plan(author_id, name) {
     const sql = "INSERT INTO Workout_Plans (name, user_who_created_it) VALUES (?, ?)";
@@ -34,7 +35,6 @@ function update_workout_plan(workout_plan_id, name) {
 }
 
 
-
 function delete_workout_plan(workout_plan_id) {
     const sql = "DELETE FROM Workout_Plans WHERE workout_plan_id = ?";
     return new Promise((resolve, reject) => {
@@ -56,6 +56,7 @@ async function get_workouts_by_author(author_id) {
     const params = [author_id];
     return _get_workouts(sql, params);
 }
+
 
 async function get_workout_by_id(workout_plan_id) {
     const sql = `SELECT workout_plan_id, name, created, modified, user_who_created_it AS author_id
@@ -124,7 +125,7 @@ async function get_exercises_of_workouts(workout_plan_ids) {
     const sql = `SELECT id, workout_plan_id, exercise_id, weekday, time,
         created, modified, reps_per_set, num_sets, weight
         FROM Workout_Plan_Exercises
-        WHERE workout_plan_ids IN ?`;
+        WHERE workout_plan_id IN (?)`;
     const exercises = await new Promise((resolve, reject) => {
         con.query(sql, [workout_plan_ids], (err, results) => {
             if (err) {
@@ -236,6 +237,7 @@ function delete_workout_exercise(workout_plan_exercise_id) {
     });
 }
 
+
 // When user wants to clear out the exercises from a workout plan without deleting the workout plan itself
 function delete_exercises_of_workout(workout_plan_id) {
     const sql = `DELETE FROM Workout_Plan_Exercises
@@ -251,49 +253,90 @@ function delete_exercises_of_workout(workout_plan_id) {
     });
 }
 
+// TODO: Remove test code before committing
+// const mysql = require("mysql");
+// const con = mysql.createConnection({ 
+//     host: "localhost",
+//     user: "root", //Replace with your user
+//     password: "cactusgreen", //Replace with your password
+//     database: "cs490_database"
+// });
 
-const con = mysql.createConnection({ 
-    host: "localhost",
-    user: "root", //Replace with your user
-    password: "cactusgreen", //Replace with your password
-    database: "cs490_database"
-});
+// const create_workout_driver = async () => {
+//     const author_id = 2;
+//     await create_workout_plan(author_id, "NEW WORKOUT 2");
+// }
 
-const create_workout_driver = async () => {
-    const author_id = 2;
-    await create_workout_plan(author_id, "NEW WORKOUT 2");
-}
+// const get_workouts_by_author_driver = async () => {
+//     const author_id = 2;
+//     const workouts = await get_workouts_by_author(author_id);
+//     for (const workout of workouts) {
+//         console.log(workout);
+//     }
+// }
 
-const get_workouts_by_author_driver = async () => {
-    const author_id = 2;
-    const workouts = await get_workouts_by_author(author_id);
-    for (const workout of workouts) {
-        console.log(workout);
-    }
-}
+// const get_workout_by_id_driver = async () => {
+//     const id = 22;
+//     const workout = await get_workout_by_id(id);
+//     console.log(workout);
+// };
 
-const get_workout_by_id_driver = async () => {
-    const id = 22;
-    const workout = await get_workout_by_id(id);
-    console.log(workout);
-};
+// const update_workout_plan_driver = async () => {
+//     const new_name = "New Workout Name";
+//     const id = 21;
+//     await update_workout_plan(id, new_name);
+// };
 
-const update_workout_plan_driver = async () => {
-    const new_name = "New Workout Name";
-    const id = 21;
-    await update_workout_plan(id, new_name);
-};
+// const delete_workout_plan_driver = async () => {
+//     const id = 22;
+//     await delete_workout_plan(id);
+// };
 
-const delete_workout_plan_driver = async () => {
-    const id = 22;
-    await delete_workout_plan(id);
-}
+// const get_exercises_of_workouts_driver = async () => {
+//     const ids = [1, 2, 3];
+//     const exercises_by_workout = await get_exercises_of_workouts(ids);
+//     console.log(exercises_by_workout);
+// };
 
-const func = async () => {
-    await delete_workout_plan_driver();
-    await get_workout_by_id_driver();
-    console.log()
-    await get_workouts_by_author_driver();
-    con.end();
-};
-func();
+// const get_exercises_by_workout_id_driver = async () => {
+//     const id = 21;
+//     const exercises = await get_exercises_by_workout_id(id);
+//     exercises.forEach(e => console.log(e));
+// };
+
+// const create_workout_exercise_driver = async () => {
+//     const workout_plan_id = 21;
+//     const exercise_id = 44;
+//     const details = {
+//         weekday: "thursday",
+//         time: "10:30:00",
+//     };
+
+//     await create_workout_exercise(workout_plan_id, exercise_id, details);
+// };
+
+// const update_workout_exercise_driver = async () => {
+//     const we_id = 288;
+//     const details = {
+//         num_sets: null,
+//         reps_per_set: null
+//     };
+
+//     await update_workout_exercise(we_id, details);
+// };
+
+// const delete_workout_exercise_driver = async () => {
+//     const we_id = 288;
+//     await delete_workout_exercise(we_id);
+// };
+
+// const delete_exercises_of_workout_driver = async () => {
+//     const workout_plan_id = 21;
+//     delete_exercises_of_workout(workout_plan_id);
+// };
+
+// const func = async () => {
+//     delete_exercises_of_workout_driver();
+//     get_exercises_by_workout_id_driver();
+//     con.end();
+// };
