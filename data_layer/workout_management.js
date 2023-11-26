@@ -57,12 +57,13 @@ async function get_workouts_by_author(author_id) {
     return _get_workouts(sql, params);
 }
 
-async function get_workouts_by_id(workout_plan_id) {
+async function get_workout_by_id(workout_plan_id) {
     const sql = `SELECT workout_plan_id, name, created, modified, user_who_created_it AS author_id
         FROM Workout_Plans
         WHERE workout_plan_id = ?`;
     const params = [workout_plan_id];
-    return _get_workouts(sql, params);
+    const workout_arr = await _get_workouts(sql, params);
+    return workout_arr?.[0] ?? null;
 }
 
 
@@ -89,7 +90,8 @@ async function get_assigned_workout(user_id) {
         return null;
     }
 
-    return _get_workouts(get_workout_sql, [workout_id])[0];
+    const workout_arr = await _get_workouts(get_workout_sql, [workout_id]);
+    return workout_arr[0];
 }
 
 
@@ -262,7 +264,7 @@ const create_workout_driver = async () => {
     await create_workout_plan(author_id, "NEW WORKOUT 2");
 }
 
-const read_workouts_by_id_driver = async () => {
+const get_workouts_by_author_driver = async () => {
     const author_id = 2;
     const workouts = await get_workouts_by_author(author_id);
     for (const workout of workouts) {
@@ -270,8 +272,20 @@ const read_workouts_by_id_driver = async () => {
     }
 }
 
+const get_workout_by_id_driver = async () => {
+    const id = 21;
+    const workout = await get_workout_by_id(id);
+    console.log(workout);
+};
+
+const update_workout_plan_driver = async () => {
+    const new_name = "New Workout Name";
+    const id = 21;
+    await update_workout_plan(id, new_name);
+}
+
 const func = async () => {
-    await read_workouts_by_id_driver();
+    await get_workout_by_id_driver();
     con.end();
 }
 func();
