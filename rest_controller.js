@@ -7,6 +7,7 @@ const coach_search = require("./business_layer/coach_search");
 const daily_survey = require("./business_layer/daily_survey");
 const client_coach_interaction = require("./business_layer/client_coach_interaction");
 const messaging = require("./business_layer/messaging");
+const profile_management = require("./business_layer/profile_management");
 
 async function health_check(req, res) {
   res.status(200).send("Hello, world!");
@@ -343,6 +344,83 @@ async function insert_daily_survey_controller(req, res) {
     res.status(400).json({ message: error.message || "An error occurred" });
   }
 }
+
+async function get_user_profile(req, res)
+{
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  if(req.session.user === undefined || req.session.user["user_id"] == undefined)
+  {  
+    res.status(400).send({
+      message: "User is not logged in"
+    });
+  }
+  else
+  {
+    profile_management
+      .get_profile_info(
+        req.session.user["user_id"],
+      )
+      .then((response) =>{
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.status(200).send({
+          response: response
+        });
+      })
+      .catch((err) =>{
+        console.log(err);
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.status(400).send({
+          message: err
+        });
+      })
+  }
+}
+async function set_user_profile(req, res)
+{
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  if(req.session.user === undefined || req.session.user["user_id"] == undefined)
+  {  
+    res.status(400).send({
+      message: "User is not logged in"
+    });
+  }
+  else
+  {
+    console.log(req.body);
+    profile_management
+      .set_profile_info(
+        req.session.user["user_id"],
+        req.body.about_me,
+        req.body.experience_level,
+        req.body.height,
+        req.body.weight,
+        req.body.medical_conditions,
+        req.body.budget,
+        req.body.goals,
+        req.body.target_weight,
+        req.body.birthday,
+        req.body.availability,
+        req.body.hourly_rate,
+        req.body.coaching_history,
+        req.body.accepting_new_clients,
+        req.body.coaching_experience_level
+      )
+      .then((response) =>{
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.status(200).send({
+          response: "Information updated"
+        });
+      })
+      .catch((err) =>{
+        console.log(err);
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.status(400).send({
+          message: err
+        });
+      })
+  }
+}
+
 module.exports.insert_daily_survey_controller = insert_daily_survey_controller;
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
 module.exports.accept_client_controller = accept_client_controller;
@@ -358,3 +436,5 @@ module.exports.insert_message_controller = insert_message_controller;
 module.exports.get_client_coach_messages_controller = get_client_coach_messages_controller;
 module.exports.alter_account_info_controller = alter_account_info_controller;
 module.exports.search_coaches_controller = search_coaches_controller;
+module.exports.get_user_profile = get_user_profile;
+module.exports.set_user_profile = set_user_profile;
