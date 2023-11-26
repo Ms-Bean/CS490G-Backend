@@ -153,11 +153,11 @@ async function request_coach_controller(req, res)
         message: response
       });
     })
-    .catch((error_message) =>{
-      console.log(error_message);
+    .catch((error) =>{
+      console.log(error.message);
       res.header("Access-Control-Allow-Origin", "http://localhost:3000");
       res.status(400).send({
-        message: error_message
+        message: error.message
       });
     });
 }

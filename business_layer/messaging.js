@@ -24,7 +24,7 @@ async function insert_message_business_layer(current_user_id, recipient_id, cont
         return Promise.reject(new Error("Cannot send empty message"));
     }
 
-    if (!(await _check_if_coach_of(current_user_id, recipient_id) || await _check_if_coach_of(recipient_id, current_user_id))) {
+    if (!(await client_coach_interaction.check_if_client_has_hired_coach(current_user_id, recipient_id) || await client_coach_interaction.check_if_client_has_hired_coach(recipient_id, current_user_id))) {
         return Promise.reject(new Error("Current user cannot message another user that's neither their coach nor client"));
     }
     return messaging.insert_message_data_layer(current_user_id, recipient_id, content);
@@ -54,12 +54,12 @@ async function get_client_coach_messages_business_layer(current_user_id, other_u
         return Promise.reject(new Error("Invalid page number"));
     }
 
-    if (!(await _check_if_coach_of(current_user_id, other_user_id) || await _check_if_coach_of(other_user_id, current_user_id))) {
+    if (!(await client_coach_interaction.check_if_client_has_hired_coach(current_user_id, other_user_id) || await client_coach_interaction.check_if_client_has_hired_coach(other_user_id, current_user_id))) {
         return Promise.reject(new Error("Current user cannot view messages from another user that's neither their coach nor client"));
     }
 
     const message_count = await messaging.count_client_coach_messages(current_user_id, other_user_id);
-    const page_count = Math.ceil(message_count / page_size);
+    const page_count = Math.ceil(message_count / page_size) || 1;
     page_num = Math.min(page_num, page_count);
     
     const messages = await messaging.get_client_coach_message_page_data_layer(current_user_id, other_user_id, page_size, page_num);

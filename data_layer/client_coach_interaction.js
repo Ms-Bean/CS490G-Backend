@@ -1,5 +1,5 @@
-let connection = require("./conn");
-let con = connection.con;
+const connection = require("./conn");
+const con = connection.con;
 
 /**
  * 
@@ -20,19 +20,31 @@ function get_clients_of_coach(coach_id) {
     });
 }
 
-async function request_coach_data_layer(coach_id, client_id, comment)
-{
+async function request_coach_data_layer(coach_id, client_id, comment) {
     return new Promise((resolve, reject) => {
-        const sql = "INSERT INTO Coach_Requests (coach_id, client_id, comment) VALUES (?, ?, ?)";
-        con.query(sql, [coach_id, client_id, comment], function(err, result){
-            if(err)
-            {
-                console.log(err);
-                reject("Something went wrong in our database");
+        const sql = "INSERT INTO Client_Coach (coach_id, client_id, requested) VALUES (?, ?, 1)";
+        con.query(sql, [coach_id, client_id], (err) => {
+            if (err) {
+                console.log(`MySQL error: ${err.code}`);
+                console.log(`MySQL error message: ${err.sqlMessage}`);
+                console.log(`Relevant SQL query: ${err.sql}`);
+                reject(new Error("Something went wrong on our side :("));
             }
-            resolve("The request has been sent.");
+
+            resolve();
         });
-    });
+    })
+    // return new Promise((resolve, reject) => {
+    //     const sql = "INSERT INTO Coach_Requests (coach_id, client_id, comment) VALUES (?, ?, ?)";
+    //     con.query(sql, [coach_id, client_id, comment], function(err, result){
+    //         if(err)
+    //         {
+    //             console.log(err);
+    //             reject("Something went wrong in our database");
+    //         }
+    //         resolve("The request has been sent.");
+    //     });
+    // });
 }
 
 /**
@@ -42,7 +54,7 @@ async function request_coach_data_layer(coach_id, client_id, comment)
  * @returns {Promise<boolean>}
  */
 function check_if_client_coach_request_exists(coach_id, client_id) {
-    const sql = "SELECT coach_id FROM Coach_Requests WHERE coach_id = ? AND client_id = ?";
+    const sql = "SELECT requested FROM Client_Coach WHERE coach_id = ? AND client_id = ?";
     return new Promise((resolve, reject) => {
         con.query(sql, [coach_id, client_id], (err, results) => {
             if (err) {
@@ -50,7 +62,8 @@ function check_if_client_coach_request_exists(coach_id, client_id) {
                 return;
             };
 
-            resolve(results.length > 0);
+            let request_exists = !!results[0]?.requested;
+            resolve(request_exists);
         });
     });
 }
@@ -62,7 +75,7 @@ function check_if_client_coach_request_exists(coach_id, client_id) {
  * @returns {Promise<boolean>}
  */
 function check_if_client_has_hired_coach(coach_id, client_id) {
-    const sql = "SELECT * FROM Client_Coach WHERE coach_id = ? AND client_id = ?";
+    const sql = "SELECT requested FROM Client_Coach WHERE coach_id = ? AND client_id = ?";
     return new Promise((resolve, reject) => {
         con.query(sql, [coach_id, client_id], (err, results) => {
             if (err) {
@@ -70,83 +83,96 @@ function check_if_client_has_hired_coach(coach_id, client_id) {
                 return;
             };
 
-            resolve(results.length > 0);
+            let was_hired = results.length > 0 ? !results[0].requested : false;
+            resolve(was_hired);
         });
     });
 }
 
 function accept_client_data_layer(coach_id, client_id) {
-    const insert_sql = "INSERT INTO Client_Coach (coach_id, client_id) VALUES (?, ?)";
-    const delete_sql = "DELETE FROM Coach_Requests WHERE client_id = ? AND coach_id = ?";
+    // TODO: Have modified field be updated by a trigger
+    const sql = "UPDATE Client_Coach SET requested = 0, modified = CURRENT_TIMESTAMP WHERE coach_id = ? AND client_id = ?";
 
     return new Promise((resolve, reject) => {
-        con.beginTransaction(err => {
+        con.query(sql, [coach_id, client_id], (err) => {
             if (err) {
-                reject(err);
-                return;
+                // TODO: Extract code into its own function
+                console.log(`MySQL error: ${err.code}`);
+                console.log(`MySQL error message: ${err.sqlMessage}`);
+                console.log(`Relevant SQL query: ${err.sql}`);
+                reject(new Error("Something went wrong on our side :("));
             }
-            con.query(insert_sql, [coach_id, client_id], (err, results) => {
-                if (err) {
-                    return con.rollback(() => {
-                        reject(err);
-                    });
-                }
-                console.log("Inserted Client and Coach into Client_Coach table");
-            });
 
-            con.query(delete_sql, [client_id, coach_id], (err, results) => {
-                if (err) {
-                    return con.rollback(() => {
-                        reject(err);
-                    });
-                }
-                console.log("Deleted Client's request for Coach");
-                con.commit((err) => {
-                    if (err) {
-                        return con.rollback(() => {
-                            reject(err);
-                        });
-                    }
-                    console.log("Commited changes to DB");
-                });
-            });
-
-            resolve("Coach has accepted Client's request");
+            resolve();
         });
     });
+    // const insert_sql = "INSERT INTO Client_Coach (coach_id, client_id) VALUES (?, ?)";
+    // const delete_sql = "DELETE FROM Coach_Requests WHERE client_id = ? AND coach_id = ?";
+
+    // return new Promise((resolve, reject) => {
+    //     con.beginTransaction(err => {
+    //         if (err) {
+    //             reject(err);
+    //             return;
+    //         }
+    //         con.query(insert_sql, [coach_id, client_id], (err, results) => {
+    //             if (err) {
+    //                 return con.rollback(() => {
+    //                     reject(err);
+    //                 });
+    //             }
+    //             console.log("Inserted Client and Coach into Client_Coach table");
+    //         });
+
+    //         con.query(delete_sql, [client_id, coach_id], (err, results) => {
+    //             if (err) {
+    //                 return con.rollback(() => {
+    //                     reject(err);
+    //                 });
+    //             }
+    //             console.log("Deleted Client's request for Coach");
+    //             con.commit((err) => {
+    //                 if (err) {
+    //                     return con.rollback(() => {
+    //                         reject(err);
+    //                     });
+    //                 }
+    //                 console.log("Commited changes to DB");
+    //             });
+    //         });
+
+    //         resolve("Coach has accepted Client's request");
+    //     });
+    // });
 }
 
-async function remove_coach_data_layer(client_id, coach_id)
-{
+async function remove_coach_data_layer(client_id, coach_id) {
     let sql = "DELETE FROM Client_Coach WHERE coach_id = ? AND client_id = ?";
     console.log(coach_id);
     console.log(client_id);
     console.log("");
-    return new Promise((resolve, reject) =>{
-        con.query(sql, [coach_id, client_id], function(err, results){
-            if(err)
-            {
+    return new Promise((resolve, reject) => {
+        con.query(sql, [coach_id, client_id], function (err, results) {
+            if (err) {
                 console.log(err);
                 reject("sql failure");
             }
             let sql = "DELETE FROM Messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)";
-            con.query(sql, [coach_id, client_id, client_id, coach_id], function(err, results){
-                if(err)
-                {
+            con.query(sql, [coach_id, client_id, client_id, coach_id], function (err, results) {
+                if (err) {
                     console.log(err);
                     reject("sql failure");
                 }
                 let sql = "DELETE FROM Appointments WHERE (client_id = ? AND coach_id = ?)";
-                con.query(sql, [client_id, coach_id], function(err, results){
-                    if(err)
-                    {
+                con.query(sql, [client_id, coach_id], function (err, results) {
+                    if (err) {
                         console.log(err);
                         reject("sql failure");
                     }
                     resolve("Removed");
                 });
             });
-    
+
         });
     });
 }
