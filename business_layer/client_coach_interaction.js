@@ -13,7 +13,7 @@ const messaging = require("../data_layer/messaging")
  * @returns {Promise<Object>} - Resolves with success message if the request is successful.
  * @throws {Promise<string>} - Rejects with an error message if the request fails.
  */
-async function request_coach_business_layer(coach_id, client_id, comment)
+async function request_coach_business_layer(coach_id, client_id)
 {
     //TODO, Check if coach_id and client_id belong to a coach and a client, respectively
     //Reject with "You are not logged in as a client" if client_id does not belong to a client
@@ -27,11 +27,7 @@ async function request_coach_business_layer(coach_id, client_id, comment)
         {
             reject("Invalid coach id");
         }
-        if(/^.*'.*$/.test(comment))
-        {
-            reject("Comment cannot contain quotes") //TODO allow comment to contain quotes without SQL injection
-        }
-        client_coach_interaction.request_coach_data_layer(coach_id, client_id, comment).then(response =>{
+        client_coach_interaction.request_coach_data_layer(coach_id, client_id).then(response =>{
             resolve(response);
         }).catch((error) =>{
             reject(error);

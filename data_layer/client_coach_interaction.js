@@ -34,17 +34,6 @@ async function request_coach_data_layer(coach_id, client_id, comment) {
             resolve();
         });
     })
-    // return new Promise((resolve, reject) => {
-    //     const sql = "INSERT INTO Coach_Requests (coach_id, client_id, comment) VALUES (?, ?, ?)";
-    //     con.query(sql, [coach_id, client_id, comment], function(err, result){
-    //         if(err)
-    //         {
-    //             console.log(err);
-    //             reject("Something went wrong in our database");
-    //         }
-    //         resolve("The request has been sent.");
-    //     });
-    // });
 }
 
 /**
@@ -106,44 +95,6 @@ function accept_client_data_layer(coach_id, client_id) {
             resolve();
         });
     });
-    // const insert_sql = "INSERT INTO Client_Coach (coach_id, client_id) VALUES (?, ?)";
-    // const delete_sql = "DELETE FROM Coach_Requests WHERE client_id = ? AND coach_id = ?";
-
-    // return new Promise((resolve, reject) => {
-    //     con.beginTransaction(err => {
-    //         if (err) {
-    //             reject(err);
-    //             return;
-    //         }
-    //         con.query(insert_sql, [coach_id, client_id], (err, results) => {
-    //             if (err) {
-    //                 return con.rollback(() => {
-    //                     reject(err);
-    //                 });
-    //             }
-    //             console.log("Inserted Client and Coach into Client_Coach table");
-    //         });
-
-    //         con.query(delete_sql, [client_id, coach_id], (err, results) => {
-    //             if (err) {
-    //                 return con.rollback(() => {
-    //                     reject(err);
-    //                 });
-    //             }
-    //             console.log("Deleted Client's request for Coach");
-    //             con.commit((err) => {
-    //                 if (err) {
-    //                     return con.rollback(() => {
-    //                         reject(err);
-    //                     });
-    //                 }
-    //                 console.log("Commited changes to DB");
-    //             });
-    //         });
-
-    //         resolve("Coach has accepted Client's request");
-    //     });
-    // });
 }
 
 async function remove_coach_data_layer(client_id, coach_id) {

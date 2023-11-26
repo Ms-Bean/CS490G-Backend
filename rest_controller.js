@@ -144,8 +144,7 @@ async function request_coach_controller(req, res)
   client_coach_interaction
     .request_coach_business_layer(
       req.body.coach_id,
-      req.session.user["user_id"],
-      req.body.comment
+      req.session.user["user_id"]
     )    
     .then((response) =>{
       res.header("Access-Control-Allow-Origin", "http://localhost:3000");
