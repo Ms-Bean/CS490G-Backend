@@ -7,6 +7,67 @@ const client_coach_interaction = require("../data_layer/client_coach_interaction
 const messaging = require("../data_layer/messaging")
 const bcrypt = require('bcrypt');
 
+async function insert_user_business_layer(first_name, last_name, username, email, password, role)
+{
+    const username_Exists_Flag = await registration.check_if_username_exists_data_layer(username); //checking check_if_username_exists 
+    if(username_Exists_Flag){
+        return Promise.reject("That username is already taken.");
+    } 
+    else {
+        if(!/^([a-zA-Z]|[0-9]|[_])+$/.test(username))
+            return Promise.reject("Username containing characters other than letters, numbers, or underscores entered.");}
+    if(!/^[a-zA-Z\-]+$/.test(first_name))
+        return Promise.reject("First name must contain letters or hyphens only");
+    if(first_name.length > 255)
+        return Promise.reject("Excessively long first name entered.");
+    if(!/^[a-zA-Z\-]+$/.test(last_name))
+        return Promise.reject("Last name must contain letters or hyphens only");
+    if(last_name.length > 255)
+        return Promise.reject("Excessively long last name entered.");
+    if(!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email))
+        return Promise.reject("Invalid email entered.");
+    if(email.length > 255)
+        return Promise.reject("Excessively long email entered.")
+    if(username.length > 255)
+        return Promise.reject("Excessively long username entered.");
+    if(username.length < 1)
+        return Promise.reject("Empty username entered.");
+    if(/^.*'.*$/.test(password) || /^.*".*$/.test(password))
+        return Promise.reject("Password cannot contain quotes.");
+    if(password.length < 1)
+            return Promise.reject("Empty password entered.");
+    if(role != "client" && role != "coach")
+        return Promise.reject("Role must be client or coach");
+        
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+    let salt = '';
+    for (let i = 0; i < 10; i++ )
+       salt += chars.charAt(Math.floor(Math.random() * chars.length));
+
+    const salted_password = password + salt;
+    const hashed_password = await new Promise((resolve, reject) => {
+        bcrypt.hash(salted_password, 10, function(err, hash) {
+            if(err) reject(err)
+            resolve(hash)
+        });
+    })   
+    return new Promise((resolve, reject) => {
+
+    console.log("Going to insert");
+        registration.insert_user_data_layer(first_name, last_name, username, email, hashed_password, salt, role).then((data_layer_response) =>{
+        
+      console.log("INserted");
+            resolve({
+                user_id: data_layer_response,
+                message: "Successfully added user"
+            });
+        }).catch((error) =>{
+            console.log("data layer failed");
+            reject(error);
+        });
+    });
+}
+
 // Function to set the user's address
 /**
  * @param {number} user_id - ID of the user.
@@ -223,6 +284,8 @@ async function accept_coach_survey_business_layer(user_id, cost_per_session, ava
         return Promise.reject("User is not a coach.");
     }
 }
+
+module.exports.insert_user_business_layer = insert_user_business_layer;
 module.exports.set_user_address_business_layer = set_user_address_business_layer;
 module.exports.alter_account_info_business_layer = alter_account_info_business_layer;
 module.exports.accept_client_survey_business_layer = accept_client_survey_business_layer;
