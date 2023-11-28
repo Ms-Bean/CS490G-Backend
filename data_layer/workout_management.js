@@ -8,29 +8,74 @@
 const connection = require("./conn");
 const con = connection.con;
 
-function create_workout_plan(author_id, name) {
+class WorkoutPlan {
+    constructor({workout_plan_id, name, author_id, exercises}) {
+        this.workout_plan_id = workout_plan_id;
+        this.name = name;
+        this.author_id = author_id;
+        this.exercises = exercises;
+    }
+}
+
+class WorkoutPlanExercise {
+    constructor({workout_plan_exercise_id, workout_plan_id, exercise_id, weekday, time,
+                reps_per_set = null, num_sets = null, weight = null}) {
+        this.workout_plan_exercise_id = workout_plan_exercise_id;
+        this.workout_plan_id = workout_plan_id;
+        this.exercise_id = exercise_id;
+        this.weekday = weekday;
+        this.time = time;
+        this.reps_per_set = reps_per_set;
+        this.num_sets = num_sets;
+        this.weight = weight;
+    }
+}
+
+
+class Exercise {
+    constructor({exercise_id, name, description, author_id, video_link,
+                 difficulty, equipment_items, muscle_groups, goals}) {
+        this.exercise_id = exercise_id;
+        this.name = name;
+        this.description = description;
+        this.author_id = author_id;
+        this.video_link = video_link;
+        this.difficulty = difficulty;
+        this.equipment_items = equipment_items;
+        this.muscle_groups = muscle_groups;
+        this.goals = goals;
+    }
+}
+
+
+async function create_workout_plan(wp) {
     const sql = "INSERT INTO Workout_Plans (name, user_who_created_it) VALUES (?, ?)";
-    return new Promise((resolve, reject) => {
-        con.query(sql, [name, author_id], (err) => {
+    const {name, author_id} = wp;
+    const workout_plan_id = await new Promise((resolve, reject) => {
+        con.query(sql, [name, author_id], (err, results) => {
             if (err) {
                 reject(err);
                 return;
             }
-            resolve();
+            resolve(results.insertId);
         });
     });
+
+    return new WorkoutPlan({workout_plan_id, name, author_id});
 }
 
 
-function update_workout_plan(workout_plan_id, name) {
+function update_workout_plan(workout_plan) {
     const sql = "UPDATE Workout_Plans SET name = ? WHERE workout_plan_id = ?";
+    const {workout_plan_id, name} = workout_plan;
     return new Promise((resolve, reject) => {
         con.query(sql, [name, workout_plan_id], (err) => {
             if (err) {
                 reject(err);
                 return;
             }
-            resolve();
+
+            resolve(new WorkoutPlan({workout_plan_id, name, author_id: workout_plan.author_id, exercises: workout_plan.exercises}));
         });
     });
 }
@@ -106,16 +151,7 @@ function _get_workouts(sql, params) {
                 return;
             }
 
-            const workouts = results.map(r => {
-                return {
-                    workout_plan_id: r.workout_plan_id,
-                    name: r.name,
-                    created: r.created,
-                    modified: r.modified,
-                    author_id: r.author_id
-                };
-            });
-
+            const workouts = results.map(r => new WorkoutPlan({workout_plan_id: r.workout_plan_id, name: r.name, author_id: r.author_id}));
             resolve(workouts);
         });
     });
@@ -134,20 +170,16 @@ async function get_exercises_of_workouts(workout_plan_ids) {
                 return;
             }
 
-            const exercises = results.map(r => {
-                return {
-                    id: r.id,
-                    workout_plan_id: r.workout_plan_id,
-                    exercise_id: r.exercise_id,
-                    weekday: r.weekday,
-                    time: r.time,
-                    created: r.created,
-                    modified: r.modified,
-                    reps_per_set: r.reps_per_set,
-                    num_sets: r.num_sets,
-                    weight: r.weight
-                };
-            });
+            const exercises = results.map(r => new WorkoutPlanExercise({
+                workout_plan_exercise_id: r.id,
+                workout_plan_id: r.workout_plan_id,
+                exercise_id: r.exercise_id,
+                weekday: r.weekday,
+                time: r.time,
+                reps_per_set: r.reps_per_set,
+                num_sets: r.num_sets,
+                weight: r.weight
+            }));
 
             resolve(exercises);
         });
@@ -171,20 +203,31 @@ async function get_exercises_by_workout_id(workout_plan_id) {
 }
 
 
-function create_workout_exercise(workout_plan_id, exercise_id, details) {
+async function create_workout_exercise(wpe) {
     const sql = `INSERT INTO Workout_Plan_Exercises
         (workout_plan_id, exercise_id, weekday, time, reps_per_set, num_sets, weight)
         VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    const {weekday, time, reps_per_set, num_sets, weight} = details;
+    const {workout_plan_id, exercise_id, weekday, time, reps_per_set, num_sets, weight} = wpe;
     const args = [workout_plan_id, exercise_id, weekday, time, reps_per_set, num_sets, weight];
-    return new Promise((resolve, reject) => {
-        con.query(sql, args, (err) => {
+    const results = await new Promise((resolve, reject) => {
+        con.query(sql, args, (err, results) => {
             if (err) {
                 reject(err);
                 return;
             }
-            resolve();
+            resolve(results);
         });
+    });
+
+    return new WorkoutPlanExercise({
+        workout_plan_exercise_id: results.insertId,
+        workout_plan_id: wpe.workout_plan_id,
+        exercise_id: wpe.exercise_id,
+        weekday: wpe.weekday,
+        time: wpe.time,
+        reps_per_set: wpe.reps_per_set,
+        num_sets: wpe.num_sets,
+        weight: wpe.weight
     });
 }
 
@@ -205,14 +248,14 @@ function _get_update_args(args) {
 }
 
 
-function update_workout_exercise(workout_plan_exercise_id, details) {
-    const {set_clause, args} = _get_update_args(details);
+async function update_workout_exercise(wpe) {
+    const {weekday, time, reps_per_set, num_sets, weight, workout_plan_exercise_id} = wpe;
+    const {set_clause, args} = _get_update_args({weekday, time, reps_per_set, num_sets, weight});
     const sql = `UPDATE Workout_Plan_Exercises
         SET ${set_clause}
         WHERE id = ?`;
     args.push(workout_plan_exercise_id);
-
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
         con.query(sql, args, (err) => {
             if (err) {
                 reject(err);
@@ -220,6 +263,17 @@ function update_workout_exercise(workout_plan_exercise_id, details) {
             }
             resolve();
         });
+    });
+
+    return new WorkoutPlanExercise({
+        workout_plan_exercise_id: wpe.workout_plan_exercise_id,
+        workout_plan_id: wpe.workout_plan_id,
+        exercise_id: wpe.exercise_id,
+        weekday: wpe.weekday,
+        time: wpe.time,
+        reps_per_set: wpe.reps_per_set,
+        num_sets: wpe.num_sets,
+        weight: wpe.weight
     });
 }
 
@@ -315,19 +369,10 @@ async function get_all_exercises() {
 
 
 function _convert_row_to_exercise(exercise_row) {
-    return {
-        exercise_id: exercise_row.exercise_id,
-        name: exercise_row.name,
-        description: exercise_row.description,
-        created: exercise_row.created,
-        modified: exercise_row.modified,
-        creator_id: exercise_row.creator_id,
-        video_link: exercise_row.video_link,
-        difficulty: exercise_row.difficulty,
-        equipment_items: exercise_row.equipment_items?.split(',') ?? [],
-        muscle_groups: exercise_row.muscle_groups?.split(',') ?? [],
-        goals: exercise_row.goals?.split(',') ?? [],
-    };
+    exercise_row.equipment_items = exercise_row.equipment_items?.split(',') ?? [];
+    exercise_row.muscle_groups = exercise_row.muscle_groups?.split(',') ?? [];
+    exercise_row.goals = exercise_row.goals?.split(',') ?? [];
+    return new Exercise(exercise_row);
 }
 
 
@@ -359,7 +404,8 @@ module.exports = {
 
 // const create_workout_driver = async () => {
 //     const author_id = 2;
-//     await create_workout_plan(author_id, "NEW WORKOUT 2");
+//     const workout = new WorkoutPlan({workout_plan_id: 0, name: "New workout 2", author_id});
+//     return create_workout_plan(workout);
 // }
 
 // const get_workouts_by_author_driver = async () => {
@@ -377,9 +423,10 @@ module.exports = {
 // };
 
 // const update_workout_plan_driver = async () => {
-//     const new_name = "New Workout Name";
-//     const id = 21;
-//     await update_workout_plan(id, new_name);
+//     const new_name = "New Workout Name 2";
+//     const id = 2;
+//     const wp = new WorkoutPlan({workout_plan_id: 23, name: new_name, author_id: id})
+//     return update_workout_plan(wp);
 // };
 
 // const delete_workout_plan_driver = async () => {
@@ -400,24 +447,27 @@ module.exports = {
 // };
 
 // const create_workout_exercise_driver = async () => {
-//     const workout_plan_id = 21;
+//     const workout_plan_id = 22;
 //     const exercise_id = 44;
-//     const details = {
-//         weekday: "thursday",
-//         time: "10:30:00",
-//     };
+//     const weekday = "thursday";
+//     const time = "10:30:00";
 
-//     await create_workout_exercise(workout_plan_id, exercise_id, details);
+//     const wpe = new WorkoutPlanExercise({workout_plan_exercise_id: 0, workout_plan_id, exercise_id, weekday, time});
+//     return create_workout_exercise(wpe);
 // };
 
 // const update_workout_exercise_driver = async () => {
-//     const we_id = 288;
-//     const details = {
-//         num_sets: null,
-//         reps_per_set: null
-//     };
+//     const we_id = 286;
+//     const workout_plan_id = 22;
+//     const exercise_id = 44;
+//     const weekday = "monday";
+//     const time = "12:30:00";
+//     const num_sets = 2;
+//     const reps_per_set = 6;
+//     const weight = 150;
+//     const wpe = new WorkoutPlanExercise({workout_plan_exercise_id: we_id, workout_plan_id, exercise_id, weekday, time, reps_per_set, num_sets, weight});
 
-//     await update_workout_exercise(we_id, details);
+//     return update_workout_exercise(wpe);
 // };
 
 // const delete_workout_exercise_driver = async () => {
@@ -431,8 +481,8 @@ module.exports = {
 // };
 
 // const func = async () => {
-//     const exercise = await get_exercise_by_id(5);
-//     console.log(exercise);
+//     const wpe = await update_workout_plan_driver();
+//     console.log(wpe);
 //     con.end();
 // };
 // func();
