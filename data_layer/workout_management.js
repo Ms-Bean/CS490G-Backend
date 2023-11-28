@@ -2,6 +2,7 @@
 // TODO: Test getting assigned workout plans
 // TODO: Wrap DELETE queries in transactions, due to effect of cascading
 // TODO: Learn how to deal with time without the date
+// TODO: Add ability to add, update, and delete exercises
 
 
 const connection = require("./conn");
@@ -253,6 +254,81 @@ function delete_exercises_of_workout(workout_plan_id) {
     });
 }
 
+
+async function get_exercise_by_id(exercise_id) {
+    const sql = `SELECT Exercise_Bank.exercise_id, Exercise_Bank.name, Exercise_Bank.description, Exercise_Bank.created, Exercise_Bank.modified,
+        Exercise_Bank.user_who_created_it AS creator_id, Exercise_Bank.difficulty, Exercise_Bank.video_link,
+        GROUP_CONCAT(DISTINCT Exercise_Equipment.equipment_item) AS equipment_items, GROUP_CONCAT(DISTINCT Exercise_Muscle_Group.muscle_group) AS muscle_groups,
+        GROUP_CONCAT(DISTINCT Exercise_Fitness_Goals.fitness_goal) AS fitness_goals
+    FROM Exercise_Bank
+        LEFT JOIN Exercise_Equipment USING (exercise_id)
+        LEFT JOIN Exercise_Muscle_Group USING (exercise_id)
+        LEFT JOIN Exercise_Fitness_Goals USING (exercise_id)
+    WHERE Exercise_Bank.exercise_id = ?
+    GROUP BY Exercise_Bank.exercise_id`;
+
+    const exercise_row = await new Promise((resolve, reject) => {
+        con.query(sql, [exercise_id], (err, results) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+
+            resolve(results?.[0] ?? null);
+        });
+    });
+
+    if (exercise_row === null) {
+        return null;
+    }
+
+    return _convert_row_to_exercise(exercise_row);
+}
+
+
+async function get_all_exercises() {
+    const sql = `SELECT Exercise_Bank.exercise_id, Exercise_Bank.name, Exercise_Bank.description, Exercise_Bank.created, Exercise_Bank.modified,
+        Exercise_Bank.user_who_created_it AS creator_id, Exercise_Bank.difficulty, Exercise_Bank.video_link,
+        GROUP_CONCAT(DISTINCT Exercise_Equipment.equipment_item) AS equipment_items, GROUP_CONCAT(DISTINCT Exercise_Muscle_Group.muscle_group) AS muscle_groups,
+        GROUP_CONCAT(DISTINCT Exercise_Fitness_Goals.fitness_goal) AS fitness_goals
+    FROM Exercise_Bank
+        LEFT JOIN Exercise_Equipment USING (exercise_id)
+        LEFT JOIN Exercise_Muscle_Group USING (exercise_id)
+        LEFT JOIN Exercise_Fitness_Goals USING (exercise_id)
+    GROUP BY Exercise_Bank.exercise_id`;
+
+    const exercise_rows = await new Promise((resolve, reject) => {
+        con.query(sql, (err, results) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+
+            resolve(results);
+        });
+    });
+
+    return exercise_rows.map(e => _convert_row_to_exercise(e));
+}
+
+
+function _convert_row_to_exercise(exercise_row) {
+    return {
+        exercise_id: exercise_row.exercise_id,
+        name: exercise_row.name,
+        description: exercise_row.description,
+        created: exercise_row.created,
+        modified: exercise_row.modified,
+        creator_id: exercise_row.creator_id,
+        video_link: exercise_row.video_link,
+        difficulty: exercise_row.difficulty,
+        equipment_items: exercise_row.equipment_items?.split(',') ?? [],
+        muscle_groups: exercise_row.muscle_groups?.split(',') ?? [],
+        fitness_goals: exercise_row.fitness_goals?.split(',') ?? [],
+    };
+}
+
+
 module.exports = {
     create_workout_plan,
     update_workout_plan,
@@ -351,7 +427,8 @@ module.exports = {
 // };
 
 // const func = async () => {
-//     delete_exercises_of_workout_driver();
-//     get_exercises_by_workout_id_driver();
+//     const exercise = await get_exercise_by_id(5);
+//     console.log(exercise);
 //     con.end();
 // };
+// func();
