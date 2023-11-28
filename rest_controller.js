@@ -332,24 +332,25 @@ async function insert_daily_survey_controller(req, res) {
   }
   else
   {
-  try {
-    const { calories_consumed,  weight, calories_burned, created, modified, date, user_id, water_intake, mood,} = req.body;
+    try {
+      const { calories_consumed,  weight, calories_burned, created, modified, date, user_id, water_intake, mood,} = req.body;
 
-    const result = await daily_survey.insert_daily_survey_business_layer({
-      calories_consumed,
-      weight,
-      calories_burned,
-      created,
-      modified,
-      date,
-      user_id,
-      water_intake,
-      mood,
-    });
+      const result = await daily_survey.insert_daily_survey_business_layer({
+        calories_consumed,
+        weight,
+        calories_burned,
+        created,
+        modified,
+        date,
+        user_id,
+        water_intake,
+        mood,
+      });
 
-    res.json(result);
-  } catch (error) {
-    res.status(400).json({ message: error.message || "An error occurred" });
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ message: error.message || "An error occurred" });
+    }
   }
 }
 
