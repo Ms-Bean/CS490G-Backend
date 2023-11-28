@@ -7,14 +7,14 @@ const con = mysql.createConnection({
     password: "cactusgreen", //Replace with your password
     database: database_name
 });
-con.connect(function(err) {
-    if (err)
-        throw err;
-    con.query("USE " + database_name, function (err, result, fields) {
-        if (err)
-            throw err;
-    });
-    console.log("connected to database");
-});
+// con.connect(function(err) {
+//     if (err)
+//         throw err;
+//     con.query("USE " + database_name, function (err, result, fields) {
+//         if (err)
+//             throw err;
+//     });
+//     console.log("connected to database");
+// });
 
 module.exports.con = con;

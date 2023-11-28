@@ -259,11 +259,12 @@ async function get_exercise_by_id(exercise_id) {
     const sql = `SELECT Exercise_Bank.exercise_id, Exercise_Bank.name, Exercise_Bank.description, Exercise_Bank.created, Exercise_Bank.modified,
         Exercise_Bank.user_who_created_it AS creator_id, Exercise_Bank.difficulty, Exercise_Bank.video_link,
         GROUP_CONCAT(DISTINCT Exercise_Equipment.equipment_item) AS equipment_items, GROUP_CONCAT(DISTINCT Exercise_Muscle_Group.muscle_group) AS muscle_groups,
-        GROUP_CONCAT(DISTINCT Exercise_Fitness_Goals.fitness_goal) AS fitness_goals
+        GROUP_CONCAT(DISTINCT Goals.name) AS goals
     FROM Exercise_Bank
         LEFT JOIN Exercise_Equipment USING (exercise_id)
         LEFT JOIN Exercise_Muscle_Group USING (exercise_id)
         LEFT JOIN Exercise_Fitness_Goals USING (exercise_id)
+        LEFT JOIN Goals ON Goals.goal_id = Exercise_Fitness_Goals.goal_id
     WHERE Exercise_Bank.exercise_id = ?
     GROUP BY Exercise_Bank.exercise_id`;
 
@@ -290,11 +291,12 @@ async function get_all_exercises() {
     const sql = `SELECT Exercise_Bank.exercise_id, Exercise_Bank.name, Exercise_Bank.description, Exercise_Bank.created, Exercise_Bank.modified,
         Exercise_Bank.user_who_created_it AS creator_id, Exercise_Bank.difficulty, Exercise_Bank.video_link,
         GROUP_CONCAT(DISTINCT Exercise_Equipment.equipment_item) AS equipment_items, GROUP_CONCAT(DISTINCT Exercise_Muscle_Group.muscle_group) AS muscle_groups,
-        GROUP_CONCAT(DISTINCT Exercise_Fitness_Goals.fitness_goal) AS fitness_goals
+        GROUP_CONCAT(DISTINCT Goals.name) AS goals
     FROM Exercise_Bank
         LEFT JOIN Exercise_Equipment USING (exercise_id)
         LEFT JOIN Exercise_Muscle_Group USING (exercise_id)
         LEFT JOIN Exercise_Fitness_Goals USING (exercise_id)
+        LEFT JOIN Goals ON Goals.goal_id = Exercise_Fitness_Goals.goal_id
     GROUP BY Exercise_Bank.exercise_id`;
 
     const exercise_rows = await new Promise((resolve, reject) => {
@@ -324,7 +326,7 @@ function _convert_row_to_exercise(exercise_row) {
         difficulty: exercise_row.difficulty,
         equipment_items: exercise_row.equipment_items?.split(',') ?? [],
         muscle_groups: exercise_row.muscle_groups?.split(',') ?? [],
-        fitness_goals: exercise_row.fitness_goals?.split(',') ?? [],
+        goals: exercise_row.goals?.split(',') ?? [],
     };
 }
 
@@ -341,7 +343,9 @@ module.exports = {
     create_workout_exercise,
     update_workout_exercise,
     delete_workout_exercise,
-    delete_exercises_of_workout
+    delete_exercises_of_workout,
+    get_exercise_by_id,
+    get_all_exercises
 };
 
 // TODO: Remove test code before committing
