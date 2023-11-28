@@ -390,7 +390,10 @@ module.exports = {
     delete_workout_exercise,
     delete_exercises_of_workout,
     get_exercise_by_id,
-    get_all_exercises
+    get_all_exercises,
+    Exercise,
+    WorkoutPlanExercise,
+    WorkoutPlan
 };
 
 // TODO: Remove test code before committing

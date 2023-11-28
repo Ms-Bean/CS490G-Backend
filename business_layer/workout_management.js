@@ -16,8 +16,14 @@ async function create_workout_plan(wp_request) {
         throw e;
     }
 
+    const wp = new workout_management.WorkoutPlan({
+        workout_plan_id: 0,
+        name: wp_request.name,
+        author_id: wp_request.author_id,
+    });
+
     try {
-        await workout_management.create_workout_plan(wp_request.author_id, wp_request.name);
+        return workout_management.create_workout_plan(wp);
     } catch (e) {
         e.code = 500;
         throw e;
@@ -32,27 +38,19 @@ async function create_workout_plan_exercise(user_id, wpe_request) {
         throw e;
     }
 
-    const {workout_plan_id, exercise_id} = wpe_request;
-    const workout_plan = await workout_management.get_workout_by_id(workout_plan_id);
-    if (workout_plan === null) {
-        const error = new Error(`Workout plan with id ${workout_plan_id} does not exist`);
+    const wpe = new workout_management.WorkoutPlanExercise(wpe_request);
+    const wp = await workout_management.get_workout_by_id(wpe.workout_plan_id);
+    if (wp === null) {
+        const error = new Error(`Workout plan with id ${wpe.workout_plan_id} does not exist`);
         error.code = 400;
         throw error;
-    } else if (workout_plan.author_id !== user_id) {
-        const error = new Error(`User unauthorized to create exercise for workout plan with id ${workout_plan_id} because they don't own the workout plan`);
+    } else if (wp.author_id !== user_id) {
+        const error = new Error(`User unauthorized to create exercise for workout plan with id ${wp.workout_plan_id} because they don't own the workout plan`);
         error.code = 403;
         throw error;
     }
 
-    const details = {
-        weekday: wpe_request.weekday,
-        time: wpe_request.time,
-        reps_per_set: wpe_request.reps_per_set,
-        num_sets: wpe_request.num_sets,
-        weight: wpe_request.weight
-    };
-
-    await workout_management.create_workout_exercise(workout_plan_id, exercise_id, details);
+    return workout_management.create_workout_exercise(wpe);
 }
 
 
@@ -76,9 +74,6 @@ function _validate_create_workout_plan_request(wp_request) {
 function _validate_create_workout_plan_exercise_request(wpe_request) {
     const weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
     const time_regex = /^((0[0-9])|(1[0-2]))(:[0-5][0-9]){2}$/;
-    if (typeof wpe_request.name !== "string") {
-        throw new Error("Workout plan exercise `name` must be a string");
-    }
     if (!weekdays.includes(wpe_request.weekday)) {
         throw new Error("Workout plan exercise `weekday` must be one of the days of the week");
     }
@@ -91,31 +86,39 @@ function _validate_create_workout_plan_exercise_request(wpe_request) {
     if (!Number.isInteger(wpe_request.exercise_id)) {
         throw new Error("Workout plan exercise `exercise_id` must be an integer");
     }
-    if (!Number.isInteger(wpe_request.reps_per_set) || wpe_request.reps_per_set !== null) {
+    if (wpe_request.reps_per_set !== null && !Number.isInteger(wpe_request.reps_per_set)) {
         throw new Error("Workout plan exercise `reps_per_set` must be an integer or null");
     }
-    if (!Number.isInteger(wpe_request.num_sets) || wpe_request.num_sets !== null) {
+    if (wpe_request.num_sets !== null && !Number.isInteger(wpe_request.num_sets)) {
         throw new Error("Workout plan exercise `num_sets` must be an integer or null");
     }
-    if (!Number.isInteger(wpe_request.weight) || wpe_request.num_sets !== null) {
+    if (wpe_request.weight !== null && !Number.isInteger(wpe_request.weight)) {
         throw new Error("Workout plan exercise `weight` must be an integer or null");
     }
 }
 
 
 module.exports = {
-    create_workout_plan
+    create_workout_plan,
+    create_workout_plan_exercise
 };
 
 const con = require("../data_layer/conn").con;
 const testing = async () => {
-    const workout_plan = {
-        name: "New Workout 2",
-        author_id: "F"
+    const wpe_request = {
+        workout_plan_id: 25,
+        exercise_id: 37,
+        weekday: "tuesday",
+        time: "10:45:00",
+        reps_per_set: null,
+        num_sets: null,
+        weight: null
     };
-    await create_workout_plan(workout_plan);
+
+    const wp = await create_workout_plan_exercise(1, wpe_request);
+    console.log(wp);
 };
-// testing().then(() => console.log("Done!")).catch((e) => {
-//     console.log(`Error code: ${e.code}`);
-//     console.log(`Error message: ${e.message}`);
-// }).finally(() => con.end());
+testing().then(() => console.log("Done!")).catch((e) => {
+    console.log(`Error code: ${e.code ?? 500}`);
+    console.log(`Error message: ${e.message}`);
+}).finally(() => con.end());
