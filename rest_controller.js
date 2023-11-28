@@ -323,7 +323,15 @@ async function search_coaches_controller(req, res) {
 
 async function insert_daily_survey_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-
+  
+  if(req.session.user === undefined || req.session.user["user_id"] == undefined)
+  {  
+    res.status(400).send({
+      message: "User is not logged in"
+    });
+  }
+  else
+  {
   try {
     const { calories_consumed,  weight, calories_burned, created, modified, date, user_id, water_intake, mood,} = req.body;
 
