@@ -253,6 +253,21 @@ function delete_exercises_of_workout(workout_plan_id) {
     });
 }
 
+module.exports = {
+    create_workout_plan,
+    update_workout_plan,
+    delete_workout_plan,
+    get_workouts_by_author,
+    get_workout_by_id,
+    // get_assigned_workout,
+    get_exercises_of_workouts,
+    get_exercises_by_workout_id,
+    create_workout_exercise,
+    update_workout_exercise,
+    delete_workout_exercise,
+    delete_exercises_of_workout
+};
+
 // TODO: Remove test code before committing
 // const mysql = require("mysql");
 // const con = mysql.createConnection({ 
