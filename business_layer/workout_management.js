@@ -94,6 +94,25 @@ async function delete_workout_plan(user_id, wp_request) {
     await workout_management.delete_workout_plan(workout_plan_id);
 }
 
+async function delete_workout_plan_exercise(user_id, wpe_request) {
+    _validate_create_workout_plan_exercise_request(wpe_request);
+    const wp = await workout_management.get_workout_by_id(wpe_request.workout_plan_id);
+    const {workout_plan_id, workout_plan_exercise_id} = wpe_request;
+    if (wp === null) {
+        throw new APIError(`No workout plan with id ${workout_plan_id} exists`, 400);
+    } else if (wp.author_id !== user_id) {
+        throw new APIError(`User unauthorized to modify workout plan with id ${workout_plan_id} because they don't own the workout plan`, 403);
+    }
+
+    const wpe = (await workout_management.get_exercises_by_workout_id(workout_plan_id))
+        .reduce((p, c) => c.workout_plan_exercise_id === workout_plan_exercise_id ? c : p, null);
+
+    if (wpe === null) {
+        throw new APIError(`Workout plan exercise with id ${workout_plan_exercise_id} doesn't exist under workout plan with id ${workout_plan_id}`, 400);
+    }
+
+    await workout_management.delete_workout_exercise(workout_plan_exercise_id);
+}
 
 // TODO: Clean up and refactor
 // TODO: Validate exercises property
@@ -156,8 +175,8 @@ const testing = async () => {
         author_id: 2
     };
     const wpe_request = {
-        workout_plan_exercise_id: 289,
-        workout_plan_id: 25,
+        workout_plan_exercise_id: 287,
+        workout_plan_id: 22,
         exercise_id: 36,
         weekday: "wednesday",
         time: "17:00:00",
@@ -166,7 +185,7 @@ const testing = async () => {
         weight: 150
     }
 
-    const wpe = await delete_workout_plan(2, wp_request);
+    const wpe = await delete_workout_plan_exercise(2, wpe_request);
     console.log(wpe);
 };
 testing().then(() => console.log("Done!")).catch((e) => {
