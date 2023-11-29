@@ -19,23 +19,6 @@ async function insert_daily_survey_data_layer({
   water_intake,
   mood,
 }) {
-  console.log(
-    "insert_daily_survey_data_layer, date: ",
-    date,
-    "user_id: ",
-    user_id,
-    "calories_consumed: ",
-    calories_consumed,
-    "weight: ",
-    weight,
-    "calories_burned: ",
-    calories_burned,
-    "water_intake: ",
-    water_intake,
-    "mood: ",
-    mood
-  );
-
   const formattedCreatedDatetime = new Date(created)
     .toISOString()
     .slice(0, 19)

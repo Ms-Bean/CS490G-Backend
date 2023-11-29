@@ -323,12 +323,10 @@ async function search_coaches_controller(req, res) {
 }
 
 async function insert_daily_survey_controller(req, res) {
-  console.log("daily survey ", req.body)
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   
   if(req.session.user === undefined || req.session.user["user_id"] == undefined)
   {  
-    console.log("user is not logged in");
     res.status(400).send({
       message: "User is not logged in"
     });
