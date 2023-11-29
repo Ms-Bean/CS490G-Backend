@@ -8,6 +8,7 @@ const daily_survey = require("./business_layer/daily_survey");
 const client_coach_interaction = require("./business_layer/client_coach_interaction");
 const messaging = require("./business_layer/messaging");
 const profile_management = require("./business_layer/profile_management");
+const coach_dashboard = require("./business_layer/coach_dashboard");
 
 async function health_check(req, res) {
   res.status(200).send("Hello, world!");
@@ -323,25 +324,34 @@ async function search_coaches_controller(req, res) {
 
 async function insert_daily_survey_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-
-  try {
-    const { calories_consumed,  weight, calories_burned, created, modified, date, user_id, water_intake, mood,} = req.body;
-
-    const result = await daily_survey.insert_daily_survey_business_layer({
-      calories_consumed,
-      weight,
-      calories_burned,
-      created,
-      modified,
-      date,
-      user_id,
-      water_intake,
-      mood,
+  
+  if(req.session.user === undefined || req.session.user["user_id"] == undefined)
+  {  
+    res.status(400).send({
+      message: "User is not logged in"
     });
+  }
+  else
+  {
+    try {
+      const { calories_consumed,  weight, calories_burned, created, modified, date, user_id, water_intake, mood,} = req.body;
 
-    res.json(result);
-  } catch (error) {
-    res.status(400).json({ message: error.message || "An error occurred" });
+      const result = await daily_survey.insert_daily_survey_business_layer({
+        calories_consumed,
+        weight,
+        calories_burned,
+        created,
+        modified,
+        date,
+        user_id,
+        water_intake,
+        mood,
+      });
+
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ message: error.message || "An error occurred" });
+    }
   }
 }
 
@@ -421,6 +431,37 @@ async function set_user_profile(req, res)
   }
 }
 
+
+async function get_coach_dashboard_info(req, res)
+{
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  if(req.session.user === undefined || req.session.user["user_id"] == undefined)
+  {  
+    res.status(400).send({
+      message: "User is not logged in"
+    });
+  }
+  else
+  {
+    console.log(req.body);
+    coach_dashboard
+      .get_coach_dashboard_info(
+        req.session.user["user_id"]
+      )
+      .then((response) =>{
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.status(200).send(response);
+      })
+      .catch((err) =>{
+        console.log(err);
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.status(400).send({
+          message: err
+        });
+      })
+  }
+}
+
 module.exports.insert_daily_survey_controller = insert_daily_survey_controller;
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
 module.exports.accept_client_controller = accept_client_controller;
@@ -438,3 +479,4 @@ module.exports.alter_account_info_controller = alter_account_info_controller;
 module.exports.search_coaches_controller = search_coaches_controller;
 module.exports.get_user_profile = get_user_profile;
 module.exports.set_user_profile = set_user_profile;
+module.exports.get_coach_dashboard_info = get_coach_dashboard_info;

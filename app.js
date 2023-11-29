@@ -56,6 +56,7 @@ app.post('/coaches/search', controller.search_coaches_controller);
 app.post('/daily_survey', controller.insert_daily_survey_controller);
 app.get('/get_user_profile', controller.get_user_profile);
 app.post('/set_user_profile', controller.set_user_profile);
+app.get("/get_coach_dashboard_info", controller.get_coach_dashboard_info);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {

@@ -4,7 +4,7 @@
   "description": "The backend (nodejs)",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose --forceExit"
+    "test": "node .\\__tests__\\testrunner.js"
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +19,7 @@
   },
   "keywords": [],
   "devDependencies": {
+    "glob": "^7.2.3",
     "jest": "^29.7.0"
   }
 }
