@@ -4,7 +4,7 @@ let database_name = "cs490_database" //Replace with your database name
 const con = mysql.createConnection({ 
     host: "localhost",
     user: "root", //Replace with your user
-    password: "cactusgreen", //Replace with your password
+    password: "Bigben70!?@@@", //Replace with your password
     database: database_name
 });
 con.connect(function(err) {
