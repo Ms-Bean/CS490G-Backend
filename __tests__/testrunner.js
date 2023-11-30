@@ -3,7 +3,7 @@ const glob = require('glob');
 const path = require('path');
 
 // Find all test files using the glob pattern
-const testFiles = glob.sync('test/**/*.js');
+const testFiles = glob.sync('..\\__tests__\\*.js');
 
 // Run each test file
 testFiles.forEach((file) => {
