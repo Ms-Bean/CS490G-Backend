@@ -89,8 +89,10 @@ async function update_workout_plan_exercise(user_id, wpe_request) {
 
 
 async function delete_workout_plan(user_id, wp_request) {
-    _validate_create_workout_plan_request(wp_request);
     const {workout_plan_id} = wp_request;
+    if (!Number.isInteger(workout_plan_id)) {
+        throw new APIError("Invalid workout plan id");
+    }
     const wp = await workout_management.get_workout_by_id(workout_plan_id);
     if (wp === null) {
         throw new APIError(`No workout plan with id ${workout_plan_id} exists`, 400);
@@ -102,8 +104,13 @@ async function delete_workout_plan(user_id, wp_request) {
 }
 
 async function delete_workout_plan_exercise(user_id, wpe_request) {
-    _validate_create_workout_plan_exercise_request(wpe_request);
     const {workout_plan_id, workout_plan_exercise_id} = wpe_request;
+    if (!Number.isInteger(workout_plan_id)) {
+        throw new APIError("Invalid workout plan id");
+    } else if (!Number.isInteger(workout_plan_exercise_id)) {
+        throw new APIError("Invalid workout plan exercise id");
+    }
+    
     const wp = await workout_management.get_workout_by_id(workout_plan_id);
     if (wp === null) {
         throw new APIError(`No workout plan with id ${workout_plan_id} exists`, 400);
