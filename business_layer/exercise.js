@@ -24,6 +24,11 @@ async function delete_exercise_business_layer(exerciseId) {
   return exercise_bank.delete_exercise_data_layer(exerciseId);
 }
 
+async function add_exercise_business_layer(exerciseData) {
+  return exercise_bank.add_exercise_data_layer(exerciseData);
+}
+
+module.exports.add_exercise_business_layer = add_exercise_business_layer;
 module.exports.get_all_exercises_business_layer = get_all_exercises_business_layer;
 module.exports.delete_exercise_business_layer = delete_exercise_business_layer;
 module.exports.update_exercise_business_layer = update_exercise_business_layer;

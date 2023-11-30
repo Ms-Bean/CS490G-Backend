@@ -60,6 +60,7 @@ app.get("/get_coach_dashboard_info", controller.get_coach_dashboard_info);
 app.get("/exercises", controller.get_all_exercises_controller);
 app.put("/update_exercise/:exercise_id", controller.update_exercise_controller);
 app.delete("/delete_exercise/:exercise_id", controller.delete_exercise_controller);
+app.post("/add_exercise", controller.add_exercise_controller);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {

@@ -76,6 +76,31 @@ async function delete_exercise_data_layer(exerciseId) {
   });
 }
 
+async function add_exercise_data_layer(exerciseData) {
+  let sql = `
+    INSERT INTO Exercise_Bank (name, description, user_who_created_it, difficulty, video_link, goal_id, thumbnail)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const { name, description, user_who_created_it, difficulty, video_link, goal_id, thumbnail } = exerciseData;
+
+  return new Promise((resolve, reject) => {
+    con.query(
+      sql, 
+      [name, description, user_who_created_it, difficulty, video_link, goal_id, thumbnail], 
+      (err, result) => {
+        if (err) {
+          console.error("Error executing SQL in add_exercise_data_layer:", err);
+          reject(new Error("Failed to add new exercise to the database."));
+        } else {
+          resolve("New exercise added successfully");
+        }
+      }
+    );
+  });
+}
+
+module.exports.add_exercise_data_layer = add_exercise_data_layer;
 module.exports.delete_exercise_data_layer = delete_exercise_data_layer;
 module.exports.get_all_exercises_data_layer = get_all_exercises_data_layer;
 module.exports.update_exercise_data_layer = update_exercise_data_layer;

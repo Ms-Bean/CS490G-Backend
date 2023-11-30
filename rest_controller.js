@@ -510,7 +510,7 @@ async function delete_exercise_controller(req, res) {
     console.log("Access denied: User is not logged in");
     return res.status(403).send({ message: "Access denied: User is not logged in" });
   }
-  
+
   const exerciseId = req.params.exercise_id;
   try {
     const message = await exercise.delete_exercise_business_layer(exerciseId);
@@ -522,6 +522,27 @@ async function delete_exercise_controller(req, res) {
   }
 }
 
+async function add_exercise_controller(req, res) {
+  console.log("Received request to add a new exercise", req.body);
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  if (!req.session.user || !req.session.user["user_id"]) {
+    console.log("Access denied: User is not logged in");
+    return res.status(403).send({ message: "Access denied: User is not logged in" });
+  }
+
+  try {
+    const exerciseData = req.body; // Assuming exerciseData contains all necessary fields
+    const message = await exercise.add_exercise_business_layer(exerciseData);
+    console.log("New exercise added successfully, sending response");
+    res.status(201).json({ message });
+  } catch (error) {
+    console.error("Error in add_exercise_controller:", error);
+    res.status(400).json({ message: error.message });
+  }
+}
+
+module.exports.add_exercise_controller = add_exercise_controller;
 module.exports.delete_exercise_controller = delete_exercise_controller;
 module.exports.get_all_exercises_controller = get_all_exercises_controller;
 module.exports.update_exercise_controller = update_exercise_controller;
