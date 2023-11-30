@@ -8,7 +8,6 @@ async function get_all_exercises_business_layer() {
   return exercise_bank.get_all_exercises_data_layer();
 }
 
-module.exports.get_all_exercises_business_layer = get_all_exercises_business_layer;
 
 /**
  * Business logic for updating an exercise item.
@@ -21,4 +20,10 @@ async function update_exercise_business_layer(exerciseData) {
   return exercise_bank.update_exercise_data_layer(exerciseData);
 }
 
+async function delete_exercise_business_layer(exerciseId) {
+  return exercise_bank.delete_exercise_data_layer(exerciseId);
+}
+
+module.exports.get_all_exercises_business_layer = get_all_exercises_business_layer;
+module.exports.delete_exercise_business_layer = delete_exercise_business_layer;
 module.exports.update_exercise_business_layer = update_exercise_business_layer;

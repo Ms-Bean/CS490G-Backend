@@ -61,5 +61,21 @@ async function update_exercise_data_layer(exerciseData) {
   });
 }
 
+async function delete_exercise_data_layer(exerciseId) {
+  let sql = "DELETE FROM Exercise_Bank WHERE exercise_id = ?";
+
+  return new Promise((resolve, reject) => {
+    con.query(sql, [exerciseId], (err, result) => {
+      if (err) {
+        console.error("Error executing SQL in delete_exercise_data_layer:", err);
+        reject(new Error("Failed to delete exercise from the database."));
+      } else {
+        resolve("Exercise deleted successfully");
+      }
+    });
+  });
+}
+
+module.exports.delete_exercise_data_layer = delete_exercise_data_layer;
 module.exports.get_all_exercises_data_layer = get_all_exercises_data_layer;
 module.exports.update_exercise_data_layer = update_exercise_data_layer;
