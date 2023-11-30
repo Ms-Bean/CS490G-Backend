@@ -508,7 +508,7 @@ async function get_workout_plans_from_author(req, res) {
 
   const user_id = req.session.user.user_id;
   try {
-    const workout_plans = await workout_management.get_workout_plans_by_owner({author_id, user_id});
+    const workout_plans = await workout_management.get_workout_plans_by_owner({user_id, author_id});
     res.json({workout_plans});
   } catch (e) {
     console.log(e.message);
