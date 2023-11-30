@@ -247,7 +247,7 @@ async function create_workout_exercise(wpe) {
         reps_per_set: wpe.reps_per_set,
         num_sets: wpe.num_sets,
         weight: wpe.weight,
-        exercise: new Exercise({exercise_id: wpe.exercise_id})
+        exercise: wpe.exercise
     });
 }
 
@@ -345,27 +345,33 @@ async function get_workout_exercise_by_id(workout_plan_exercise_id) {
     WHERE wpe.id = ?
     GROUP BY wpe.id`;
 
-    return new Promise((resolve, reject) => {
+    const results = await new Promise((resolve, reject) => {
         con.query(sql, [workout_plan_exercise_id], (err, results) => {
             if (err) {
                 reject(err);
                 return;
             }
-
-            const wpe = new WorkoutPlanExercise({
-                workout_plan_exercise_id: r.id,
-                workout_plan_id: r.workout_plan_id,
-                weekday: r.weekday,
-                time: r.time,
-                reps_per_set: r.reps_per_set,
-                num_sets: r.num_sets,
-                weight: r.weight,
-                exercise: _convert_row_to_exercise(r)
-            });
-
-            resolve(wpe);
+            resolve(results);
         });
     });
+
+    if (results.length === 0) {
+        return null;
+    }
+
+    const row = results[0];
+    const wpe = new WorkoutPlanExercise({
+        workout_plan_exercise_id: row.id,
+        workout_plan_id: row.workout_plan_id,
+        weekday: row.weekday,
+        time: row.time,
+        reps_per_set: row.reps_per_set,
+        num_sets: row.num_sets,
+        weight: row.weight,
+        exercise: _convert_row_to_exercise(row)
+    });
+
+    return wpe;
 }
 
 

@@ -36,6 +36,12 @@ async function create_workout_plan(user_id, wp_request) {
 
 async function create_workout_plan_exercise(user_id, wpe_request) {
     _validate_create_workout_plan_exercise_request(wpe_request);
+    const ex = await workout_management.get_exercise_by_id(wpe_request.exercise_id);
+    if (ex === null) {
+        throw new APIError(`No exercise with ID ${wpe_request.exercise_id} exists!`, 400);
+    }
+    
+    wpe_request.exercise = ex;
     const wpe = new workout_management.WorkoutPlanExercise(wpe_request);
     const wp = await workout_management.get_workout_by_id(wpe.workout_plan_id);
     if (wp === null) {
@@ -97,17 +103,15 @@ async function delete_workout_plan(user_id, wp_request) {
 
 async function delete_workout_plan_exercise(user_id, wpe_request) {
     _validate_create_workout_plan_exercise_request(wpe_request);
-    const wp = await workout_management.get_workout_by_id(wpe_request.workout_plan_id);
     const {workout_plan_id, workout_plan_exercise_id} = wpe_request;
+    const wp = await workout_management.get_workout_by_id(workout_plan_id);
     if (wp === null) {
         throw new APIError(`No workout plan with id ${workout_plan_id} exists`, 400);
     } else if (wp.author_id !== user_id) {
         throw new APIError(`User unauthorized to modify workout plan with id ${workout_plan_id} because they don't own the workout plan`, 403);
     }
 
-    const wpe = (await workout_management.get_exercises_by_workout_id(workout_plan_id))
-        .reduce((p, c) => c.workout_plan_exercise_id === workout_plan_exercise_id ? c : p, null);
-
+    const wpe = await workout_management.get_workout_exercise_by_id(workout_plan_exercise_id);
     if (wpe === null) {
         throw new APIError(`Workout plan exercise with id ${workout_plan_exercise_id} doesn't exist under workout plan with id ${workout_plan_id}`, 400);
     }
@@ -139,14 +143,17 @@ async function get_workout_plans_by_owner({user_id, author_id}) {
 }
 
 
-async function get_workout_plan_exercise_by_id(user_id, wpe_id) {
+async function get_workout_plan_exercise_by_id(user_id, wp_id, wpe_id) {
+    const wp = await workout_management.get_workout_by_id(wp_id);
+    if (wp === null) {
+        throw new APIError(`No workout plan with id ${wp_id} exists`, 404);
+    }
+    await _is_authorized_to_view_workout_plan_or_throw_403(user_id, wp.author_id);
+
     const wpe = await workout_management.get_workout_exercise_by_id(wpe_id);
     if (wpe === null) {
         throw new APIError(`No workout plan exercise with ID ${wpe_id}`, 404);
     }
-
-    const wp = await workout_management.get_workout_by_id(wpe.workout_plan_id);
-    await _is_authorized_to_view_workout_plan_or_throw_403(user_id, wp.author_id);
 
     return wpe;
 }

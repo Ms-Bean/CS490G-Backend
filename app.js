@@ -68,11 +68,11 @@ app.route('/workout_plan/:id')
   .put(controller.update_workout_plan)
   .delete(controller.delete_workout_plan);
 
-// app.post('/workout_plan/:wp_id/new');
-// app.route('/workout_plan/:wp_id/exercise/:wpe_id')
-//   .get()
-//   .put()
-//   .delete();
+app.post('/workout_plan/:wp_id/new', controller.create_workout_plan_exercise);
+app.route('/workout_plan/:wp_id/exercise/:wpe_id')
+  .get(controller.get_workout_plan_exercise_by_id)
+  .put(controller.update_workout_plan_exercise)
+  .delete(controller.delete_workout_plan_exercise);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {

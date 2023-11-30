@@ -606,6 +606,126 @@ async function delete_workout_plan(req, res) {
 }
 
 
+async function create_workout_plan_exercise(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot update workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.wp_id))) {
+    res.status(400).json({message: "Invalid workout plan id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  req.body.workout_plan_id = Number(req.params.wp_id);
+  try {
+    const workout_plan_exercise = await workout_management.create_workout_plan_exercise(user_id, req.body);
+    res.json({workout_plan_exercise});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function update_workout_plan_exercise(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot update workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.wp_id))) {
+    res.status(400).json({message: "Invalid workout plan id"});
+    return;
+  } else if (Number.isNaN(Number(req.params.wpe_id))) {
+    res.status(400).json({message: "Invalid workout plan exercise id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  req.body.workout_plan_id = Number(req.params.wp_id);
+  req.body.workout_plan_exercise_id = Number(req.params.wpe_id);
+  try {
+    const workout_plan_exercise = await workout_management.update_workout_plan_exercise(user_id, req.body);
+    res.json({workout_plan_exercise});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function get_workout_plan_exercise_by_id(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot update workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.wp_id))) {
+    res.status(400).json({message: "Invalid workout plan id"});
+    return;
+  } else if (Number.isNaN(Number(req.params.wpe_id))) {
+    res.status(400).json({message: "Invalid workout plan exercise id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  const workout_plan_id = Number(req.params.wp_id);
+  const workout_plan_exercise_id = Number(req.params.wpe_id);
+  try {
+    const workout_plan_exercise = await workout_management.get_workout_plan_exercise_by_id(user_id, workout_plan_id, workout_plan_exercise_id);
+    res.json({workout_plan_exercise});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function delete_workout_plan_exercise(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot update workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.wp_id))) {
+    res.status(400).json({message: "Invalid workout plan id"});
+    return;
+  } else if (Number.isNaN(Number(req.params.wpe_id))) {
+    res.status(400).json({message: "Invalid workout plan exercise id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  req.body.workout_plan_id = Number(req.params.wp_id);
+  req.body.workout_plan_exercise_id = Number(req.params.wpe_id);
+  try {
+    await workout_management.delete_workout_plan_exercise(user_id, req.body);
+    res.json({message: "Workout plan exercise successfully deleted"});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
 // TODO: Use proper middleware to check if users are logged in for all routes that require it
 function is_logged_in(req) {
   return req.session?.user?.user_id !== undefined;
@@ -637,3 +757,7 @@ module.exports.get_workout_plans_from_author = get_workout_plans_from_author;
 module.exports.get_workout_by_id = get_workout_by_id;
 module.exports.update_workout_plan = update_workout_plan;
 module.exports.delete_workout_plan = delete_workout_plan;
+module.exports.create_workout_plan_exercise = create_workout_plan_exercise;
+module.exports.update_workout_plan_exercise = update_workout_plan_exercise;
+module.exports.get_workout_plan_exercise_by_id = get_workout_plan_exercise_by_id;
+module.exports.delete_workout_plan_exercise = delete_workout_plan_exercise;
