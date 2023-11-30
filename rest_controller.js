@@ -9,6 +9,7 @@ const client_coach_interaction = require("./business_layer/client_coach_interact
 const messaging = require("./business_layer/messaging");
 const profile_management = require("./business_layer/profile_management");
 const coach_dashboard = require("./business_layer/coach_dashboard");
+const exercise = require("./business_layer/exercise");
 
 async function health_check(req, res) {
   res.status(200).send("Hello, world!");
@@ -212,7 +213,6 @@ async function get_role_controller(req, res)
     }
 }
 
-
 async function insert_message_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   messaging.insert_message_business_layer(
@@ -235,6 +235,7 @@ async function get_client_coach_messages_controller(req, res) {
   })
   .catch((err) => res.status(400).json({message: err.message}));
 }
+
 async function get_user_account_info_controller(req, res)
 {  
   if(req.session.user === undefined || req.session.user["user_id"] == undefined)
@@ -264,6 +265,7 @@ async function get_user_account_info_controller(req, res)
     });
   }
 }
+
 async function alter_account_info_controller(req, res)
 {
   console.log("HIII");
@@ -304,7 +306,6 @@ async function alter_account_info_controller(req, res)
       })
   }
 }
-
 
 async function search_coaches_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -386,6 +387,7 @@ async function get_user_profile(req, res)
       })
   }
 }
+
 async function set_user_profile(req, res)
 {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -432,7 +434,6 @@ async function set_user_profile(req, res)
   }
 }
 
-
 async function get_coach_dashboard_info(req, res)
 {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -462,7 +463,49 @@ async function get_coach_dashboard_info(req, res)
       })
   }
 }
+async function get_all_exercises_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
 
+  try {
+    const exercises = await exercise.get_all_exercises_business_layer();
+    res.json(exercises);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+async function update_exercise_controller(req, res) {
+  console.log("Received request to update an exercise", req.body);
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  if (!req.session.user || !req.session.user["user_id"]) {
+    console.log("Access denied: User is not logged in");
+    return res.status(403).send({ message: "Access denied: User is not logged in" });
+  }
+
+  try {
+    const userRole = await user_info.get_role_business_layer(req.session.user["user_id"]);
+    
+    if (userRole !== 'admin') {
+      console.log("Access denied: User is not an admin", req.session.user);
+      return res.status(403).send({ message: "Access denied: User is not an admin" });
+    }
+
+    console.log("User is authorized. Updating exercise with provided data");
+    const exerciseData = req.body; // Assuming exerciseData contains all necessary fields
+    const message = await exercise.update_exercise_business_layer(exerciseData);
+    console.log("Exercise updated successfully, sending response");
+    res.status(200).json({ message });
+  } catch (error) {
+    console.error("Error in update_exercise_controller:", error);
+    res.status(400).json({ message: error.message });
+  }
+}
+
+
+
+module.exports.get_all_exercises_controller = get_all_exercises_controller;
+module.exports.update_exercise_controller = update_exercise_controller;
 module.exports.insert_daily_survey_controller = insert_daily_survey_controller;
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
 module.exports.accept_client_controller = accept_client_controller;
