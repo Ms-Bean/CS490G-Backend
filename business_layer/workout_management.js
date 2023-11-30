@@ -25,12 +25,7 @@ async function create_workout_plan(wp_request) {
         author_id: wp_request.author_id,
     });
 
-    try {
-        return workout_management.create_workout_plan(wp);
-    } catch (e) {
-        e.code = 500;
-        throw e;
-    }
+    return workout_management.create_workout_plan(wp);
 }
 
 async function create_workout_plan_exercise(user_id, wpe_request) {
@@ -114,6 +109,63 @@ async function delete_workout_plan_exercise(user_id, wpe_request) {
     await workout_management.delete_workout_exercise(workout_plan_exercise_id);
 }
 
+
+async function get_workout_plan_by_id({user_id, wp_id, include_exercises}) {
+    const wp = await workout_management.get_workout_by_id(wp_id);
+    if (wp === null) {
+        throw new APIError(`No workout plan with id ${wp_id} exists`, 400);
+    } else if (wp.author_id !== user_id) {
+        throw new APIError(`User unauthorized to view workout plan with id ${wp_id} because they don't own the workout plan`, 403);
+    }
+
+    if (!include_exercises) {
+        return wp;
+    }
+
+    wp.exercises = await workout_management.get_exercises_by_workout_id(wp_id);
+    return wp;
+}
+
+
+async function get_workout_plans_by_owner({user_id, author_id}) {
+    await _is_authorized_to_view_workout_plan_or_throw_403(user_id, author_id);
+    const wps = await workout_management.get_workouts_by_author(author_id);
+    return {workout_plans: wps};
+}
+
+
+async function get_workout_plan_exercise_by_id(user_id, wpe_id) {
+    const wpe = await workout_management.get_workout_exercise_by_id(wpe_id);
+    if (wpe === null) {
+        throw new APIError(`No workout plan exercise with ID ${wpe_id}`, 404);
+    }
+
+    const wp = await workout_management.get_workout_by_id(wpe.workout_plan_id);
+    await _is_authorized_to_view_workout_plan_or_throw_403(user_id, wp.author_id);
+
+    return wpe;
+}
+
+
+async function get_exercise_by_id(exercise_id) {
+    return workout_management.get_exercise_by_id(exercise_id);
+}
+
+async function get_all_exercises() {
+    return {
+        exercises: await workout_management.get_all_exercises()
+    };
+}
+
+
+async function _is_authorized_to_view_workout_plan_or_throw_403(user_id, wp_author_id) {
+    if (user_id !== wp_author_id &&
+            !(await client_coach_interaction.check_if_client_has_hired_coach(user_id, wp_author_id) || await client_coach_interaction.check_if_client_has_hired_coach(wp_author_id, user_id))) {
+        throw new APIError(`User with ID ${user_id} not authorized to view workout plans owned by user with ID ${wp_author_id}`, 403);
+    }
+}
+
+
 // TODO: Clean up and refactor
 // TODO: Validate exercises property
 function _validate_create_workout_plan_request(wp_request) {
@@ -164,31 +216,38 @@ module.exports = {
     create_workout_plan,
     create_workout_plan_exercise,
     update_workout_plan,
-    update_workout_plan_exercise
+    update_workout_plan_exercise,
+    delete_workout_plan,
+    delete_workout_plan_exercise,
+    get_workout_plan_by_id,
+    get_workout_plans_by_owner,
+    get_workout_plan_exercise_by_id,
+    get_exercise_by_id,
+    get_all_exercises,
 };
 
-const con = require("../data_layer/conn").con;
-const testing = async () => {
-    const wp_request = {
-        workout_plan_id: 25,
-        name: 'New Name for Second New Workout from Business Layer',
-        author_id: 2
-    };
-    const wpe_request = {
-        workout_plan_exercise_id: 287,
-        workout_plan_id: 22,
-        exercise_id: 36,
-        weekday: "wednesday",
-        time: "17:00:00",
-        reps_per_set: 5,
-        num_sets: 3,
-        weight: 150
-    }
+// const con = require("../data_layer/conn").con;
+// const testing = async () => {
+//     const wp_request = {
+//         workout_plan_id: 25,
+//         name: 'New Name for Second New Workout from Business Layer',
+//         author_id: 2
+//     };
+//     const wpe_request = {
+//         workout_plan_exercise_id: 287,
+//         workout_plan_id: 22,
+//         exercise_id: 36,
+//         weekday: "wednesday",
+//         time: "17:00:00",
+//         reps_per_set: 5,
+//         num_sets: 3,
+//         weight: 150
+//     }
 
-    const wpe = await delete_workout_plan_exercise(2, wpe_request);
-    console.log(wpe);
-};
-testing().then(() => console.log("Done!")).catch((e) => {
-    console.log(`Error code: ${e.status_code ?? 500}`);
-    console.log(`Error message: ${e.message}`);
-}).finally(() => con.end());
+//     const wpe = await get_workout_plan_by_id({user_id: 38, wp_id: 1, include_exercises: false});
+//     console.log(wpe);
+// };
+// testing().then(() => console.log("Done!")).catch((e) => {
+//     console.log(`Error code: ${e.status_code ?? 500}`);
+//     console.log(`Error message: ${e.message}`);
+// }).finally(() => con.end());
