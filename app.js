@@ -61,6 +61,8 @@ app.get("/exercises", controller.get_all_exercises_controller);
 app.put("/update_exercise/:exercise_id", controller.update_exercise_controller);
 app.delete("/delete_exercise/:exercise_id", controller.delete_exercise_controller);
 app.post("/add_exercise", controller.add_exercise_controller);
+app.get("/goal_name/:goal_id", controller.goal_name_by_id_controller);
+app.get("/goals", controller.get_all_goals_controller);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {

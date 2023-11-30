@@ -10,6 +10,7 @@ const messaging = require("./business_layer/messaging");
 const profile_management = require("./business_layer/profile_management");
 const coach_dashboard = require("./business_layer/coach_dashboard");
 const exercise = require("./business_layer/exercise");
+const goal = require("./business_layer/goals");
 
 async function health_check(req, res) {
   res.status(200).send("Hello, world!");
@@ -542,6 +543,30 @@ async function add_exercise_controller(req, res) {
   }
 }
 
+async function goal_name_by_id_controller(req, res) {
+  const goalId = req.params.goal_id;
+
+  try {
+    const goalName = await exercise.goal_name_by_id_business_layer(goalId);
+    res.json({ goalName });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+async function get_all_goals_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  try {
+    const goals = await goal.get_all_goals_business_layer();
+    res.json(goals);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+module.exports.get_all_goals_controller = get_all_goals_controller;
+module.exports.goal_name_by_id_controller = goal_name_by_id_controller;
 module.exports.add_exercise_controller = add_exercise_controller;
 module.exports.delete_exercise_controller = delete_exercise_controller;
 module.exports.get_all_exercises_controller = get_all_exercises_controller;

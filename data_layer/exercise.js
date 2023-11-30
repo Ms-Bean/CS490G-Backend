@@ -7,17 +7,20 @@ let con = connection.con;
  * @returns {Promise<Array>} - Resolves with an array of exercises.
  */
 async function get_all_exercises_data_layer() {
-  // SQL query to select all exercises
-  let sql = "SELECT * FROM Exercise_Bank";
+  // SQL query to select all exercises along with their corresponding goal names
+  let sql = `
+    SELECT Exercise_Bank.*, Goals.name AS goal_name 
+    FROM Exercise_Bank
+    LEFT JOIN Goals ON Exercise_Bank.goal_id = Goals.goal_id;
+  `;
 
   return new Promise((resolve, reject) => {
-    // Executing the SQL query
     con.query(sql, (err, results) => {
       if (err) {
         console.error("Error executing SQL in get_all_exercises_data_layer:", err);
         reject(new Error("Failed to retrieve exercises from the database."));
       } else {
-        // Successfully retrieved the exercises
+        // Successfully retrieved the exercises along with goal names
         resolve(results);
       }
     });
