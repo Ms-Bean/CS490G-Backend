@@ -129,8 +129,7 @@ async function get_workout_plan_by_id({user_id, wp_id, include_exercises}) {
 
 async function get_workout_plans_by_owner({user_id, author_id}) {
     await _is_authorized_to_view_workout_plan_or_throw_403(user_id, author_id);
-    const wps = await workout_management.get_workouts_by_author(author_id);
-    return {workout_plans: wps};
+    return await workout_management.get_workouts_by_author(author_id);
 }
 
 
@@ -152,9 +151,7 @@ async function get_exercise_by_id(exercise_id) {
 }
 
 async function get_all_exercises() {
-    return {
-        exercises: await workout_management.get_all_exercises()
-    };
+    return workout_management.get_all_exercises();
 }
 
 

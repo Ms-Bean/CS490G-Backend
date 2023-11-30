@@ -57,6 +57,23 @@ app.post('/daily_survey', controller.insert_daily_survey_controller);
 app.get('/get_user_profile', controller.get_user_profile);
 app.post('/set_user_profile', controller.set_user_profile);
 
+app.get('/exercise/all', controller.get_all_exercises);
+app.get('/exercise/:id', controller.get_exercise_by_id);
+
+// app.post('/workout_plan/new');
+// app.get('/workout_plan/author');  // author_id provided through query param
+
+// app.route('/workout_plan/:id')
+//   .get()
+//   .put()
+//   .delete();
+
+// app.post('/workout_plan/:wp_id/new');
+// app.route('/workout_plan/:wp_id/exercise/:wpe_id')
+//   .get()
+//   .put()
+//   .delete();
+
 app.get("/check_session", (req, res) => {
   if (req.session.user) {
     res.status(200).send({ isLoggedIn: true, user: req.session.user });

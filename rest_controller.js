@@ -8,6 +8,7 @@ const daily_survey = require("./business_layer/daily_survey");
 const client_coach_interaction = require("./business_layer/client_coach_interaction");
 const messaging = require("./business_layer/messaging");
 const profile_management = require("./business_layer/profile_management");
+const workout_management = require("./business_layer/workout_management");
 
 async function health_check(req, res) {
   res.status(200).send("Hello, world!");
@@ -430,6 +431,51 @@ async function set_user_profile(req, res)
   }
 }
 
+
+async function get_all_exercises(req, res) {
+  try {
+    const exercises = await workout_management.get_all_exercises();
+    res.json({
+      exercises
+    });
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+// TODO: determine if basic type validation is better suited for the controllers or business layer
+async function get_exercise_by_id(req, res) {
+  const exercise_id = Number(req.params.id);
+  if (Number.isNaN(exercise_id)) {
+    res.status(400).json({message: "Invalid exercise id"});
+  }
+
+  try {
+    const exercise = await workout_management.get_exercise_by_id(exercise_id);
+    res.json({
+      exercise
+    });
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+// TODO: Use proper middleware to check if users are logged in for all routes that require it
+function is_logged_in(req) {
+  return req.session?.user?.user_id !== undefined;
+}
+
+
 module.exports.insert_daily_survey_controller = insert_daily_survey_controller;
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
 module.exports.accept_client_controller = accept_client_controller;
@@ -447,3 +493,6 @@ module.exports.alter_account_info_controller = alter_account_info_controller;
 module.exports.search_coaches_controller = search_coaches_controller;
 module.exports.get_user_profile = get_user_profile;
 module.exports.set_user_profile = set_user_profile;
+
+module.exports.get_all_exercises = get_all_exercises;
+module.exports.get_exercise_by_id = get_exercise_by_id;
