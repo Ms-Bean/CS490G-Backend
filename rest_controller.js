@@ -453,6 +453,7 @@ async function get_exercise_by_id(req, res) {
   const exercise_id = Number(req.params.id);
   if (Number.isNaN(exercise_id)) {
     res.status(400).json({message: "Invalid exercise id"});
+    return;
   }
 
   try {
@@ -492,6 +493,119 @@ async function create_new_workout_plan(req, res) {
 }
 
 
+async function get_workout_plans_from_author(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot read workout plan without logging in"});
+    return;
+  }
+
+  const author_id = Number(req.query.author_id);
+  if (Number.isNaN(author_id)) {
+    res.status(400).json({message: "Invalid author id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  try {
+    const workout_plans = await workout_management.get_workout_plans_by_owner({author_id, user_id});
+    res.json({workout_plans});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function get_workout_by_id(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot read workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.id))) {
+    res.status(400).json({message: "Invalid exercise id"});
+    return;
+  }
+  if (req.query.include_exercises && !["true", "false"].includes(req.query.include_exercises)) {
+    res.status(400).json({message: "Invalid includes exercises query"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  const include_exercises = req.query.include_exercises === "true";
+  const wp_id = Number(req.params.id);
+  try {
+    const workout_plan = await workout_management.get_workout_plan_by_id({user_id, wp_id, include_exercises});
+    res.json({workout_plan});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function update_workout_plan(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot update workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.id))) {
+    res.status(400).json({message: "Invalid workout plan id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  req.body.workout_plan_id = Number(req.params.id);
+  try {
+    const workout_plan = await workout_management.update_workout_plan(user_id, req.body);
+    res.json({workout_plan});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function delete_workout_plan(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot update workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.id))) {
+    res.status(400).json({message: "Invalid workout plan id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  req.body.workout_plan_id = Number(req.params.id);
+  try {
+    await workout_management.delete_workout_plan(user_id, req.body);
+    res.json({message: "Workout plan successfully deleted"});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
 // TODO: Use proper middleware to check if users are logged in for all routes that require it
 function is_logged_in(req) {
   return req.session?.user?.user_id !== undefined;
@@ -519,3 +633,7 @@ module.exports.set_user_profile = set_user_profile;
 module.exports.get_all_exercises = get_all_exercises;
 module.exports.get_exercise_by_id = get_exercise_by_id;
 module.exports.create_new_workout_plan = create_new_workout_plan;
+module.exports.get_workout_plans_from_author = get_workout_plans_from_author;
+module.exports.get_workout_by_id = get_workout_by_id;
+module.exports.update_workout_plan = update_workout_plan;
+module.exports.delete_workout_plan = delete_workout_plan;

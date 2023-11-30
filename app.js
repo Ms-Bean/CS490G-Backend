@@ -61,12 +61,12 @@ app.get('/exercise/all', controller.get_all_exercises);
 app.get('/exercise/:id', controller.get_exercise_by_id);
 
 app.post('/workout_plan/new', controller.create_new_workout_plan);
-// app.get('/workout_plan/author');  // author_id provided through query param
+app.get('/workout_plan/author', controller.get_workout_plans_from_author);  // author_id provided through query param
 
-// app.route('/workout_plan/:id')
-//   .get()
-//   .put()
-//   .delete();
+app.route('/workout_plan/:id')
+  .get(controller.get_workout_by_id)
+  .put(controller.update_workout_plan)
+  .delete(controller.delete_workout_plan);
 
 // app.post('/workout_plan/:wp_id/new');
 // app.route('/workout_plan/:wp_id/exercise/:wpe_id')

@@ -119,7 +119,7 @@ async function delete_workout_plan_exercise(user_id, wpe_request) {
 async function get_workout_plan_by_id({user_id, wp_id, include_exercises}) {
     const wp = await workout_management.get_workout_by_id(wp_id);
     if (wp === null) {
-        throw new APIError(`No workout plan with id ${wp_id} exists`, 400);
+        throw new APIError(`No workout plan with id ${wp_id} exists`, 404);
     } else if (wp.author_id !== user_id) {
         throw new APIError(`User unauthorized to view workout plan with id ${wp_id} because they don't own the workout plan`, 403);
     }
@@ -135,7 +135,7 @@ async function get_workout_plan_by_id({user_id, wp_id, include_exercises}) {
 
 async function get_workout_plans_by_owner({user_id, author_id}) {
     await _is_authorized_to_view_workout_plan_or_throw_403(user_id, author_id);
-    return await workout_management.get_workouts_by_author(author_id);
+    return workout_management.get_workouts_by_author(author_id);
 }
 
 

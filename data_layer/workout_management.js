@@ -69,19 +69,21 @@ async function create_workout_plan(wp) {
 }
 
 
-function update_workout_plan(workout_plan) {
+async function update_workout_plan(workout_plan) {
     const sql = "UPDATE Workout_Plans SET name = ? WHERE workout_plan_id = ?";
     const {workout_plan_id, name} = workout_plan;
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
         con.query(sql, [name, workout_plan_id], (err) => {
             if (err) {
                 reject(err);
                 return;
             }
 
-            resolve(new WorkoutPlan({workout_plan_id, name, author_id: workout_plan.author_id, exercises: workout_plan.exercises}));
+            resolve();
         });
     });
+
+    return get_workout_by_id(workout_plan_id);
 }
 
 
