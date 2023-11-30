@@ -156,7 +156,7 @@ function _get_workouts(sql, params) {
                 return;
             }
 
-            const workouts = results.map(r => new WorkoutPlan({workout_plan_id: r.workout_plan_id, name: r.name, author_id: r.author_id}));
+            const workouts = results.map(r => new WorkoutPlan(r));
             resolve(workouts);
         });
     });
@@ -164,10 +164,6 @@ function _get_workouts(sql, params) {
 
 
 async function get_exercises_of_workouts(workout_plan_ids) {
-    // const sql = `SELECT id, workout_plan_id, exercise_id, weekday, time,
-    //     created, modified, reps_per_set, num_sets, weight
-    //     FROM Workout_Plan_Exercises
-    //     WHERE workout_plan_id IN (?)`;
     const sql = `SELECT wpe.id, wpe.workout_plan_id, wpe.exercise_id, wpe.weekday, wpe.time,
         wpe.reps_per_set, wpe.num_sets, wpe.weight,
         eb.exercise_id, eb.name, eb.description, 

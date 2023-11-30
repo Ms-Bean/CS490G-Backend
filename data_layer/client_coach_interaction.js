@@ -1,114 +1,136 @@
-const assert = require('assert');
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const sinon = require('sinon');
-const {
-  get_clients_of_coach,
-  request_coach_data_layer,
-  check_if_client_coach_request_exists,
-  check_if_client_has_hired_coach,
-  accept_client_data_layer,
-  remove_coach_data_layer
-} = require('./your-module'); // Replace with the correct path
+const connection = require("./conn");
+const con = connection.con;
 
-chai.use(chaiAsPromised);
-const { expect } = chai;
+/**
+ * 
+ * @param {number} coach_id 
+ * @returns {Promise<number>}
+ */
+function get_clients_of_coach(coach_id) {
+    const sql = "SELECT client_id FROM Client_Coach WHERE coach_id = ?";
+    return new Promise((resolve, reject) => {
+        con.query(sql, [coach_id], (err, results) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                resolve(results.map(r => r.user_id));
+            }
+        });
+    });
+}
 
-describe('Unit Tests for your-module', () => {
-  // Mock the database connection
-  const mockCon = {
-    query: sinon.stub()
-  };
+async function request_coach_data_layer(coach_id, client_id, comment) {
+    return new Promise((resolve, reject) => {
+        const sql = "INSERT INTO Client_Coach (coach_id, client_id, requested) VALUES (?, ?, 1)";
+        con.query(sql, [coach_id, client_id], (err) => {
+            if (err) {
+                console.log(`MySQL error: ${err.code}`);
+                console.log(`MySQL error message: ${err.sqlMessage}`);
+                console.log(`Relevant SQL query: ${err.sql}`);
+                reject(new Error("Something went wrong on our side :("));
+            }
 
-  // Replace the actual connection with the mock connection
-  before(() => {
-    sinon.replace(require('./conn'), 'con', mockCon);
-  });
+            resolve();
+        });
+    })
+}
 
-  // Restore the original connection after all tests
-  after(() => {
-    sinon.restore();
-  });
+/**
+ * 
+ * @param {number} coach_id 
+ * @param {number} client_id 
+ * @returns {Promise<boolean>}
+ */
+function check_if_client_coach_request_exists(coach_id, client_id) {
+    const sql = "SELECT requested FROM Client_Coach WHERE coach_id = ? AND client_id = ?";
+    return new Promise((resolve, reject) => {
+        con.query(sql, [coach_id, client_id], (err, results) => {
+            if (err) {
+                reject(err);
+                return;
+            };
 
-  it('get_clients_of_coach should return an array of client IDs', async () => {
-    // Arrange
-    const coachId = 1;
-    const expectedResult = [1, 2, 3];
-    mockCon.query.withArgs(sinon.match.any, [coachId]).yields(null, expectedResult);
+            let request_exists = !!results[0]?.requested;
+            resolve(request_exists);
+        });
+    });
+}
+// TODO: Change schema to reflect one-to-many relationship between client and coach
+/**
+ * 
+ * @param {number} coach_id 
+ * @param {number} client_id 
+ * @returns {Promise<boolean>}
+ */
+function check_if_client_has_hired_coach(coach_id, client_id) {
+    const sql = "SELECT requested FROM Client_Coach WHERE coach_id = ? AND client_id = ?";
+    return new Promise((resolve, reject) => {
+        con.query(sql, [coach_id, client_id], (err, results) => {
+            if (err) {
+                reject(err);
+                return;
+            };
 
-    // Act
-    const result = await get_clients_of_coach(coachId);
+            let was_hired = results.length > 0 ? !results[0].requested : false;
+            resolve(was_hired);
+        });
+    });
+}
 
-    // Assert
-    assert.deepStrictEqual(result, expectedResult);
-    console.log('get_clients_of_coach passed successfully.');
-  });
+function accept_client_data_layer(coach_id, client_id) {
+    // TODO: Have modified field be updated by a trigger
+    const sql = "UPDATE Client_Coach SET requested = 0, modified = CURRENT_TIMESTAMP WHERE coach_id = ? AND client_id = ?";
 
-  it('request_coach_data_layer should resolve when the query is successful', async () => {
-    // Arrange
-    const coachId = 1;
-    const clientId = 2;
-    mockCon.query.yields(null);
+    return new Promise((resolve, reject) => {
+        con.query(sql, [coach_id, client_id], (err) => {
+            if (err) {
+                // TODO: Extract code into its own function
+                console.log(`MySQL error: ${err.code}`);
+                console.log(`MySQL error message: ${err.sqlMessage}`);
+                console.log(`Relevant SQL query: ${err.sql}`);
+                reject(new Error("Something went wrong on our side :("));
+            }
 
-    // Act & Assert
-    await expect(request_coach_data_layer(coachId, clientId)).to.be.fulfilled;
-    assert.strictEqual(mockCon.query.calledOnce, true);
-    console.log('request_coach_data_layer passed successfully.');
-  });
+            resolve();
+        });
+    });
+}
 
-  it('check_if_client_coach_request_exists should return true when a request exists', async () => {
-    // Arrange
-    const coachId = 1;
-    const clientId = 2;
-    const expectedResult = [{ requested: 1 }];
-    mockCon.query.withArgs(sinon.match.any, [coachId, clientId]).yields(null, expectedResult);
+async function remove_coach_data_layer(client_id, coach_id) {
+    let sql = "DELETE FROM Client_Coach WHERE coach_id = ? AND client_id = ?";
+    console.log(coach_id);
+    console.log(client_id);
+    console.log("");
+    return new Promise((resolve, reject) => {
+        con.query(sql, [coach_id, client_id], function (err, results) {
+            if (err) {
+                console.log(err);
+                reject("sql failure");
+            }
+            let sql = "DELETE FROM Messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)";
+            con.query(sql, [coach_id, client_id, client_id, coach_id], function (err, results) {
+                if (err) {
+                    console.log(err);
+                    reject("sql failure");
+                }
+                let sql = "DELETE FROM Appointments WHERE (client_id = ? AND coach_id = ?)";
+                con.query(sql, [client_id, coach_id], function (err, results) {
+                    if (err) {
+                        console.log(err);
+                        reject("sql failure");
+                    }
+                    resolve("Removed");
+                });
+            });
 
-    // Act
-    const result = await check_if_client_coach_request_exists(coachId, clientId);
+        });
+    });
+}
+module.exports.accept_client_data_layer = accept_client_data_layer;
+module.exports.check_if_client_coach_request_exists = check_if_client_coach_request_exists;
+module.exports.check_if_client_has_hired_coach = check_if_client_has_hired_coach;
 
-    // Assert
-    assert.strictEqual(result, true);
-    console.log('check_if_client_coach_request_exists passed successfully.');
-  });
-
-  it('check_if_client_has_hired_coach should return true when a client has hired a coach', async () => {
-    // Arrange
-    const coachId = 1;
-    const clientId = 2;
-    const expectedResult = [{ requested: 0 }];
-    mockCon.query.withArgs(sinon.match.any, [coachId, clientId]).yields(null, expectedResult);
-
-    // Act
-    const result = await check_if_client_has_hired_coach(coachId, clientId);
-
-    // Assert
-    assert.strictEqual(result, true);
-    console.log('check_if_client_has_hired_coach passed successfully.');
-  });
-
-  it('accept_client_data_layer should resolve when the query is successful', async () => {
-    // Arrange
-    const coachId = 1;
-    const clientId = 2;
-    mockCon.query.yields(null);
-
-    // Act & Assert
-    await expect(accept_client_data_layer(coachId, clientId)).to.be.fulfilled;
-    assert.strictEqual(mockCon.query.calledOnce, true);
-    console.log('accept_client_data_layer passed successfully.');
-  });
-
-  it('remove_coach_data_layer should resolve when all queries are successful', async () => {
-    // Arrange
-    const coachId = 1;
-    const clientId = 2;
-    mockCon.query.onCall(0).yields(null);
-    mockCon.query.onCall(1).yields(null);
-    mockCon.query.onCall(2).yields(null);
-
-    // Act & Assert
-    await expect(remove_coach_data_layer(clientId, coachId)).to.be.fulfilled;
-    assert.strictEqual(mockCon.query.callCount, 3);
-    console.log('remove_coach_data_layer passed successfully.');
-  });
-});
+module.exports.request_coach_data_layer = request_coach_data_layer;
+module.exports.get_clients_of_coach = get_clients_of_coach;
+module.exports.remove_coach_data_layer = remove_coach_data_layer;
