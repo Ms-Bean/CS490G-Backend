@@ -189,6 +189,8 @@ function _validate_create_workout_plan_request(wp_request) {
     let message = "";
     if (typeof wp_request.name !== "string") {
         message = "Workout plan name must be a string";
+    } else if (wp_request.name.trim().length === 0) {
+        message = "Workout plan name must not be empty";
     } else if (!Number.isInteger(wp_request.author_id)) {
         message = "Workout plan author_id must be an integer";
     } else if (wp_request.exercises != null) {
