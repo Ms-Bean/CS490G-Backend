@@ -60,7 +60,7 @@ app.post('/set_user_profile', controller.set_user_profile);
 app.get('/exercise/all', controller.get_all_exercises);
 app.get('/exercise/:id', controller.get_exercise_by_id);
 
-// app.post('/workout_plan/new');
+app.post('/workout_plan/new', controller.create_new_workout_plan);
 // app.get('/workout_plan/author');  // author_id provided through query param
 
 // app.route('/workout_plan/:id')

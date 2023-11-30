@@ -470,6 +470,28 @@ async function get_exercise_by_id(req, res) {
   }
 }
 
+
+async function create_new_workout_plan(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot create workout plan without logging in"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  try {
+    const workout_plan = await workout_management.create_workout_plan(user_id, req.body);
+    res.json({workout_plan});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
 // TODO: Use proper middleware to check if users are logged in for all routes that require it
 function is_logged_in(req) {
   return req.session?.user?.user_id !== undefined;
@@ -496,3 +518,4 @@ module.exports.set_user_profile = set_user_profile;
 
 module.exports.get_all_exercises = get_all_exercises;
 module.exports.get_exercise_by_id = get_exercise_by_id;
+module.exports.create_new_workout_plan = create_new_workout_plan;

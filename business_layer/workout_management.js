@@ -17,12 +17,18 @@ class APIError extends Error {
 }
 
 
-async function create_workout_plan(wp_request) {
+async function create_workout_plan(user_id, wp_request) {
     _validate_create_workout_plan_request(wp_request);
+    const {name, author_id} = wp_request;
+    // not using `user_id` for the author by default just in case a user can create workout
+    // plans on others behalf (like an admin, for example)
+    if (user_id !== author_id) {
+        throw new APIError(`User with ID ${user_id} cannot create workout plans on other's behalf`, 403);
+    }
     const wp = new workout_management.WorkoutPlan({
         workout_plan_id: 0,
-        name: wp_request.name,
-        author_id: wp_request.author_id,
+        name: name,
+        author_id: author_id,
     });
 
     return workout_management.create_workout_plan(wp);
