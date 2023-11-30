@@ -189,6 +189,8 @@ function _validate_create_workout_plan_request(wp_request) {
     let message = "";
     if (typeof wp_request.name !== "string") {
         message = "Workout plan name must be a string";
+    } else if (wp_request.name.trim().length === 0) {
+        message = "Workout plan name must not be empty";
     } else if (!Number.isInteger(wp_request.author_id)) {
         message = "Workout plan author_id must be an integer";
     } else if (wp_request.exercises != null) {
@@ -217,10 +219,16 @@ function _validate_create_workout_plan_exercise_request(wpe_request) {
         message = "Workout plan exercise `exercise_id` must be an integer";
     } else if (wpe_request.reps_per_set !== null && !Number.isInteger(wpe_request.reps_per_set)) {
         message = "Workout plan exercise `reps_per_set` must be an integer or null";
+    } else if (wpe_request.reps_per_set <= 0) {
+        message = "Workout plan exercise `reps_per_set` must be a positive integer";
     } else if (wpe_request.num_sets !== null && !Number.isInteger(wpe_request.num_sets)) {
         message = "Workout plan exercise `num_sets` must be an integer or null";
+    } else if (wpe_request.num_sets <= 0) {
+        message = "Workout plan exercise `num_sets` must be a positive integer";
     } else if (wpe_request.weight !== null && !Number.isInteger(wpe_request.weight)) {
         message = "Workout plan exercise `weight` must be an integer or null";
+    } else if (wpe_request.weight <= 0) {
+        message = "Workout plan exercise `weight` must be a positive integer";
     }
 
     if (message) {
