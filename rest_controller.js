@@ -727,13 +727,6 @@ async function delete_workout_plan_exercise(req, res) {
 }
 
 
-// TODO: Use proper middleware to check if users are logged in for all routes that require it
-function is_logged_in(req) {
-  return req.session?.user?.user_id !== undefined;
-}
-
-
-
 async function get_coach_dashboard_info(req, res)
 {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -764,6 +757,12 @@ async function get_coach_dashboard_info(req, res)
   }
 }
 
+
+// TODO: Use proper middleware to check if users are logged in for all routes that require it
+function is_logged_in(req) {
+  return req.session?.user?.user_id !== undefined;
+}
+
 module.exports.insert_daily_survey_controller = insert_daily_survey_controller;
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
 module.exports.accept_client_controller = accept_client_controller;
@@ -781,7 +780,7 @@ module.exports.alter_account_info_controller = alter_account_info_controller;
 module.exports.search_coaches_controller = search_coaches_controller;
 module.exports.get_user_profile = get_user_profile;
 module.exports.set_user_profile = set_user_profile;
-
+module.exports.get_coach_dashboard_info = get_coach_dashboard_info;
 module.exports.get_all_exercises = get_all_exercises;
 module.exports.get_exercise_by_id = get_exercise_by_id;
 module.exports.create_new_workout_plan = create_new_workout_plan;
@@ -793,4 +792,3 @@ module.exports.create_workout_plan_exercise = create_workout_plan_exercise;
 module.exports.update_workout_plan_exercise = update_workout_plan_exercise;
 module.exports.get_workout_plan_exercise_by_id = get_workout_plan_exercise_by_id;
 module.exports.delete_workout_plan_exercise = delete_workout_plan_exercise;
-module.exports.get_coach_dashboard_info = get_coach_dashboard_info;

@@ -2,8 +2,7 @@
 // TODO: Test getting assigned workout plans
 // TODO: Wrap DELETE queries in transactions, due to effect of cascading
 // TODO: Learn how to deal with time without the date
-// TODO: Add ability to add, update, and delete exercises
-
+// TODO: Add ability to add, update, and delete exercises to the exercise bank
 
 const connection = require("./conn");
 const con = connection.con;
@@ -462,97 +461,3 @@ module.exports = {
     WorkoutPlanExercise,
     WorkoutPlan
 };
-
-// TODO: Remove test code before committing
-// const mysql = require("mysql");
-// const con = mysql.createConnection({ 
-//     host: "localhost",
-//     user: "root", //Replace with your user
-//     password: "cactusgreen", //Replace with your password
-//     database: "cs490_database"
-// });
-
-// const create_workout_driver = async () => {
-//     const author_id = 2;
-//     const workout = new WorkoutPlan({workout_plan_id: 0, name: "New workout 2", author_id});
-//     return create_workout_plan(workout);
-// }
-
-// const get_workouts_by_author_driver = async () => {
-//     const author_id = 2;
-//     const workouts = await get_workouts_by_author(author_id);
-//     for (const workout of workouts) {
-//         console.log(workout);
-//     }
-// }
-
-// const get_workout_by_id_driver = async () => {
-//     const id = 22;
-//     const workout = await get_workout_by_id(id);
-//     console.log(workout);
-// };
-
-// const update_workout_plan_driver = async () => {
-//     const new_name = "New Workout Name 2";
-//     const id = 2;
-//     const wp = new WorkoutPlan({workout_plan_id: 23, name: new_name, author_id: id})
-//     return update_workout_plan(wp);
-// };
-
-// const delete_workout_plan_driver = async () => {
-//     const id = 22;
-//     await delete_workout_plan(id);
-// };
-
-// const get_exercises_of_workouts_driver = async () => {
-//     const ids = [1, 2, 3];
-//     const exercises_by_workout = await get_exercises_of_workouts(ids);
-//     console.log(exercises_by_workout);
-// };
-
-// const get_exercises_by_workout_id_driver = async () => {
-//     const id = 1;
-//     const exercises = await get_exercises_by_workout_id(id);
-//     exercises.forEach(e => console.log(e));
-// };
-
-// const create_workout_exercise_driver = async () => {
-//     const workout_plan_id = 22;
-//     const exercise_id = 44;
-//     const weekday = "thursday";
-//     const time = "10:30:00";
-
-//     const wpe = new WorkoutPlanExercise({workout_plan_exercise_id: 0, workout_plan_id, exercise_id, weekday, time});
-//     return create_workout_exercise(wpe);
-// };
-
-// const update_workout_exercise_driver = async () => {
-//     const we_id = 286;
-//     const workout_plan_id = 22;
-//     const exercise_id = 44;
-//     const weekday = "monday";
-//     const time = "12:30:00";
-//     const num_sets = 2;
-//     const reps_per_set = 6;
-//     const weight = 150;
-//     const wpe = new WorkoutPlanExercise({workout_plan_exercise_id: we_id, workout_plan_id, exercise_id, weekday, time, reps_per_set, num_sets, weight});
-
-//     return update_workout_exercise(wpe);
-// };
-
-// const delete_workout_exercise_driver = async () => {
-//     const we_id = 288;
-//     await delete_workout_exercise(we_id);
-// };
-
-// const delete_exercises_of_workout_driver = async () => {
-//     const workout_plan_id = 21;
-//     delete_exercises_of_workout(workout_plan_id);
-// };
-
-// const func = async () => {
-//     const wpe = await get_exercises_of_workouts_driver();
-//     console.log(wpe);
-//     con.end();
-// };
-// func();

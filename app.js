@@ -57,18 +57,14 @@ app.post('/daily_survey', controller.insert_daily_survey_controller);
 app.get('/get_user_profile', controller.get_user_profile);
 app.post('/set_user_profile', controller.set_user_profile);
 app.get("/get_coach_dashboard_info", controller.get_coach_dashboard_info);
-
 app.get('/exercise/all', controller.get_all_exercises);
 app.get('/exercise/:id', controller.get_exercise_by_id);
-
 app.post('/workout_plan/new', controller.create_new_workout_plan);
-app.get('/workout_plan/author', controller.get_workout_plans_from_author);  // author_id provided through query param
-
+app.get('/workout_plan/author', controller.get_workout_plans_from_author);
 app.route('/workout_plan/:id')
   .get(controller.get_workout_by_id)
   .put(controller.update_workout_plan)
   .delete(controller.delete_workout_plan);
-
 app.post('/workout_plan/:wp_id/new', controller.create_workout_plan_exercise);
 app.route('/workout_plan/:wp_id/exercise/:wpe_id')
   .get(controller.get_workout_plan_exercise_by_id)

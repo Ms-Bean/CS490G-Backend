@@ -235,29 +235,3 @@ module.exports = {
     get_exercise_by_id,
     get_all_exercises,
 };
-
-// const con = require("../data_layer/conn").con;
-// const testing = async () => {
-//     const wp_request = {
-//         workout_plan_id: 25,
-//         name: 'New Name for Second New Workout from Business Layer',
-//         author_id: 2
-//     };
-//     const wpe_request = {
-//         workout_plan_exercise_id: 287,
-//         workout_plan_id: 22,
-//         exercise_id: 36,
-//         weekday: "wednesday",
-//         time: "17:00:00",
-//         reps_per_set: 5,
-//         num_sets: 3,
-//         weight: 150
-//     }
-
-//     const wpe = await get_workout_plan_by_id({user_id: 38, wp_id: 1, include_exercises: false});
-//     console.log(wpe);
-// };
-// testing().then(() => console.log("Done!")).catch((e) => {
-//     console.log(`Error code: ${e.status_code ?? 500}`);
-//     console.log(`Error message: ${e.message}`);
-// }).finally(() => con.end());
