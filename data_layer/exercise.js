@@ -9,15 +9,31 @@ let con = connection.con;
 async function get_all_exercises_data_layer() {
   // SQL query to select all exercises along with their corresponding goal names
   let sql = `
-    SELECT Exercise_Bank.*, Goals.name AS goal_name 
-    FROM Exercise_Bank
-    LEFT JOIN Goals ON Exercise_Bank.goal_id = Goals.goal_id;
+    SELECT 
+      Exercise_Bank.*,
+      Goals.name AS goal_name,
+      GROUP_CONCAT(DISTINCT Exercise_Equipment.equipment_item) AS equipment_items,
+      GROUP_CONCAT(DISTINCT Exercise_Muscle_Group.muscle_group) AS muscle_groups
+    FROM 
+      Exercise_Bank
+    LEFT JOIN 
+      Goals ON Exercise_Bank.goal_id = Goals.goal_id
+    LEFT JOIN 
+      Exercise_Equipment ON Exercise_Bank.exercise_id = Exercise_Equipment.exercise_id
+    LEFT JOIN 
+      Exercise_Muscle_Group ON Exercise_Bank.exercise_id = Exercise_Muscle_Group.exercise_id
+    GROUP BY 
+      Exercise_Bank.exercise_id;
+
   `;
 
   return new Promise((resolve, reject) => {
     con.query(sql, (err, results) => {
       if (err) {
-        console.error("Error executing SQL in get_all_exercises_data_layer:", err);
+        console.error(
+          "Error executing SQL in get_all_exercises_data_layer:",
+          err
+        );
         reject(new Error("Failed to retrieve exercises from the database."));
       } else {
         resolve(results);
@@ -30,13 +46,22 @@ async function get_all_exercises_data_layer() {
  * Modifies an exercise item in the Exercise_Bank table.
  * This function updates a specific exercise record with the provided data.
  *
- * @param {Object} exerciseData - Data for updating the exercise. 
+ * @param {Object} exerciseData - Data for updating the exercise.
  *                                Expected to have exercise_id and other exercise details.
  * @returns {Promise<string>} - Resolves with a success message.
  * @throws {Error} - Throws an error if the update operation fails.
  */
 async function update_exercise_data_layer(exerciseData) {
-  const { exercise_id, name, description, user_who_created_it, difficulty, video_link, goal_id, thumbnail } = exerciseData;
+  const {
+    exercise_id,
+    name,
+    description,
+    user_who_created_it,
+    difficulty,
+    video_link,
+    goal_id,
+    thumbnail,
+  } = exerciseData;
 
   // SQL query to update a specific exercise
   let sql = `
@@ -49,10 +74,22 @@ async function update_exercise_data_layer(exerciseData) {
     // Executing the SQL query with the provided exercise data
     con.query(
       sql,
-      [name, description, user_who_created_it, difficulty, video_link, goal_id, thumbnail, exercise_id],
+      [
+        name,
+        description,
+        user_who_created_it,
+        difficulty,
+        video_link,
+        goal_id,
+        thumbnail,
+        exercise_id,
+      ],
       (err, result) => {
         if (err) {
-          console.error("Error executing SQL in update_exercise_data_layer:", err);
+          console.error(
+            "Error executing SQL in update_exercise_data_layer:",
+            err
+          );
           reject(new Error("Failed to update exercise in the database."));
         } else {
           // Successfully updated the exercise
@@ -69,7 +106,10 @@ async function delete_exercise_data_layer(exerciseId) {
   return new Promise((resolve, reject) => {
     con.query(sql, [exerciseId], (err, result) => {
       if (err) {
-        console.error("Error executing SQL in delete_exercise_data_layer:", err);
+        console.error(
+          "Error executing SQL in delete_exercise_data_layer:",
+          err
+        );
         reject(new Error("Failed to delete exercise from the database."));
       } else {
         resolve("Exercise deleted successfully");
@@ -84,12 +124,28 @@ async function add_exercise_data_layer(exerciseData) {
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
-  const { name, description, user_who_created_it, difficulty, video_link, goal_id, thumbnail } = exerciseData;
+  const {
+    name,
+    description,
+    user_who_created_it,
+    difficulty,
+    video_link,
+    goal_id,
+    thumbnail,
+  } = exerciseData;
 
   return new Promise((resolve, reject) => {
     con.query(
-      sql, 
-      [name, description, user_who_created_it, difficulty, video_link, goal_id, thumbnail], 
+      sql,
+      [
+        name,
+        description,
+        user_who_created_it,
+        difficulty,
+        video_link,
+        goal_id,
+        thumbnail,
+      ],
       (err, result) => {
         if (err) {
           console.error("Error executing SQL in add_exercise_data_layer:", err);
