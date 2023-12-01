@@ -464,8 +464,14 @@ async function get_coach_dashboard_info(req, res)
       })
   }
 }
+
+// Get all exercises
 async function get_all_exercises_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  if (!req.session.user || !req.session.user["user_id"]) {
+    console.log("Access denied: User is not logged in");
+    return res.status(403).send({ message: "Access denied: User is not logged in" });
+  }
 
   try {
     const exercises = await exercise.get_all_exercises_business_layer();
@@ -475,6 +481,7 @@ async function get_all_exercises_controller(req, res) {
   }
 }
 
+// Update exercise (admin only)
 async function update_exercise_controller(req, res) {
   console.log("Received request to update an exercise", req.body);
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -482,6 +489,11 @@ async function update_exercise_controller(req, res) {
   if (!req.session.user || !req.session.user["user_id"]) {
     console.log("Access denied: User is not logged in");
     return res.status(403).send({ message: "Access denied: User is not logged in" });
+  }
+  userRole = await user_info.get_role_business_layer(req.session.user["user_id"]);
+  if (userRole !== 'admin') {
+    console.log("Access denied: User is not an admin", req.session.user);
+    return res.status(403).send({ message: "Access denied: User is not an admin" });
   }
 
   try {
@@ -503,6 +515,7 @@ async function update_exercise_controller(req, res) {
   }
 }
 
+// Delete exercise (admin only)
 async function delete_exercise_controller(req, res) {
   console.log("Received request to delete an exercise", req.params);
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -510,6 +523,12 @@ async function delete_exercise_controller(req, res) {
   if (!req.session.user || !req.session.user["user_id"]) {
     console.log("Access denied: User is not logged in");
     return res.status(403).send({ message: "Access denied: User is not logged in" });
+  }
+  
+  userRole = await user_info.get_role_business_layer(req.session.user["user_id"]);
+  if (userRole !== 'admin') {
+    console.log("Access denied: User is not an admin", req.session.user);
+    return res.status(403).send({ message: "Access denied: User is not an admin" });
   }
 
   const exerciseId = req.params.exercise_id;
@@ -523,6 +542,7 @@ async function delete_exercise_controller(req, res) {
   }
 }
 
+// Add exercise (admin only)
 async function add_exercise_controller(req, res) {
   console.log("Received request to add a new exercise", req.body);
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -530,6 +550,12 @@ async function add_exercise_controller(req, res) {
   if (!req.session.user || !req.session.user["user_id"]) {
     console.log("Access denied: User is not logged in");
     return res.status(403).send({ message: "Access denied: User is not logged in" });
+  }
+
+  userRole = await user_info.get_role_business_layer(req.session.user["user_id"]);
+  if (userRole !== 'admin') {
+    console.log("Access denied: User is not an admin", req.session.user);
+    return res.status(403).send({ message: "Access denied: User is not an admin" });
   }
 
   try {

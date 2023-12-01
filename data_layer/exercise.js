@@ -20,7 +20,6 @@ async function get_all_exercises_data_layer() {
         console.error("Error executing SQL in get_all_exercises_data_layer:", err);
         reject(new Error("Failed to retrieve exercises from the database."));
       } else {
-        // Successfully retrieved the exercises along with goal names
         resolve(results);
       }
     });
