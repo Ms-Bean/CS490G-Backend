@@ -2,18 +2,46 @@ let connection = require("./conn");
 let con = connection.con;
 
 async function get_all_exercises_data_layer() {
-  let sql = "SELECT name, exercise_id FROM Exercise_Bank";
+  let sql = `
+    SELECT 
+      e.exercise_id, 
+      e.name, 
+      e.difficulty, 
+      g.name AS goal_name,
+      (
+        SELECT JSON_ARRAYAGG(mg.muscle_group)
+        FROM Exercise_Muscle_Group mg 
+        WHERE mg.exercise_id = e.exercise_id
+      ) AS muscle_groups,
+      (
+        SELECT JSON_ARRAYAGG(eq.equipment_item)
+        FROM Exercise_Equipment eq 
+        WHERE eq.exercise_id = e.exercise_id
+      ) AS equipment_items
+    FROM 
+      Exercise_Bank e
+    LEFT JOIN Goals g ON e.goal_id = g.goal_id
+    GROUP BY e.exercise_id
+  `;
 
   return new Promise((resolve, reject) => {
     con.query(sql, (err, results) => {
       if (err) {
         console.error(
-          "Error executing SQL in get_all_exercise_names_data_layer:",
+          "Error executing SQL in get_all_exercises_data_layer:",
           err
         );
-        reject(new Error("Failed to retrieve exercise names from the database."));
+        reject(
+          new Error("Failed to retrieve exercises data from the database.")
+        );
       } else {
-        resolve(results);
+        // Convert muscle_groups and equipment_items from JSON strings to objects
+        const processedResults = results.map((row) => ({
+          ...row,
+          muscle_groups: JSON.parse(row.muscle_groups),
+          equipment_items: JSON.parse(row.equipment_items),
+        }));
+        resolve(processedResults);
       }
     });
   });
@@ -133,7 +161,10 @@ async function update_exercise_data_layer(exerciseData) {
 
     if (equipment_items && equipment_items.length > 0) {
       sql = `INSERT INTO Exercise_Equipment (exercise_id, equipment_item) VALUES ?`;
-      const equipmentValues = equipment_items.map(item => [exercise_id, item.value]); // Extract 'value' from each item
+      const equipmentValues = equipment_items.map((item) => [
+        exercise_id,
+        item.value,
+      ]); // Extract 'value' from each item
       await new Promise((resolve, reject) => {
         con.query(sql, [equipmentValues], (err, result) => {
           if (err) {
@@ -157,7 +188,10 @@ async function update_exercise_data_layer(exerciseData) {
 
     if (muscle_groups && muscle_groups.length > 0) {
       sql = `INSERT INTO Exercise_Muscle_Group (exercise_id, muscle_group) VALUES ?`;
-      const muscleGroupValues = muscle_groups.map(item => [exercise_id, item.value]); // Extract 'value' from each item
+      const muscleGroupValues = muscle_groups.map((item) => [
+        exercise_id,
+        item.value,
+      ]); // Extract 'value' from each item
       await new Promise((resolve, reject) => {
         con.query(sql, [muscleGroupValues], (err, result) => {
           if (err) {
@@ -260,7 +294,10 @@ async function add_exercise_data_layer(exerciseData) {
     // Insert into Exercise_Muscle_Group
     if (muscleGroups && muscleGroups.length > 0) {
       sql = `INSERT INTO Exercise_Muscle_Group (exercise_id, muscle_group) VALUES ?`;
-      const muscleGroupValues = muscleGroups.map((item) => [insertedExercise, item]);
+      const muscleGroupValues = muscleGroups.map((item) => [
+        insertedExercise,
+        item,
+      ]);
       await new Promise((resolve, reject) => {
         con.query(sql, [muscleGroupValues], (err, result) => {
           if (err) {
@@ -274,7 +311,10 @@ async function add_exercise_data_layer(exerciseData) {
     // Insert into Exercise_Equipment
     if (equipmentItems && equipmentItems.length > 0) {
       sql = `INSERT INTO Exercise_Equipment (exercise_id, equipment_item) VALUES ?`;
-      const equipmentValues = equipmentItems.map((item) => [insertedExercise, item]);
+      const equipmentValues = equipmentItems.map((item) => [
+        insertedExercise,
+        item,
+      ]);
       await new Promise((resolve, reject) => {
         con.query(sql, [equipmentValues], (err, result) => {
           if (err) {
@@ -311,16 +351,22 @@ async function get_all_muscle_groups_data_layer() {
   return new Promise((resolve, reject) => {
     con.query(sql, (err, results) => {
       if (err) {
-        console.error("Error executing SQL in get_all_muscle_groups_data_layer:", err);
-        reject(new Error("Failed to retrieve muscle groups from the database."));
+        console.error(
+          "Error executing SQL in get_all_muscle_groups_data_layer:",
+          err
+        );
+        reject(
+          new Error("Failed to retrieve muscle groups from the database.")
+        );
       } else {
-        const formattedResults = results.map(item => ({ [item.muscle_group]: item.muscle_group }));
+        const formattedResults = results.map((item) => ({
+          [item.muscle_group]: item.muscle_group,
+        }));
         resolve(formattedResults);
       }
     });
   });
 }
-
 
 async function get_all_equipment_data_layer() {
   let sql = "SELECT DISTINCT equipment_item FROM Exercise_Equipment";
@@ -328,16 +374,20 @@ async function get_all_equipment_data_layer() {
   return new Promise((resolve, reject) => {
     con.query(sql, (err, results) => {
       if (err) {
-        console.error("Error executing SQL in get_all_equipment_data_layer:", err);
+        console.error(
+          "Error executing SQL in get_all_equipment_data_layer:",
+          err
+        );
         reject(new Error("Failed to retrieve equipment from the database."));
       } else {
-        const formattedResults = results.map(item => ({ [item.equipment_item]: item.equipment_item }));
+        const formattedResults = results.map((item) => ({
+          [item.equipment_item]: item.equipment_item,
+        }));
         resolve(formattedResults);
       }
     });
   });
 }
-
 
 module.exports.get_exercise_by_id_data_layer = get_exercise_by_id_data_layer;
 module.exports.get_all_equipment_data_layer = get_all_equipment_data_layer;
