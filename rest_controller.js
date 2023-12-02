@@ -8,6 +8,7 @@ const daily_survey = require("./business_layer/daily_survey");
 const client_coach_interaction = require("./business_layer/client_coach_interaction");
 const messaging = require("./business_layer/messaging");
 const profile_management = require("./business_layer/profile_management");
+const workout_management = require("./business_layer/workout_management");
 const coach_dashboard = require("./business_layer/coach_dashboard");
 
 async function health_check(req, res) {
@@ -477,6 +478,300 @@ async function set_user_profile(req, res)
 }
 
 
+async function get_all_exercises(req, res) {
+  try {
+    const exercises = await workout_management.get_all_exercises();
+    res.json({
+      exercises
+    });
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+// TODO: determine if basic type validation is better suited for the controllers or business layer
+async function get_exercise_by_id(req, res) {
+  const exercise_id = Number(req.params.id);
+  if (Number.isNaN(exercise_id)) {
+    res.status(400).json({message: "Invalid exercise id"});
+    return;
+  }
+
+  try {
+    const exercise = await workout_management.get_exercise_by_id(exercise_id);
+    res.json({
+      exercise
+    });
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function create_new_workout_plan(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot create workout plan without logging in"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  try {
+    const workout_plan = await workout_management.create_workout_plan(user_id, req.body);
+    res.json({workout_plan});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function get_workout_plans_from_author(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot read workout plan without logging in"});
+    return;
+  }
+
+  const author_id = Number(req.query.author_id);
+  if (Number.isNaN(author_id)) {
+    res.status(400).json({message: "Invalid author id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  try {
+    const workout_plans = await workout_management.get_workout_plans_by_owner({user_id, author_id});
+    res.json({workout_plans});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function get_workout_by_id(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot read workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.id))) {
+    res.status(400).json({message: "Invalid exercise id"});
+    return;
+  }
+  if (req.query.include_exercises && !["true", "false"].includes(req.query.include_exercises)) {
+    res.status(400).json({message: "Invalid includes exercises query"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  const include_exercises = req.query.include_exercises === "true";
+  const wp_id = Number(req.params.id);
+  try {
+    const workout_plan = await workout_management.get_workout_plan_by_id({user_id, wp_id, include_exercises});
+    res.json({workout_plan});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function update_workout_plan(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot update workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.id))) {
+    res.status(400).json({message: "Invalid workout plan id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  req.body.workout_plan_id = Number(req.params.id);
+  try {
+    const workout_plan = await workout_management.update_workout_plan(user_id, req.body);
+    res.json({workout_plan});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function delete_workout_plan(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot update workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.id))) {
+    res.status(400).json({message: "Invalid workout plan id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  req.body.workout_plan_id = Number(req.params.id);
+  try {
+    await workout_management.delete_workout_plan(user_id, req.body);
+    res.json({message: "Workout plan successfully deleted"});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function create_workout_plan_exercise(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot update workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.wp_id))) {
+    res.status(400).json({message: "Invalid workout plan id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  req.body.workout_plan_id = Number(req.params.wp_id);
+  try {
+    const workout_plan_exercise = await workout_management.create_workout_plan_exercise(user_id, req.body);
+    res.json({workout_plan_exercise});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function update_workout_plan_exercise(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot update workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.wp_id))) {
+    res.status(400).json({message: "Invalid workout plan id"});
+    return;
+  } else if (Number.isNaN(Number(req.params.wpe_id))) {
+    res.status(400).json({message: "Invalid workout plan exercise id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  req.body.workout_plan_id = Number(req.params.wp_id);
+  req.body.workout_plan_exercise_id = Number(req.params.wpe_id);
+  try {
+    const workout_plan_exercise = await workout_management.update_workout_plan_exercise(user_id, req.body);
+    res.json({workout_plan_exercise});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function get_workout_plan_exercise_by_id(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot update workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.wp_id))) {
+    res.status(400).json({message: "Invalid workout plan id"});
+    return;
+  } else if (Number.isNaN(Number(req.params.wpe_id))) {
+    res.status(400).json({message: "Invalid workout plan exercise id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  const workout_plan_id = Number(req.params.wp_id);
+  const workout_plan_exercise_id = Number(req.params.wpe_id);
+  try {
+    const workout_plan_exercise = await workout_management.get_workout_plan_exercise_by_id(user_id, workout_plan_id, workout_plan_exercise_id);
+    res.json({workout_plan_exercise});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
+async function delete_workout_plan_exercise(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot update workout plan without logging in"});
+    return;
+  }
+
+  if (Number.isNaN(Number(req.params.wp_id))) {
+    res.status(400).json({message: "Invalid workout plan id"});
+    return;
+  } else if (Number.isNaN(Number(req.params.wpe_id))) {
+    res.status(400).json({message: "Invalid workout plan exercise id"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  req.body.workout_plan_id = Number(req.params.wp_id);
+  req.body.workout_plan_exercise_id = Number(req.params.wpe_id);
+  try {
+    await workout_management.delete_workout_plan_exercise(user_id, req.body);
+    res.json({message: "Workout plan exercise successfully deleted"});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+
 async function get_coach_dashboard_info(req, res)
 {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -506,6 +801,12 @@ async function get_coach_dashboard_info(req, res)
       })
   }
 }
+
+
+// TODO: Use proper middleware to check if users are logged in for all routes that require it
+function is_logged_in(req) {
+  return req.session?.user?.user_id !== undefined;
+}
 module.exports.get_client_coach_list_controller = get_client_coach_list_controller;
 module.exports.insert_daily_survey_controller = insert_daily_survey_controller;
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
@@ -525,3 +826,14 @@ module.exports.search_coaches_controller = search_coaches_controller;
 module.exports.get_user_profile = get_user_profile;
 module.exports.set_user_profile = set_user_profile;
 module.exports.get_coach_dashboard_info = get_coach_dashboard_info;
+module.exports.get_all_exercises = get_all_exercises;
+module.exports.get_exercise_by_id = get_exercise_by_id;
+module.exports.create_new_workout_plan = create_new_workout_plan;
+module.exports.get_workout_plans_from_author = get_workout_plans_from_author;
+module.exports.get_workout_by_id = get_workout_by_id;
+module.exports.update_workout_plan = update_workout_plan;
+module.exports.delete_workout_plan = delete_workout_plan;
+module.exports.create_workout_plan_exercise = create_workout_plan_exercise;
+module.exports.update_workout_plan_exercise = update_workout_plan_exercise;
+module.exports.get_workout_plan_exercise_by_id = get_workout_plan_exercise_by_id;
+module.exports.delete_workout_plan_exercise = delete_workout_plan_exercise;
