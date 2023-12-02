@@ -39,6 +39,11 @@ async function get_all_muscle_groups_business_layer() {
   return exercise_bank.get_all_muscle_groups_data_layer();
 }
 
+async function check_exercise_references_business_layer(exerciseId) {
+  return exercise_bank.check_exercise_references_data_layer(exerciseId);
+} 
+
+module.exports.check_exercise_references_business_layer = check_exercise_references_business_layer;
 module.exports.get_exercise_by_id_business_layer = get_exercise_by_id_business_layer;
 module.exports.get_all_muscle_groups_business_layer = get_all_muscle_groups_business_layer;
 module.exports.get_all_equipment_business_layer = get_all_equipment_business_layer;

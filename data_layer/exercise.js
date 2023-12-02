@@ -429,7 +429,54 @@ async function get_all_equipment_data_layer() {
     });
   });
 }
+async function check_exercise_references_data_layer(exerciseId) {
+  return new Promise((resolve, reject) => {
+    // Define an array of SQL statements to check for references
+    const referenceChecks = [
+      { table: "Workout_Plan_Exercises", column: "exercise_id", message: "Exercise is part of a workout plan." },
+      { table: "Exercise_Equipment", column: "exercise_id", message: "Exercise has associated equipment." },
+      { table: "Exercise_Fitness_Goals", column: "exercise_id", message: "Exercise is linked to fitness goals." },
+      { table: "Exercise_Muscle_Group", column: "exercise_id", message: "Exercise is linked to muscle groups." },
+      { table: "Workout_Progress", column: "workout_exercise_id", message: "Exercise has workout progress records.", join: "JOIN Workout_Plan_Exercises ON Workout_Progress.workout_exercise_id = Workout_Plan_Exercises.id" }
+    ];
 
+    let references = [];
+
+    (async () => {
+      try {
+        for (const check of referenceChecks) {
+          const sql = check.join
+            ? `SELECT EXISTS(SELECT 1 FROM ${check.table} ${check.join} WHERE ${check.column} = ? LIMIT 1)`
+            : `SELECT EXISTS(SELECT 1 FROM ${check.table} WHERE ${check.column} = ? LIMIT 1)`;
+
+          const result = await executeQuery(sql, exerciseId);
+          if (result[0][Object.keys(result[0])[0]] === 1) { // Check if EXISTS returned true
+            references.push(check.message);
+          }
+        }
+
+        resolve(references.length > 0 ? references : ["Exercise is not referenced in other tables."]);
+      } catch (error) {
+        console.error("Error checking exercise references:", error);
+        reject(new Error("Failed to check for exercise references."));
+      }
+    })();
+  });
+}
+
+function executeQuery(sql, exerciseId) {
+  return new Promise((resolve, reject) => {
+    con.query(sql, [exerciseId], (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+module.exports.check_exercise_references_data_layer = check_exercise_references_data_layer;
 module.exports.get_exercise_by_id_data_layer = get_exercise_by_id_data_layer;
 module.exports.get_all_equipment_data_layer = get_all_equipment_data_layer;
 module.exports.get_all_muscle_groups_data_layer =
