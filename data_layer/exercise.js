@@ -66,8 +66,6 @@ async function get_exercise_by_id_data_layer(exerciseId) {
   });
 }
 
-
-
 async function update_exercise_data_layer(exerciseData) {
   const {
     exercise_id,
@@ -78,8 +76,8 @@ async function update_exercise_data_layer(exerciseData) {
     video_link,
     goal_id,
     thumbnail,
-    equipmentItems, // Array of equipment items
-    muscleGroups, // Array of muscle groups
+    equipment_items,
+    muscle_groups,
   } = exerciseData;
 
   // Start a transaction
@@ -133,9 +131,9 @@ async function update_exercise_data_layer(exerciseData) {
       });
     });
 
-    if (equipmentItems && equipmentItems.length > 0) {
+    if (equipment_items && equipment_items.length > 0) {
       sql = `INSERT INTO Exercise_Equipment (exercise_id, equipment_item) VALUES ?`;
-      const equipmentValues = equipmentItems.map((item) => [exercise_id, item]);
+      const equipmentValues = equipment_items.map(item => [exercise_id, item.value]); // Extract 'value' from each item
       await new Promise((resolve, reject) => {
         con.query(sql, [equipmentValues], (err, result) => {
           if (err) {
@@ -157,9 +155,9 @@ async function update_exercise_data_layer(exerciseData) {
       });
     });
 
-    if (muscleGroups && muscleGroups.length > 0) {
+    if (muscle_groups && muscle_groups.length > 0) {
       sql = `INSERT INTO Exercise_Muscle_Group (exercise_id, muscle_group) VALUES ?`;
-      const muscleGroupValues = muscleGroups.map((item) => [exercise_id, item]);
+      const muscleGroupValues = muscle_groups.map(item => [exercise_id, item.value]); // Extract 'value' from each item
       await new Promise((resolve, reject) => {
         con.query(sql, [muscleGroupValues], (err, result) => {
           if (err) {
@@ -221,30 +219,90 @@ async function add_exercise_data_layer(exerciseData) {
     video_link,
     goal_id,
     thumbnail,
+    equipmentItems, // Array of equipment items
+    muscleGroups, // Array of muscle groups
   } = exerciseData;
 
-  return new Promise((resolve, reject) => {
-    con.query(
-      sql,
-      [
-        name,
-        description,
-        user_who_created_it,
-        difficulty,
-        video_link,
-        goal_id,
-        thumbnail,
-      ],
-      (err, result) => {
+  try {
+    // Start a transaction
+    await new Promise((resolve, reject) => {
+      con.beginTransaction((err) => {
         if (err) {
-          console.error("Error executing SQL in add_exercise_data_layer:", err);
-          reject(new Error("Failed to add new exercise to the database."));
+          reject(err);
         } else {
-          resolve("New exercise added successfully");
+          resolve();
         }
-      }
-    );
-  });
+      });
+    });
+
+    // Insert into Exercise_Bank
+    const insertedExercise = await new Promise((resolve, reject) => {
+      con.query(
+        sql,
+        [
+          name,
+          description,
+          user_who_created_it,
+          difficulty,
+          video_link,
+          goal_id,
+          thumbnail,
+        ],
+        (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve(result.insertId);
+        }
+      );
+    });
+
+    // Insert into Exercise_Muscle_Group
+    if (muscleGroups && muscleGroups.length > 0) {
+      sql = `INSERT INTO Exercise_Muscle_Group (exercise_id, muscle_group) VALUES ?`;
+      const muscleGroupValues = muscleGroups.map((item) => [insertedExercise, item]);
+      await new Promise((resolve, reject) => {
+        con.query(sql, [muscleGroupValues], (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve();
+        });
+      });
+    }
+
+    // Insert into Exercise_Equipment
+    if (equipmentItems && equipmentItems.length > 0) {
+      sql = `INSERT INTO Exercise_Equipment (exercise_id, equipment_item) VALUES ?`;
+      const equipmentValues = equipmentItems.map((item) => [insertedExercise, item]);
+      await new Promise((resolve, reject) => {
+        con.query(sql, [equipmentValues], (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve();
+        });
+      });
+    }
+
+    // Commit the transaction
+    await new Promise((resolve, reject) => {
+      con.commit((err) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve("New exercise added successfully");
+      });
+    });
+  } catch (err) {
+    // Rollback the transaction in case of error
+    await new Promise((resolve, reject) => {
+      con.rollback(() => {
+        reject(err);
+      });
+    });
+    throw err;
+  }
 }
 
 async function get_all_muscle_groups_data_layer() {
