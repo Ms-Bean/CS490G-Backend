@@ -222,18 +222,59 @@ async function update_exercise_data_layer(exerciseData) {
 }
 
 async function delete_exercise_data_layer(exerciseId) {
-  let sql = "DELETE FROM Exercise_Bank WHERE exercise_id = ?";
+  return new Promise((resolve, reject) => {
+    con.beginTransaction(err => {
+      if (err) {
+        reject(new Error("Transaction initialization failed."));
+        return;
+      }
 
+      // Define an array of SQL statements for deleting related records
+      const deleteOperations = [
+        "DELETE Workout_Progress FROM Workout_Progress JOIN Workout_Plan_Exercises ON Workout_Progress.workout_exercise_id = Workout_Plan_Exercises.id WHERE Workout_Plan_Exercises.exercise_id = ?",
+        "DELETE FROM Workout_Plan_Exercises WHERE exercise_id = ?",
+        "DELETE FROM Exercise_Equipment WHERE exercise_id = ?",
+        "DELETE FROM Exercise_Fitness_Goals WHERE exercise_id = ?",
+        "DELETE FROM Exercise_Muscle_Group WHERE exercise_id = ?",
+      ];
+
+      // Execute each delete operation in sequence
+      (async () => {
+        try {
+          for (const sql of deleteOperations) {
+            await executeQuery(sql, exerciseId);
+          }
+
+          // Finally, delete the exercise from Exercise_Bank
+          await executeQuery("DELETE FROM Exercise_Bank WHERE exercise_id = ?", exerciseId);
+
+          // Commit the transaction if all operations are successful
+          con.commit(err => {
+            if (err) {
+              console.error("Error committing transaction:", err);
+              throw err;
+            }
+            resolve("Exercise and all related data deleted successfully.");
+          });
+        } catch (error) {
+          // Rollback the transaction in case of any error
+          console.error("Error during cascading delete:", error);
+          con.rollback(() => {
+            reject(new Error("Failed to delete exercise and related data."));
+          });
+        }
+      })();
+    });
+  });
+}
+
+function executeQuery(sql, exerciseId) {
   return new Promise((resolve, reject) => {
     con.query(sql, [exerciseId], (err, result) => {
       if (err) {
-        console.error(
-          "Error executing SQL in delete_exercise_data_layer:",
-          err
-        );
-        reject(new Error("Failed to delete exercise from the database."));
+        reject(err);
       } else {
-        resolve("Exercise deleted successfully");
+        resolve(result);
       }
     });
   });
