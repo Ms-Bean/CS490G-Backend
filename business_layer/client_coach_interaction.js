@@ -78,6 +78,24 @@ async function _check_if_coach_of(user_id1, user_id2) {
     const user1_clients = await client_coach_interaction.get_clients_of_coach(user_id1) || [];
     return user1_clients.includes(user_id2);
 }
+/**
+ * @param {number} user_id1 - ID of the first user.
+ * @param {number} user_id2 - ID of the second user.
+ * @returns {Promise<boolean>} - Resolves with true if user 1 is a client of user 2 (coach); otherwise, resolves with false.
+ */
+async function _check_if_client_of(user_id1, user_id2) {
+    const role1 = await user_info.get_role(user_id1);
+
+    if (role1 !== 'client') {
+        return false;
+    }
+
+    const user1_coaches = await client_coach_interaction.get_coaches_of_client(user_id1) || [];
+
+    return user1_coaches.includes(user_id2);
+}
+
 module.exports.request_coach_business_layer = request_coach_business_layer;
 module.exports.accept_client_business_layer = accept_client_business_layer;
 module.exports._check_if_coach_of = _check_if_coach_of;
+module.exports._check_if_client_of = _check_if_client_of;

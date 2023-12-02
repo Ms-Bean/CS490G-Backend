@@ -17,16 +17,16 @@ async function insert_message_business_layer(current_user_id, recipient_id, cont
     if (!Number.isInteger(current_user_id)) {
         return Promise.reject(new Error("Invalid user id"));
     }
-    if (!Number.isInteger(recipient_id)) {
-        return Promise.reject(new Error("Invalid recipient id"));
-    }
+    //if (!Number.isInteger(recipient_id)) {
+    //    return Promise.reject(new Error("Invalid recipient id"));
+    //}
     if (!content) {
         return Promise.reject(new Error("Cannot send empty message"));
     }
 
-    if (!(await client_coach_interaction.check_if_client_has_hired_coach(current_user_id, recipient_id) || await client_coach_interaction.check_if_client_has_hired_coach(recipient_id, current_user_id))) {
-        return Promise.reject(new Error("Current user cannot message another user that's neither their coach nor client"));
-    }
+    //if (!(await client_coach_interaction.check_if_client_has_hired_coach(current_user_id, recipient_id) || await client_coach_interaction.check_if_client_has_hired_coach(recipient_id, current_user_id))) {
+    //    return Promise.reject(new Error("Current user cannot message another user that's neither their coach nor client"));
+    //}
     return messaging.insert_message_data_layer(current_user_id, recipient_id, content);
 }
 // TODO rename other_user_id to a more descriptive name
@@ -53,12 +53,12 @@ async function get_client_coach_messages_business_layer(current_user_id, other_u
     if (!Number.isInteger(page_num) || page_num <= 0) {
         return Promise.reject(new Error("Invalid page number"));
     }
+    //this check is not nessesary because the coach can hire coach and its beign checked before hand.
+    //if (!(await client_coach_interaction.check_if_client_has_hired_coach(current_user_id, other_user_id) || await client_coach_interaction.check_if_client_has_hired_coach(other_user_id, current_user_id))) {
+    //    return Promise.reject(new Error("Current user cannot view messages from another user that's neither their coach nor client"));
+    //}
 
-    if (!(await client_coach_interaction.check_if_client_has_hired_coach(current_user_id, other_user_id) || await client_coach_interaction.check_if_client_has_hired_coach(other_user_id, current_user_id))) {
-        return Promise.reject(new Error("Current user cannot view messages from another user that's neither their coach nor client"));
-    }
-
-    const message_count = await messaging.count_client_coach_messages(current_user_id, other_user_id);
+    const message_count = await messaging.count_client_coach_messages_data_layer(current_user_id, other_user_id);
     const page_count = Math.ceil(message_count / page_size) || 1;
     page_num = Math.min(page_num, page_count);
     
@@ -75,5 +75,44 @@ async function get_client_coach_messages_business_layer(current_user_id, other_u
     }
     return messages_dto;
 } 
+
+/**
+ * @param {number} user_id - ID of the user (client).
+ * @returns {Promise<number[]>} - Resolves with an array of coach IDs associated with the user.
+ */
+async function get_coaches_list_of_client_business_layer(user_id) {
+    try {
+        // Get the coaches associated with the user
+        const clients_coaches = await client_coach_interaction.get_coaches_of_client_data_layer(user_id) || [];
+        
+        // Return the array of coach IDs
+        return clients_coaches;
+    } catch (error) {
+        // Handle errors, e.g., log them or rethrow
+        console.error("Error:", error);
+        throw error;
+    }
+}
+/**
+ * @param {number} user_id - ID of the coach.
+ * @returns {Promise<number[]>} - Resolves with an array of client IDs associated with the coach.
+ */
+async function get_clients_list_of_coach_business_layer(user_id) {
+    try {
+
+        const coach_clients = await client_coach_interaction.get_clients_of_coach_data_layer(user_id) || [];
+
+
+        return coach_clients;
+    } catch (error) {
+
+        console.error("Error:", error);
+        throw error;
+    }
+}
+
+
+module.exports.get_coaches_list_of_client_business_layer = get_coaches_list_of_client_business_layer;
+module.exports.get_clients_list_of_coach_business_layer = get_clients_list_of_coach_business_layer;
 module.exports.insert_message_business_layer = insert_message_business_layer;
 module.exports.get_client_coach_messages_business_layer = get_client_coach_messages_business_layer;

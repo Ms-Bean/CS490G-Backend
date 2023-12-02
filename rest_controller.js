@@ -223,6 +223,51 @@ async function insert_message_controller(req, res) {
   ).then((success_message) => res.json({message: success_message}))
    .catch((err) => res.status(400).json({message: err.message}));
 }
+async function get_client_coach_list_controller(req, res) {
+  try {
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+    // Check if the user is logged in
+    if (req.session.user === undefined || req.session.user["user_id"] == undefined) {
+      throw new Error("User is not logged in");
+    }
+
+    // Get the role of the user
+    const userRole = await user_info.get_role_business_layer(req.session.user["user_id"]);
+
+    if (userRole === 'coach') {
+      // If the user is a coach, get the list of clients and coaches
+      const clientsList = await messaging.get_clients_list_of_coach_business_layer(req.session.user["user_id"]);
+      const coachesList = await messaging.get_coaches_list_of_client_business_layer(req.session.user["user_id"]);
+
+      // Combine clientsList and coachesList into a single array
+      const user_id_List = [
+        ...clientsList.map(clientId => ({ id: clientId, role: 'client' })),
+        ...coachesList.map(coachId => ({ id: coachId, role: 'coach' })),
+      ];
+
+      // Send the combined list as JSON
+      res.status(200).json({ user_id_List });
+    }
+    else if (userRole === 'client') {
+      // If the user is a client, get the list of coaches
+      const coachesList = await messaging.get_coaches_list_of_client_business_layer(req.session.user["user_id"]);
+
+      // Add role field to coachesList
+      const user_id_List = coachesList.map(coachId => ({ id: coachId, role: 'coach' }));
+
+      // Send the coachesList as JSON
+      res.status(200).json({ user_id_List });
+    } else {
+      throw new Error("Invalid user role");
+    }
+  } catch (error) {
+    console.error(error.message);
+    res.status(400).json({ message: error.message });
+  }
+}
+
+
 
 async function get_client_coach_messages_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -762,7 +807,7 @@ async function get_coach_dashboard_info(req, res)
 function is_logged_in(req) {
   return req.session?.user?.user_id !== undefined;
 }
-
+module.exports.get_client_coach_list_controller = get_client_coach_list_controller;
 module.exports.insert_daily_survey_controller = insert_daily_survey_controller;
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
 module.exports.accept_client_controller = accept_client_controller;
