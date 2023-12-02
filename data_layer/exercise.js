@@ -42,15 +42,6 @@ async function get_all_exercises_data_layer() {
   });
 }
 
-/**
- * Modifies an exercise item in the Exercise_Bank table.
- * This function updates a specific exercise record with the provided data.
- *
- * @param {Object} exerciseData - Data for updating the exercise.
- *                                Expected to have exercise_id and other exercise details.
- * @returns {Promise<string>} - Resolves with a success message.
- * @throws {Error} - Throws an error if the update operation fails.
- */
 async function update_exercise_data_layer(exerciseData) {
   const {
     exercise_id,
@@ -61,43 +52,102 @@ async function update_exercise_data_layer(exerciseData) {
     video_link,
     goal_id,
     thumbnail,
+    equipmentItems, // Array of equipment items
+    muscleGroups,   // Array of muscle groups
   } = exerciseData;
 
-  // SQL query to update a specific exercise
-  let sql = `
-    UPDATE Exercise_Bank 
-    SET name = ?, description = ?, user_who_created_it = ?, difficulty = ?, video_link = ?, goal_id = ?, thumbnail = ?
-    WHERE exercise_id = ?
-  `;
-
-  return new Promise((resolve, reject) => {
-    // Executing the SQL query with the provided exercise data
-    con.query(
-      sql,
-      [
-        name,
-        description,
-        user_who_created_it,
-        difficulty,
-        video_link,
-        goal_id,
-        thumbnail,
-        exercise_id,
-      ],
-      (err, result) => {
-        if (err) {
-          console.error(
-            "Error executing SQL in update_exercise_data_layer:",
-            err
-          );
-          reject(new Error("Failed to update exercise in the database."));
-        } else {
-          // Successfully updated the exercise
-          resolve("Exercise updated successfully");
-        }
+  // Start a transaction
+  await new Promise((resolve, reject) => {
+    con.beginTransaction((err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
       }
-    );
+    });
   });
+
+  try {
+    // Update Exercise_Bank table
+    let sql = `
+      UPDATE Exercise_Bank 
+      SET name = ?, description = ?, user_who_created_it = ?, difficulty = ?, video_link = ?, goal_id = ?, thumbnail = ?
+      WHERE exercise_id = ?
+    `;
+    await new Promise((resolve, reject) => {
+      con.query(sql, [name, description, user_who_created_it, difficulty, video_link, goal_id, thumbnail, exercise_id], (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
+
+    // Update Exercise_Equipment table
+    sql = `DELETE FROM Exercise_Equipment WHERE exercise_id = ?`;
+    await new Promise((resolve, reject) => {
+      con.query(sql, [exercise_id], (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
+
+    if (equipmentItems && equipmentItems.length > 0) {
+      sql = `INSERT INTO Exercise_Equipment (exercise_id, equipment_item) VALUES ?`;
+      const equipmentValues = equipmentItems.map(item => [exercise_id, item]);
+      await new Promise((resolve, reject) => {
+        con.query(sql, [equipmentValues], (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve();
+        });
+      });
+    }
+
+    // Update Exercise_Muscle_Group table
+    sql = `DELETE FROM Exercise_Muscle_Group WHERE exercise_id = ?`;
+    await new Promise((resolve, reject) => {
+      con.query(sql, [exercise_id], (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
+
+    if (muscleGroups && muscleGroups.length > 0) {
+      sql = `INSERT INTO Exercise_Muscle_Group (exercise_id, muscle_group) VALUES ?`;
+      const muscleGroupValues = muscleGroups.map(item => [exercise_id, item]);
+      await new Promise((resolve, reject) => {
+        con.query(sql, [muscleGroupValues], (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve();
+        });
+      });
+    }
+
+    // Commit the transaction
+    await new Promise((resolve, reject) => {
+      con.commit((err) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve("Exercise updated successfully");
+      });
+    });
+  } catch (err) {
+    // Rollback the transaction in case of error
+    await new Promise((resolve, reject) => {
+      con.rollback(() => {
+        reject(err);
+      });
+    });
+  }
 }
 
 async function delete_exercise_data_layer(exerciseId) {
@@ -158,6 +208,38 @@ async function add_exercise_data_layer(exerciseData) {
   });
 }
 
+async function get_all_muscle_groups_data_layer() {
+  let sql = "SELECT DISTINCT muscle_group FROM Exercise_Muscle_Group";
+
+  return new Promise((resolve, reject) => {
+    con.query(sql, (err, results) => {
+      if (err) {
+        console.error("Error executing SQL in get_all_muscle_groups_data_layer:", err);
+        reject(new Error("Failed to retrieve muscle groups from the database."));
+      } else {
+        resolve(results);
+      }
+    });
+  });
+}
+
+async function get_all_equipment_data_layer() {
+  let sql = "SELECT DISTINCT equipment_item FROM Exercise_Equipment";
+
+  return new Promise((resolve, reject) => {
+    con.query(sql, (err, results) => {
+      if (err) {
+        console.error("Error executing SQL in get_all_equipment_data_layer:", err);
+        reject(new Error("Failed to retrieve equipment from the database."));
+      } else {
+        resolve(results);
+      }
+    });
+  });
+}
+
+module.exports.get_all_equipment_data_layer = get_all_equipment_data_layer;
+module.exports.get_all_muscle_groups_data_layer = get_all_muscle_groups_data_layer;
 module.exports.add_exercise_data_layer = add_exercise_data_layer;
 module.exports.delete_exercise_data_layer = delete_exercise_data_layer;
 module.exports.get_all_exercises_data_layer = get_all_exercises_data_layer;

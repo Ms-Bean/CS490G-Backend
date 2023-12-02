@@ -8,7 +8,6 @@ async function get_all_exercises_business_layer() {
   return exercise_bank.get_all_exercises_data_layer();
 }
 
-
 /**
  * Business logic for updating an exercise item.
  *
@@ -28,6 +27,16 @@ async function add_exercise_business_layer(exerciseData) {
   return exercise_bank.add_exercise_data_layer(exerciseData);
 }
 
+async function get_all_equipment_business_layer() {
+  return exercise_bank.get_all_equipment_data_layer();
+}
+
+async function get_all_muscle_groups_business_layer() {
+  return exercise_bank.get_all_muscle_groups_data_layer();
+}
+
+module.exports.get_all_muscle_groups_business_layer = get_all_muscle_groups_business_layer;
+module.exports.get_all_equipment_business_layer = get_all_equipment_business_layer;
 module.exports.add_exercise_business_layer = add_exercise_business_layer;
 module.exports.get_all_exercises_business_layer = get_all_exercises_business_layer;
 module.exports.delete_exercise_business_layer = delete_exercise_business_layer;

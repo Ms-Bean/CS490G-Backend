@@ -591,6 +591,30 @@ async function get_all_goals_controller(req, res) {
   }
 }
 
+async function get_all_muscle_groups_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  try {
+    const muscleGroups = await exercise.get_all_muscle_groups_business_layer();
+    res.json(muscleGroups);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+async function get_all_equipment_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  try {
+    const equipmentItems = await exercise.get_all_equipment_business_layer();
+    res.json(equipmentItems);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+module.exports.get_all_equipment_controller = get_all_equipment_controller;
+module.exports.get_all_muscle_groups_controller = get_all_muscle_groups_controller;
 module.exports.get_all_goals_controller = get_all_goals_controller;
 module.exports.goal_name_by_id_controller = goal_name_by_id_controller;
 module.exports.add_exercise_controller = add_exercise_controller;
