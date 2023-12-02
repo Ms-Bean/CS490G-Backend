@@ -65,6 +65,7 @@ app.get("/goal_name/:goal_id", controller.goal_name_by_id_controller);
 app.get("/goals", controller.get_all_goals_controller);
 app.get('/muscle-groups', controller.get_all_muscle_groups_controller);
 app.get('/equipment', controller.get_all_equipment_controller);
+app.get("/exercise/:exercise_id", controller.get_exercise_by_id_controller);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {

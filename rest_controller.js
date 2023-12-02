@@ -613,6 +613,32 @@ async function get_all_equipment_controller(req, res) {
   }
 }
 
+async function get_exercise_by_id_controller(req, res) {
+  console.log("Received request to get exercise by ID", req.params);
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  const exerciseId = req.params.exercise_id;
+
+  if (!exerciseId) {
+    console.log("Invalid request: Missing exercise ID");
+    return res.status(400).send({ message: "Invalid request: Missing exercise ID" });
+  }
+
+  try {
+    const exerciseDetails = await exercise.get_exercise_by_id_business_layer(exerciseId);
+    if (!exerciseDetails) {
+      console.log(`Exercise with ID ${exerciseId} not found`);
+      return res.status(404).send({ message: "Exercise not found" });
+    }
+    console.log("Exercise details fetched successfully, sending response");
+    res.status(200).json(exerciseDetails);
+  } catch (error) {
+    console.error("Error in get_exercise_by_id_controller:", error);
+    res.status(400).json({ message: error.message });
+  }
+}
+
+module.exports.get_exercise_by_id_controller = get_exercise_by_id_controller;
 module.exports.get_all_equipment_controller = get_all_equipment_controller;
 module.exports.get_all_muscle_groups_controller = get_all_muscle_groups_controller;
 module.exports.get_all_goals_controller = get_all_goals_controller;
