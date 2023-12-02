@@ -50,8 +50,11 @@ app.get("/get_role", controller.get_role_controller);
 app.get("/get_user_account_info", controller.get_user_account_info_controller);
 app.post("/alter_account_info", controller.alter_account_info_controller);
 app.route('/messages')
-    .post(controller.insert_message_controller)
     .get(controller.get_client_coach_messages_controller);
+app.route('/messages/list')    
+    .get(controller.get_client_coach_list_controller);  
+app.route('/messages/insert')
+    .post(controller.insert_message_controller)
 app.post('/coaches/search', controller.search_coaches_controller);
 app.post('/daily_survey', controller.insert_daily_survey_controller);
 app.get('/get_user_profile', controller.get_user_profile);

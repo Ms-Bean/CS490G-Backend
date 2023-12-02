@@ -4,21 +4,64 @@ const con = connection.con;
 /**
  * 
  * @param {number} coach_id 
- * @returns {Promise<number>}
+ * @returns {Promise<Array<{ client_id: number, client_name: string }>>}
  */
-function get_clients_of_coach(coach_id) {
-    const sql = "SELECT client_id FROM Client_Coach WHERE coach_id = ?";
+function get_clients_of_coach_data_layer(coach_id) {
+    const sql = `
+        SELECT cc.client_id, CONCAT(u.first_name, ' ', u.last_name) AS client_name
+        FROM Client_Coach cc
+        JOIN users u ON cc.client_id = u.user_id
+        WHERE cc.coach_id = ?;
+    `;
+    
     return new Promise((resolve, reject) => {
         con.query(sql, [coach_id], (err, results) => {
             if (err) {
                 console.log(err);
                 reject(err);
             } else {
-                resolve(results.map(r => r.user_id));
+                const clientData = results.map(r => ({
+                    id: r.client_id,
+                    name: r.client_name,
+                }));
+                resolve(clientData);
             }
         });
     });
 }
+
+
+/**
+ * @param {number} client_id 
+ * @returns {Promise<Array<{ coach_id: number, coach_name: string }>>}
+ */
+function get_coaches_of_client_data_layer(client_id) {
+    const sql = `
+        SELECT c.coach_id, CONCAT(u.first_name, ' ', u.last_name) AS coach_name
+        FROM Client_Coach c
+        JOIN users u ON c.coach_id = u.user_id
+        WHERE c.client_id = ?;
+    `;
+    
+    return new Promise((resolve, reject) => {
+        con.query(sql, [client_id], (err, results) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                const coachData = results.map(r => ({
+                    id: r.coach_id,
+                    name: r.coach_name,
+                }));
+                resolve(coachData);
+            }
+        });
+    });
+}
+
+
+
+
 
 async function request_coach_data_layer(coach_id, client_id, comment) {
     return new Promise((resolve, reject) => {
@@ -127,10 +170,11 @@ async function remove_coach_data_layer(client_id, coach_id) {
         });
     });
 }
+module.exports.get_coaches_of_client_data_layer = get_coaches_of_client_data_layer;
 module.exports.accept_client_data_layer = accept_client_data_layer;
 module.exports.check_if_client_coach_request_exists = check_if_client_coach_request_exists;
 module.exports.check_if_client_has_hired_coach = check_if_client_has_hired_coach;
 
 module.exports.request_coach_data_layer = request_coach_data_layer;
-module.exports.get_clients_of_coach = get_clients_of_coach;
+module.exports.get_clients_of_coach_data_layer = get_clients_of_coach_data_layer;
 module.exports.remove_coach_data_layer = remove_coach_data_layer;

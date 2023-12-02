@@ -58,7 +58,7 @@ function get_client_coach_message_page_data_layer(user_id, other_user_id, page_s
  * @param {number} other_user_id 
  * @returns {Promise<number>}
  */
-function count_client_coach_messages(user_id, other_user_id) {
+function count_client_coach_messages_data_layer(user_id, other_user_id) {
     const sql = "SELECT COUNT(message_id) AS message_count FROM Messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)";
     return new Promise((resolve, reject) => {
         con.query(sql, [other_user_id, user_id, user_id, other_user_id], (err, results) => {
@@ -96,4 +96,4 @@ function insert_message_data_layer(sender_id, receiver_id, content) {
 }
 module.exports.insert_message_data_layer = insert_message_data_layer;
 module.exports.get_client_coach_message_page_data_layer = get_client_coach_message_page_data_layer;
-module.exports.count_client_coach_messages = count_client_coach_messages;
+module.exports.count_client_coach_messages_data_layer = count_client_coach_messages_data_layer;
