@@ -814,13 +814,12 @@ async function get_client_dashboard_info(req, res)
   }
   else
   {
-    if(req.body.client_id !== undefined)
+    if(req.headers.client_id !== undefined)
     {
-      console.log(req.body);
       client_dashboard
         .get_client_dashboard_info(
           req.session.user["user_id"],
-          req.session.body.client_id
+          req.headers.client_id
         )
         .then((response) =>{
           res.header("Access-Control-Allow-Origin", "http://localhost:3000");

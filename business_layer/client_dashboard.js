@@ -9,7 +9,7 @@ async function get_client_dashboard_info(requester_id, client_id)
             reject("Invalid requester id")
         }
         user_info.get_role_business_layer(requester_id).then((response) =>{
-            if(client_id === undefined || client_id == requester_id)
+            if(client_id === "undefined" || client_id == "null" || client_id == requester_id || client_id === undefined)
             {
                 client_dashboard.get_client_dashboard_info(requester_id).then((requester_response) =>{
                     resolve(requester_response);
@@ -20,6 +20,7 @@ async function get_client_dashboard_info(requester_id, client_id)
             }
             else
             {
+                console.log(client_id)
                 if(!/^[0-9]+$/.test(client_id))
                 {
                     reject("Invalid client id")
