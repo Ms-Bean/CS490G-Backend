@@ -190,9 +190,9 @@ async function accept_client_controller(req, res)
 async function get_role_controller(req, res)
 {
   if(req.session.user === undefined)
-    res.status(400).send({message: "You are not logged in."});
+    res.status(200).send({message: "visitor"});
   else if(req.session.user["user_id"] === undefined)
-    res.status(400).send({message: "You are not logged in."});
+    res.status(200).send({message: "visitor"});
   else
   {
     user_info
@@ -468,10 +468,10 @@ async function get_coach_dashboard_info(req, res)
 // Get all exercises
 async function get_all_exercises_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-  if (!req.session.user || !req.session.user["user_id"]) {
-    console.log("Access denied: User is not logged in");
-    return res.status(403).send({ message: "Access denied: User is not logged in" });
-  }
+  // if (!req.session.user || !req.session.user["user_id"]) {
+  //   console.log("Access denied: User is not logged in");
+  //   return res.status(403).send({ message: "Access denied: User is not logged in" });
+  // }
 
   try {
     const exercises = await exercise.get_all_exercises_business_layer();
