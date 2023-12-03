@@ -6,7 +6,7 @@ async function get_profile_info(user_id)
 {
     return new Promise((resolve, reject) =>{
         user_info.get_role(user_id).then((role) =>{
-            if(role != "client" && role != "coach")
+            if(role != "client" && role != "coach" && role != "admin")
             {
                 reject("User is not a client or coach");
             }
@@ -41,7 +41,7 @@ async function set_profile_info(user_id, about_me, experience_level, height, wei
 {
     return new Promise((resolve, reject) =>{
         user_info.get_role(user_id).then((role) =>{
-            if(role != "client" && role != "coach")
+            if(role != "client" && role != "coach" && role != "admin")
             {
                 reject("User is not a client or coach");
             }
