@@ -170,7 +170,7 @@ async function get_exercises_of_workouts(workout_plan_ids) {
         eb.user_who_created_it AS creator_id, eb.difficulty, eb.video_link,
         GROUP_CONCAT(DISTINCT Exercise_Equipment.equipment_item) AS equipment_items, GROUP_CONCAT(DISTINCT Exercise_Muscle_Group.muscle_group) AS muscle_groups,
         GROUP_CONCAT(DISTINCT Goals.name) AS goals
-    FROM workout_plan_exercises wpe
+    FROM Workout_Plan_Exercises wpe
         INNER JOIN Exercise_Bank eb USING (exercise_id)
         LEFT JOIN Exercise_Equipment USING (exercise_id)
         LEFT JOIN Exercise_Muscle_Group USING (exercise_id)
@@ -331,7 +331,7 @@ async function get_workout_exercise_by_id(workout_plan_exercise_id) {
         eb.user_who_created_it AS creator_id, eb.difficulty, eb.video_link,
         GROUP_CONCAT(DISTINCT Exercise_Equipment.equipment_item) AS equipment_items, GROUP_CONCAT(DISTINCT Exercise_Muscle_Group.muscle_group) AS muscle_groups,
         GROUP_CONCAT(DISTINCT Goals.name) AS goals
-    FROM workout_plan_exercises wpe
+    FROM Workout_Plan_Exercises wpe
         INNER JOIN Exercise_Bank eb USING (exercise_id)
         LEFT JOIN Exercise_Equipment USING (exercise_id)
         LEFT JOIN Exercise_Muscle_Group USING (exercise_id)
