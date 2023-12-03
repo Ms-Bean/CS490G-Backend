@@ -6,6 +6,7 @@ const daily_survey = require("../data_layer/daily_survey");
 const client_coach_interaction = require("../data_layer/client_coach_interaction");
 const messaging = require("../data_layer/messaging");
 const workout_management = require("../data_layer/workout_management");
+const exercise = require("../data_layer/exercise");
 
 
 class APIError extends Error {
@@ -36,7 +37,7 @@ async function create_workout_plan(user_id, wp_request) {
 
 async function create_workout_plan_exercise(user_id, wpe_request) {
     _validate_create_workout_plan_exercise_request(wpe_request);
-    const ex = await workout_management.get_exercise_by_id(wpe_request.exercise_id);
+    const ex = await exercise.get_exercise_by_id_data_layer(wpe_request.exercise_id);
     if (ex === null) {
         throw new APIError(`No exercise with ID ${wpe_request.exercise_id} exists!`, 400);
     }
@@ -166,15 +167,6 @@ async function get_workout_plan_exercise_by_id(user_id, wp_id, wpe_id) {
 }
 
 
-async function get_exercise_by_id(exercise_id) {
-    return workout_management.get_exercise_by_id(exercise_id);
-}
-
-async function get_all_exercises() {
-    return workout_management.get_all_exercises();
-}
-
-
 async function _is_authorized_to_view_workout_plan_or_throw_403(user_id, wp_author_id) {
     if (user_id !== wp_author_id &&
             !(await client_coach_interaction.check_if_client_has_hired_coach(user_id, wp_author_id) || await client_coach_interaction.check_if_client_has_hired_coach(wp_author_id, user_id))) {
@@ -247,6 +239,4 @@ module.exports = {
     get_workout_plan_by_id,
     get_workout_plans_by_owner,
     get_workout_plan_exercise_by_id,
-    get_exercise_by_id,
-    get_all_exercises,
 };

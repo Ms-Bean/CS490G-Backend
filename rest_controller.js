@@ -482,46 +482,6 @@ async function set_user_profile(req, res)
 }
 
 
-async function get_all_exercises(req, res) {
-  try {
-    const exercises = await workout_management.get_all_exercises();
-    res.json({
-      exercises
-    });
-  } catch (e) {
-    console.log(e.message);
-    if (!e.status_code) {
-      res.status(500).json({message: "Oops! Something went wrong on our end"});
-    } else {
-      res.status(e.status_code).json({message: e.message});
-    }
-  }
-}
-
-// TODO: determine if basic type validation is better suited for the controllers or business layer
-async function get_exercise_by_id(req, res) {
-  const exercise_id = Number(req.params.id);
-  if (Number.isNaN(exercise_id)) {
-    res.status(400).json({message: "Invalid exercise id"});
-    return;
-  }
-
-  try {
-    const exercise = await workout_management.get_exercise_by_id(exercise_id);
-    res.json({
-      exercise
-    });
-  } catch (e) {
-    console.log(e.message);
-    if (!e.status_code) {
-      res.status(500).json({message: "Oops! Something went wrong on our end"});
-    } else {
-      res.status(e.status_code).json({message: e.message});
-    }
-  }
-}
-
-
 async function create_new_workout_plan(req, res) {
   if (!is_logged_in(req)) {
     res.status(401).json({message: "Cannot create workout plan without logging in"});
@@ -1034,8 +994,6 @@ module.exports.search_coaches_controller = search_coaches_controller;
 module.exports.get_user_profile = get_user_profile;
 module.exports.set_user_profile = set_user_profile;
 module.exports.get_coach_dashboard_info = get_coach_dashboard_info;
-module.exports.get_all_exercises = get_all_exercises;
-module.exports.get_exercise_by_id = get_exercise_by_id;
 module.exports.create_new_workout_plan = create_new_workout_plan;
 module.exports.get_workout_plans_from_author = get_workout_plans_from_author;
 module.exports.get_workout_by_id = get_workout_by_id;
