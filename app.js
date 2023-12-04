@@ -60,8 +60,6 @@ app.post('/daily_survey', controller.insert_daily_survey_controller);
 app.get('/get_user_profile', controller.get_user_profile);
 app.post('/set_user_profile', controller.set_user_profile);
 app.get("/get_coach_dashboard_info", controller.get_coach_dashboard_info);
-app.get('/exercise/all', controller.get_all_exercises);
-app.get('/exercise/:id', controller.get_exercise_by_id);
 app.post('/workout_plan/new', controller.create_new_workout_plan);
 app.get('/workout_plan/author', controller.get_workout_plans_from_author);
 app.route('/workout_plan/:id')
@@ -73,6 +71,16 @@ app.route('/workout_plan/:wp_id/exercise/:wpe_id')
   .get(controller.get_workout_plan_exercise_by_id)
   .put(controller.update_workout_plan_exercise)
   .delete(controller.delete_workout_plan_exercise);
+app.get("/exercises", controller.get_all_exercises_controller);
+app.put("/update_exercise/:exercise_id", controller.update_exercise_controller);
+app.delete("/delete_exercise/:exercise_id", controller.delete_exercise_controller);
+app.post("/add_exercise", controller.add_exercise_controller);
+app.get("/goal_name/:goal_id", controller.goal_name_by_id_controller);
+app.get("/goals", controller.get_all_goals_controller);
+app.get('/muscle-groups', controller.get_all_muscle_groups_controller);
+app.get('/equipment', controller.get_all_equipment_controller);
+app.get("/exercise/:exercise_id", controller.get_exercise_by_id_controller);
+app.get("/exercise/:exercise_id/references", controller.check_exercise_references_controller);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {

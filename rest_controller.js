@@ -10,6 +10,8 @@ const messaging = require("./business_layer/messaging");
 const profile_management = require("./business_layer/profile_management");
 const workout_management = require("./business_layer/workout_management");
 const coach_dashboard = require("./business_layer/coach_dashboard");
+const exercise = require("./business_layer/exercise");
+const goal = require("./business_layer/goals");
 
 async function health_check(req, res) {
   res.status(200).send("Hello, world!");
@@ -189,9 +191,9 @@ async function accept_client_controller(req, res)
 async function get_role_controller(req, res)
 {
   if(req.session.user === undefined)
-    res.status(400).send({message: "You are not logged in."});
+    res.status(200).send({message: "visitor"});
   else if(req.session.user["user_id"] === undefined)
-    res.status(400).send({message: "You are not logged in."});
+    res.status(200).send({message: "visitor"});
   else
   {
     user_info
@@ -212,7 +214,6 @@ async function get_role_controller(req, res)
       })
     }
 }
-
 
 async function insert_message_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -281,6 +282,7 @@ async function get_client_coach_messages_controller(req, res) {
   })
   .catch((err) => res.status(400).json({message: err.message}));
 }
+
 async function get_user_account_info_controller(req, res)
 {  
   if(req.session.user === undefined || req.session.user["user_id"] == undefined)
@@ -310,6 +312,7 @@ async function get_user_account_info_controller(req, res)
     });
   }
 }
+
 async function alter_account_info_controller(req, res)
 {
   console.log("HIII");
@@ -350,7 +353,6 @@ async function alter_account_info_controller(req, res)
       })
   }
 }
-
 
 async function search_coaches_controller(req, res) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -396,7 +398,8 @@ async function insert_daily_survey_controller(req, res) {
 
       res.json(result);
     } catch (error) {
-      res.status(400).json({ message: error.message || "An error occurred" });
+      console.error("Error in insert_daily_survey_controller:", error.message);
+      res.status(400).json({ message: error.message });
     }
   }
 }
@@ -431,6 +434,7 @@ async function get_user_profile(req, res)
       })
   }
 }
+
 async function set_user_profile(req, res)
 {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -474,46 +478,6 @@ async function set_user_profile(req, res)
           message: err
         });
       })
-  }
-}
-
-
-async function get_all_exercises(req, res) {
-  try {
-    const exercises = await workout_management.get_all_exercises();
-    res.json({
-      exercises
-    });
-  } catch (e) {
-    console.log(e.message);
-    if (!e.status_code) {
-      res.status(500).json({message: "Oops! Something went wrong on our end"});
-    } else {
-      res.status(e.status_code).json({message: e.message});
-    }
-  }
-}
-
-// TODO: determine if basic type validation is better suited for the controllers or business layer
-async function get_exercise_by_id(req, res) {
-  const exercise_id = Number(req.params.id);
-  if (Number.isNaN(exercise_id)) {
-    res.status(400).json({message: "Invalid exercise id"});
-    return;
-  }
-
-  try {
-    const exercise = await workout_management.get_exercise_by_id(exercise_id);
-    res.json({
-      exercise
-    });
-  } catch (e) {
-    console.log(e.message);
-    if (!e.status_code) {
-      res.status(500).json({message: "Oops! Something went wrong on our end"});
-    } else {
-      res.status(e.status_code).json({message: e.message});
-    }
   }
 }
 
@@ -771,7 +735,6 @@ async function delete_workout_plan_exercise(req, res) {
   }
 }
 
-
 async function get_coach_dashboard_info(req, res)
 {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -808,6 +771,211 @@ function is_logged_in(req) {
   return req.session?.user?.user_id !== undefined;
 }
 module.exports.get_client_coach_list_controller = get_client_coach_list_controller;
+// Get all exercises
+async function get_all_exercises_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  // if (!req.session.user || !req.session.user["user_id"]) {
+  //   console.log("Access denied: User is not logged in");
+  //   return res.status(403).send({ message: "Access denied: User is not logged in" });
+  // }
+
+  try {
+    const exercises = await exercise.get_all_exercises_business_layer();
+    res.json(exercises);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+// Update exercise (admin only)
+async function update_exercise_controller(req, res) {
+  console.log("Received request to update an exercise", req.body);
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  if (!req.session.user || !req.session.user["user_id"]) {
+    console.log("Access denied: User is not logged in");
+    return res.status(403).send({ message: "Access denied: User is not logged in" });
+  }
+  userRole = await user_info.get_role_business_layer(req.session.user["user_id"]);
+  if (userRole !== 'admin') {
+    console.log("Access denied: User is not an admin", req.session.user);
+    return res.status(403).send({ message: "Access denied: User is not an admin" });
+  }
+
+  try {
+    const userRole = await user_info.get_role_business_layer(req.session.user["user_id"]);
+    
+    if (userRole !== 'admin') {
+      console.log("Access denied: User is not an admin", req.session.user);
+      return res.status(403).send({ message: "Access denied: User is not an admin" });
+    }
+
+    console.log("User is authorized. Updating exercise with provided data");
+    const exerciseData = req.body; // Assuming exerciseData contains all necessary fields
+    const message = await exercise.update_exercise_business_layer(exerciseData);
+    console.log("Exercise updated successfully, sending response");
+    res.status(200).json({ message });
+  } catch (error) {
+    console.error("Error in update_exercise_controller:", error);
+    res.status(400).json({ message: error.message });
+  }
+}
+
+// Delete exercise (admin only)
+async function delete_exercise_controller(req, res) {
+  console.log("Received request to delete an exercise", req.params);
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  if (!req.session.user || !req.session.user["user_id"]) {
+    console.log("Access denied: User is not logged in");
+    return res.status(403).send({ message: "Access denied: User is not logged in" });
+  }
+  
+  userRole = await user_info.get_role_business_layer(req.session.user["user_id"]);
+  if (userRole !== 'admin') {
+    console.log("Access denied: User is not an admin", req.session.user);
+    return res.status(403).send({ message: "Access denied: User is not an admin" });
+  }
+
+  const exerciseId = req.params.exercise_id;
+  try {
+    const message = await exercise.delete_exercise_business_layer(exerciseId);
+    console.log("Exercise deleted successfully, sending response");
+    res.status(200).json({ message });
+  } catch (error) {
+    console.error("Error in delete_exercise_controller:", error);
+    res.status(400).json({ message: error.message });
+  }
+}
+
+// Add exercise (admin only)
+async function add_exercise_controller(req, res) {
+  console.log("Received request to add a new exercise", req.body);
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  if (!req.session.user || !req.session.user["user_id"]) {
+    console.log("Access denied: User is not logged in");
+    return res.status(403).send({ message: "Access denied: User is not logged in" });
+  }
+
+  userRole = await user_info.get_role_business_layer(req.session.user["user_id"]);
+  if (userRole !== 'admin') {
+    console.log("Access denied: User is not an admin", req.session.user);
+    return res.status(403).send({ message: "Access denied: User is not an admin" });
+  }
+
+  try {
+    const exerciseData = req.body; // Assuming exerciseData contains all necessary fields
+    const message = await exercise.add_exercise_business_layer(exerciseData);
+    console.log("New exercise added successfully, sending response");
+    res.status(201).json({ message });
+  } catch (error) {
+    console.error("Error in add_exercise_controller:", error);
+    res.status(400).json({ message: error.message });
+  }
+}
+
+async function goal_name_by_id_controller(req, res) {
+  const goalId = req.params.goal_id;
+
+  try {
+    const goalName = await exercise.goal_name_by_id_business_layer(goalId);
+    res.json({ goalName });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+async function get_all_goals_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  try {
+    const goals = await goal.get_all_goals_business_layer();
+    res.json(goals);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+async function get_all_muscle_groups_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  try {
+    const muscleGroups = await exercise.get_all_muscle_groups_business_layer();
+    res.json(muscleGroups);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+async function get_all_equipment_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  try {
+    const equipmentItems = await exercise.get_all_equipment_business_layer();
+    res.json(equipmentItems);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+async function get_exercise_by_id_controller(req, res) {
+  console.log("Received request to get exercise by ID", req.params);
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  const exerciseId = req.params.exercise_id;
+
+  if (!exerciseId) {
+    console.log("Invalid request: Missing exercise ID");
+    return res.status(400).send({ message: "Invalid request: Missing exercise ID" });
+  }
+
+  try {
+    const exerciseDetails = await exercise.get_exercise_by_id_business_layer(exerciseId);
+    if (!exerciseDetails) {
+      console.log(`Exercise with ID ${exerciseId} not found`);
+      return res.status(404).send({ message: "Exercise not found" });
+    }
+    console.log("Exercise details fetched successfully, sending response");
+    res.status(200).json(exerciseDetails);
+  } catch (error) {
+    console.error("Error in get_exercise_by_id_controller:", error);
+    res.status(400).json({ message: error.message });
+  }
+}
+
+async function check_exercise_references_controller(req, res) {
+  console.log("Received request to check exercise references", req.params);
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  const exerciseId = req.params.exercise_id;
+
+  if (!exerciseId) {
+    console.log("Invalid request: Missing exercise ID");
+    return res.status(400).send({ message: "Invalid request: Missing exercise ID" });
+  }
+
+  try {
+    const references = await exercise.check_exercise_references_business_layer(exerciseId);
+    console.log("Exercise references checked successfully, sending response");
+    res.status(200).json(references);
+  } catch (error) {
+    console.error("Error in check_exercise_references_controller:", error);
+    res.status(400).json({ message: error.message });
+  }
+}
+
+
+module.exports.check_exercise_references_controller = check_exercise_references_controller;
+module.exports.get_exercise_by_id_controller = get_exercise_by_id_controller;
+module.exports.get_all_equipment_controller = get_all_equipment_controller;
+module.exports.get_all_muscle_groups_controller = get_all_muscle_groups_controller;
+module.exports.get_all_goals_controller = get_all_goals_controller;
+module.exports.goal_name_by_id_controller = goal_name_by_id_controller;
+module.exports.add_exercise_controller = add_exercise_controller;
+module.exports.delete_exercise_controller = delete_exercise_controller;
+module.exports.get_all_exercises_controller = get_all_exercises_controller;
+module.exports.update_exercise_controller = update_exercise_controller;
 module.exports.insert_daily_survey_controller = insert_daily_survey_controller;
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
 module.exports.accept_client_controller = accept_client_controller;
@@ -826,8 +994,6 @@ module.exports.search_coaches_controller = search_coaches_controller;
 module.exports.get_user_profile = get_user_profile;
 module.exports.set_user_profile = set_user_profile;
 module.exports.get_coach_dashboard_info = get_coach_dashboard_info;
-module.exports.get_all_exercises = get_all_exercises;
-module.exports.get_exercise_by_id = get_exercise_by_id;
 module.exports.create_new_workout_plan = create_new_workout_plan;
 module.exports.get_workout_plans_from_author = get_workout_plans_from_author;
 module.exports.get_workout_by_id = get_workout_by_id;
