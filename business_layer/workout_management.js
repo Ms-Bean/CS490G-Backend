@@ -199,7 +199,7 @@ function _validate_create_workout_plan_request(wp_request) {
 // TODO: Validate exercises property
 function _validate_create_workout_plan_exercise_request(wpe_request) {
     let message = "";
-    const weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    const weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
     const time_regex = /^(([0-1]\d)|(2[0-3]))(:[0-5]\d){2}$/;
     if (!weekdays.includes(wpe_request.weekday)) {
         message = "Workout plan exercise `weekday` must be one of the days of the week";
@@ -219,7 +219,7 @@ function _validate_create_workout_plan_exercise_request(wpe_request) {
         message = "Workout plan exercise `num_sets` must be a positive integer";
     } else if (wpe_request.weight !== null && !Number.isInteger(wpe_request.weight)) {
         message = "Workout plan exercise `weight` must be an integer or null";
-    } else if (wpe_request.weight <= 0) {
+    } else if (wpe_request.weight !== null && wpe_request.weight <= 0) {
         message = "Workout plan exercise `weight` must be a positive integer";
     }
 
