@@ -12,7 +12,7 @@ const workout_management = require("./business_layer/workout_management");
 const coach_dashboard = require("./business_layer/coach_dashboard");
 const exercise = require("./business_layer/exercise");
 const goal = require("./business_layer/goals");
-
+const client_dashboard = require("./business_layer/client_dashboard");
 async function health_check(req, res) {
   res.status(200).send("Hello, world!");
 }
@@ -765,6 +765,56 @@ async function get_coach_dashboard_info(req, res)
   }
 }
 
+async function get_client_dashboard_info(req, res)
+{
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  if(req.session.user["user_id"] == undefined)
+  {  
+    res.status(400).send({
+      message: "User is not logged in"
+    });
+  }
+  else
+  {
+    if(req.headers.client_id !== undefined)
+    {
+      client_dashboard
+        .get_client_dashboard_info(
+          req.session.user["user_id"],
+          req.headers.client_id
+        )
+        .then((response) =>{
+          res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+          res.status(200).send(response);
+        })
+        .catch((err) =>{
+          console.log(err);
+          res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+          res.status(400).send({
+            message: err
+          });
+        })
+    }
+    else
+    {      
+      client_dashboard
+        .get_client_dashboard_info(
+          req.session.user["user_id"]
+        )
+        .then((response) =>{
+          res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+          res.status(200).send(response);
+        })
+        .catch((err) =>{
+          console.log(err);
+          res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+          res.status(400).send({
+            message: err
+          });
+        })
+    }
+  }
+}
 
 // TODO: Use proper middleware to check if users are logged in for all routes that require it
 function is_logged_in(req) {
@@ -1003,3 +1053,4 @@ module.exports.create_workout_plan_exercise = create_workout_plan_exercise;
 module.exports.update_workout_plan_exercise = update_workout_plan_exercise;
 module.exports.get_workout_plan_exercise_by_id = get_workout_plan_exercise_by_id;
 module.exports.delete_workout_plan_exercise = delete_workout_plan_exercise;
+module.exports.get_client_dashboard_info = get_client_dashboard_info;

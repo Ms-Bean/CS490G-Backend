@@ -6,7 +6,8 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 
 const controller = require("./rest_controller");
-const profile_management = require("./business_layer/profile_management")
+const profile_management = require("./business_layer/profile_management");
+const client_dashboard = require("./business_layer/client_dashboard");
 
 // set server port
 const PORT = 3500 || process.env.PORT;
@@ -49,6 +50,7 @@ app.post("/accept_client", controller.accept_client_controller);
 app.get("/get_role", controller.get_role_controller);
 app.get("/get_user_account_info", controller.get_user_account_info_controller);
 app.post("/alter_account_info", controller.alter_account_info_controller);
+app.get("/get_client_dashboard_info", controller.get_client_dashboard_info);
 app.route('/messages')
     .get(controller.get_client_coach_messages_controller);
 app.route('/messages/list')    
@@ -93,8 +95,8 @@ app.listen(PORT, () => {
   console.log("Server running on port " + PORT.toString());
 });
 
-profile_management.get_profile_info(996).then((response) =>{
-  console.log(response)
-}).catch((err) => {
+client_dashboard.get_client_dashboard_info(45).then((response) =>{
+  console.log(response);
+}).catch((err) =>{
   console.log(err);
 });
