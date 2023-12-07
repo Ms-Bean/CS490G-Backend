@@ -67,7 +67,7 @@ app.route('/workout_plan/:id')
   .get(controller.get_workout_by_id)
   .put(controller.update_workout_plan)
   .delete(controller.delete_workout_plan);
-app.post('/workout_plan/:wp_id/new', controller.create_workout_plan_exercise);
+app.post('/workout_plan/:wp_id/exercise/new', controller.create_workout_plan_exercise);
 app.route('/workout_plan/:wp_id/exercise/:wpe_id')
   .get(controller.get_workout_plan_exercise_by_id)
   .put(controller.update_workout_plan_exercise)
