@@ -75,7 +75,7 @@ function get_coaches_of_client_data_layer(client_id) {
     LEFT JOIN 
         messages m ON (u.user_id = m.sender_id OR u.user_id = m.receiver_id)
     WHERE 
-        c.client_id = 6 
+        c.client_id = ?
         AND c.requested = 0
         AND (m.created IS NULL OR m.created = (
             SELECT MAX(created) 
