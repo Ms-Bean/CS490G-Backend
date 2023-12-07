@@ -73,6 +73,12 @@ async function get_client_dashboard_info(user_id)
                     console.log(err);
                     reject("sql failure");
                 }
+                if(workout_plan_id_result.length == 0)
+                {
+                    console.log("ZERO!!!");
+                    resolve(workout_schedule);
+                    return;
+                }
                 console.log(workout_plan_id_result)
                 let workout_plan_id = workout_plan_id_result[0].workout_plan_id;
                 let workout_plan_name = workout_plan_id_result[0].name;
