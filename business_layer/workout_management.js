@@ -85,6 +85,11 @@ async function update_workout_plan_exercise(user_id, wpe_request) {
         throw new APIError(`Workout plan exercise with id ${workout_plan_exercise_id} doesn't exist under workout plan with id ${workout_plan_id}`, 400);
     }
 
+    const ex = await exercise.get_exercise_by_id_data_layer(wpe_request.exercise_id);
+    if (ex === null) {
+        throw new APIError(`Exercise with id ${wpe_request.exercise_id} does not exist`, 400);
+    }
+
     return workout_management.update_workout_exercise(wpe_request);
 }
 
