@@ -21,6 +21,7 @@ async function get_all_exercises_data_layer() {
     FROM 
       Exercise_Bank e
     LEFT JOIN Goals g ON e.goal_id = g.goal_id
+    WHERE e.active = 1  -- Only select active exercises
     GROUP BY e.exercise_id
   `;
 
@@ -73,7 +74,7 @@ async function get_exercise_by_id_data_layer(exerciseId) {
          (SELECT DISTINCT exercise_id, muscle_group FROM Exercise_Muscle_Group) AS DistinctMuscleGroup
        GROUP BY exercise_id) AS MuscleGroups ON Exercise_Bank.exercise_id = MuscleGroups.exercise_id
     WHERE 
-      Exercise_Bank.exercise_id = ?
+      Exercise_Bank.exercise_id = ? AND Exercise_Bank.active = 1 -- Check if the exercise is active
     GROUP BY 
       Exercise_Bank.exercise_id;
   `;
@@ -106,6 +107,7 @@ async function update_exercise_data_layer(exerciseData) {
     thumbnail,
     equipment_items,
     muscle_groups,
+    active,
   } = exerciseData;
 
   // Start a transaction
@@ -123,7 +125,7 @@ async function update_exercise_data_layer(exerciseData) {
     // Update Exercise_Bank table
     let sql = `
       UPDATE Exercise_Bank 
-      SET name = ?, description = ?, user_who_created_it = ?, difficulty = ?, video_link = ?, goal_id = ?, thumbnail = ?
+      SET name = ?, description = ?, user_who_created_it = ?, difficulty = ?, video_link = ?, goal_id = ?, thumbnail = ?, active = ? 
       WHERE exercise_id = ?
     `;
     await new Promise((resolve, reject) => {
@@ -137,6 +139,7 @@ async function update_exercise_data_layer(exerciseData) {
           video_link,
           goal_id,
           thumbnail,
+          active, // Add 'active' to the values list
           exercise_id,
         ],
         (err, result) => {
@@ -222,48 +225,16 @@ async function update_exercise_data_layer(exerciseData) {
 }
 
 async function delete_exercise_data_layer(exerciseId) {
+  let sql = "UPDATE Exercise_Bank SET active = 0 WHERE exercise_id = ?";
+
   return new Promise((resolve, reject) => {
-    con.beginTransaction(err => {
+    con.query(sql, [exerciseId], (err, result) => {
       if (err) {
-        reject(new Error("Transaction initialization failed."));
-        return;
+        console.error("Error executing SQL in delete_exercise_data_layer:", err);
+        reject(new Error("Failed to deactivate exercise in the database."));
+      } else {
+        resolve("Exercise deactivated successfully.");
       }
-
-      // Define an array of SQL statements for deleting related records
-      const deleteOperations = [
-        "DELETE Workout_Progress FROM Workout_Progress JOIN Workout_Plan_Exercises ON Workout_Progress.workout_exercise_id = Workout_Plan_Exercises.id WHERE Workout_Plan_Exercises.exercise_id = ?",
-        "DELETE FROM Workout_Plan_Exercises WHERE exercise_id = ?",
-        "DELETE FROM Exercise_Equipment WHERE exercise_id = ?",
-        "DELETE FROM Exercise_Fitness_Goals WHERE exercise_id = ?",
-        "DELETE FROM Exercise_Muscle_Group WHERE exercise_id = ?",
-      ];
-
-      // Execute each delete operation in sequence
-      (async () => {
-        try {
-          for (const sql of deleteOperations) {
-            await executeQuery(sql, exerciseId);
-          }
-
-          // Finally, delete the exercise from Exercise_Bank
-          await executeQuery("DELETE FROM Exercise_Bank WHERE exercise_id = ?", exerciseId);
-
-          // Commit the transaction if all operations are successful
-          con.commit(err => {
-            if (err) {
-              console.error("Error committing transaction:", err);
-              throw err;
-            }
-            resolve("Exercise and all related data deleted successfully.");
-          });
-        } catch (error) {
-          // Rollback the transaction in case of any error
-          console.error("Error during cascading delete:", error);
-          con.rollback(() => {
-            reject(new Error("Failed to delete exercise and related data."));
-          });
-        }
-      })();
     });
   });
 }
