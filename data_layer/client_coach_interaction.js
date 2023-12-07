@@ -17,17 +17,17 @@ function get_clients_of_coach_data_layer(coach_id) {
     FROM 
         Client_Coach cc
     JOIN 
-        users u ON cc.client_id = u.user_id
+        Users u ON cc.client_id = u.user_id
     JOIN 
-        user_profile up ON u.user_id = up.user_id
+        User_Profile up ON u.user_id = up.user_id
     LEFT JOIN 
-        messages m ON (u.user_id = m.sender_id OR u.user_id = m.receiver_id)
+        Messages m ON (u.user_id = m.sender_id OR u.user_id = m.receiver_id)
     WHERE 
         cc.coach_id = ?
         AND cc.requested = 0
         AND (m.created IS NULL OR m.created = (
             SELECT MAX(created) 
-            FROM messages 
+            FROM Messages 
             WHERE sender_id = u.user_id OR receiver_id = u.user_id
         ));
 
@@ -69,17 +69,17 @@ function get_coaches_of_client_data_layer(client_id) {
     FROM 
         Client_Coach c
     JOIN 
-        users u ON c.coach_id = u.user_id
+        Users u ON c.coach_id = u.user_id
     JOIN 
-        user_profile up ON u.user_id = up.user_id
+        User_Profile up ON u.user_id = up.user_id
     LEFT JOIN 
-        messages m ON (u.user_id = m.sender_id OR u.user_id = m.receiver_id)
+        Messages m ON (u.user_id = m.sender_id OR u.user_id = m.receiver_id)
     WHERE 
         c.client_id = ?
         AND c.requested = 0
         AND (m.created IS NULL OR m.created = (
             SELECT MAX(created) 
-            FROM messages 
+            FROM Messages 
             WHERE sender_id = u.user_id OR receiver_id = u.user_id
         ));
     `;
