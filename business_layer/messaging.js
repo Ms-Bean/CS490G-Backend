@@ -5,8 +5,9 @@ const coach_search = require("../data_layer/coach_search");
 const daily_survey = require("../data_layer/daily_survey");
 const client_coach_interaction = require("../data_layer/client_coach_interaction");
 const messaging = require("../data_layer/messaging")
-// Function to insert a message between a client and a coach
-/**
+
+
+/** Function to insert a message between a client and a coach
  * @param {number} current_user_id - ID of the user sending the message.
  * @param {number} recipient_id - ID of the user receiving the message.
  * @param {string} content - Content of the message.
@@ -18,21 +19,21 @@ async function insert_message_business_layer(current_user_id, recipient_id, cont
         return Promise.reject(new Error("Invalid user id"));
     }
     if (!Number.isInteger(recipient_id)) {
-        return Promise.reject(new Error("Invalid recipient id"));
+       return Promise.reject(new Error("Invalid recipient id"));
     }
     if (!content) {
         return Promise.reject(new Error("Cannot send empty message"));
     }
 
-    //if (!(await client_coach_interaction.check_if_client_has_hired_coach(current_user_id, recipient_id) || await client_coach_interaction.check_if_client_has_hired_coach(recipient_id, current_user_id))) {
-    //    return Promise.reject(new Error("Current user cannot message another user that's neither their coach nor client"));
-    //}
+    if (!(await client_coach_interaction.check_if_client_has_hired_coach(current_user_id, recipient_id) || await client_coach_interaction.check_if_client_has_hired_coach(recipient_id, current_user_id))) {
+       return Promise.reject(new Error("Current user cannot message another user that's neither their coach nor client"));
+    }
     return messaging.insert_message_data_layer(current_user_id, recipient_id, content);
 }
-// TODO rename other_user_id to a more descriptive name
 
-// Function to retrieve client-coach messages
-/**
+
+// TODO rename other_user_id to a more descriptive name
+/** Function to retrieve client-coach messages
  * @param {number} current_user_id - ID of the user making the request.
  * @param {number} other_user_id - ID of the other user in the conversation.
  * @param {number} page_size - Number of messages per page.
@@ -53,10 +54,9 @@ async function get_client_coach_messages_business_layer(current_user_id, other_u
     if (!Number.isInteger(page_num) || page_num <= 0) {
         return Promise.reject(new Error("Invalid page number"));
     }
-    //this check is not nessesary because the coach can hire coach and its beign checked before hand.
-    //if (!(await client_coach_interaction.check_if_client_has_hired_coach(current_user_id, other_user_id) || await client_coach_interaction.check_if_client_has_hired_coach(other_user_id, current_user_id))) {
-    //    return Promise.reject(new Error("Current user cannot view messages from another user that's neither their coach nor client"));
-    //}
+    if (!(await client_coach_interaction.check_if_client_has_hired_coach(current_user_id, other_user_id) || await client_coach_interaction.check_if_client_has_hired_coach(other_user_id, current_user_id))) {
+       return Promise.reject(new Error("Current user cannot view messages from another user that's neither their coach nor client"));
+    }
 
     const message_count = await messaging.count_client_coach_messages_data_layer(current_user_id, other_user_id);
     const page_count = Math.ceil(message_count / page_size) || 1;
