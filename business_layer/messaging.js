@@ -17,9 +17,9 @@ async function insert_message_business_layer(current_user_id, recipient_id, cont
     if (!Number.isInteger(current_user_id)) {
         return Promise.reject(new Error("Invalid user id"));
     }
-    //if (!Number.isInteger(recipient_id)) {
-    //    return Promise.reject(new Error("Invalid recipient id"));
-    //}
+    if (!Number.isInteger(recipient_id)) {
+        return Promise.reject(new Error("Invalid recipient id"));
+    }
     if (!content) {
         return Promise.reject(new Error("Cannot send empty message"));
     }
