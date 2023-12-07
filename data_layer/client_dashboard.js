@@ -73,6 +73,7 @@ async function get_client_dashboard_info(user_id)
                     console.log(err);
                     reject("sql failure");
                 }
+                console.log(workout_plan_id_result)
                 let workout_plan_id = workout_plan_id_result[0].workout_plan_id;
                 let workout_plan_name = workout_plan_id_result[0].name;
                 workout_schedule.workout_plan_name = workout_plan_name;
@@ -84,7 +85,7 @@ async function get_client_dashboard_info(user_id)
                     let current_weekday = get_weekday_result[0].weekday;
                     for(let days_ago = 4; days_ago >= 0; days_ago--)
                     {
-                        let weekday = weekdays[(current_weekday - days_ago) % 7];
+                        let weekday = weekdays[mod(current_weekday - days_ago, 7)];
                         workout_schedule["days"].push({
                             "weekday": weekday,
                             "exercises": []
