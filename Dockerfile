@@ -14,10 +14,10 @@ RUN npm install
 EXPOSE 3500
 
 # Use environment variables for database connection, with default values
-ENV DB_HOST=localhost
-ENV DB_USER=root
-ENV DB_PASS=password
-ENV DB_NAME=mydatabase
+ENV DB_HOST=172.19.0.3
+ENV DB_USER=jenkins
+ENV DB_PASS=moxi
+ENV DB_NAME=moxi
 
 # Run app.js when the container launches
 CMD ["node", "app.js"]
