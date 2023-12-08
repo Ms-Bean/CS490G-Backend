@@ -10,7 +10,7 @@ const profile_management = require("./business_layer/profile_management");
 const client_dashboard = require("./business_layer/client_dashboard");
 
 // set server port
-const PORT = process.env.PORT;
+const PORT = 3500;
 
 const corsOptions = {
   origin: process.env.FRONTEND_URL,
