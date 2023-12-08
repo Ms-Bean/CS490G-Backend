@@ -13,7 +13,7 @@ const client_dashboard = require("./business_layer/client_dashboard");
 const PORT = 3500 || process.env.PORT;
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL,
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   optionsSuccessStatus: 204,
