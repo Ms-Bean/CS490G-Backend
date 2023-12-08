@@ -1,13 +1,11 @@
 const mysql = require("mysql");
 
-let database_name = "cs490_database" // Replace with your database name
-
 // Use environment variables for database credentials
 const con = mysql.createConnection({ 
-    host: process.env.DB_HOST || "localhost",
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASS || "cactusgreen",
-    database: database_name
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME
 });
 
 // Uncomment the connect function if you need to establish the connection here
