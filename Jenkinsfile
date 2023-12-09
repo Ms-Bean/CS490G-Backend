@@ -23,24 +23,30 @@ pipeline {
         
         stage('Checkout Backend') {
             steps {
-                git branch: params.BACKEND_BRANCH, url: 'https://github.com/Ms-Bean/CS490G-Backend.git'
+                sh 'mkdir -p CS490G-Backend'
+                dir('CS490G-Backend') {
+                    git branch: params.BACKEND_BRANCH, url: 'https://github.com/Ms-Bean/CS490G-Backend.git'
+                }
             }
         }
 
         stage('Build and Run Backend') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')]) {
-                    sh 'docker build -t moxi-backend .'
-                    sh """
-                       docker run -d --name moxi-backend \
-                       -e DB_HOST=\$DB_HOST \
-                       -e DB_USER=\$DB_USER \
-                       -e DB_PASS=\$DB_PASS \
-                       -e DB_NAME=\$DB_NAME \
-                       -e FRONTEND_URL=\$FRONTEND_URL \
-                       -p 3500:3500 \
-                       moxi-backend
-                       """
+                    dir('CS490G-Backend') {
+
+                        sh 'docker build -t moxi-backend .'
+                        sh """
+                        docker run -d --name moxi-backend \
+                        -e DB_HOST=\$DB_HOST \
+                        -e DB_USER=\$DB_USER \
+                        -e DB_PASS=\$DB_PASS \
+                        -e DB_NAME=\$DB_NAME \
+                        -e FRONTEND_URL=\$FRONTEND_URL \
+                        -p 3500:3500 \
+                        moxi-backend
+                        """
+                    }
                 }
             }
         }
