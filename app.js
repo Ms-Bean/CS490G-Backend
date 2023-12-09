@@ -4,6 +4,7 @@ const cors = require("cors");
 const app = express();
 const session = require("express-session");
 const bodyParser = require("body-parser");
+require('dotenv').config();
 
 const controller = require("./rest_controller");
 const profile_management = require("./business_layer/profile_management");
