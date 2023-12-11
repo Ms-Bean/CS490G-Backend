@@ -4,7 +4,7 @@
   "description": "The backend (nodejs)",
   "main": "index.js",
   "scripts": {
-    "test": "node .\\__tests__\\testrunner.js",
+    "test": "jest",
     "start": "node app.js"
   },
   "author": "",
