@@ -270,8 +270,8 @@ function _get_update_args(args) {
 
 
 async function update_workout_exercise(wpe) {
-    const {weekday, time, reps_per_set, num_sets, weight, workout_plan_exercise_id} = wpe;
-    const {set_clause, args} = _get_update_args({weekday, time, reps_per_set, num_sets, weight});
+    const {exercise_id, weekday, time, reps_per_set, num_sets, weight, workout_plan_exercise_id} = wpe;
+    const {set_clause, args} = _get_update_args({exercise_id, weekday, time, reps_per_set, num_sets, weight});
     const sql = `UPDATE Workout_Plan_Exercises
         SET ${set_clause}
         WHERE id = ?`;

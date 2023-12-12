@@ -118,6 +118,11 @@ async function update_workout_plan_exercise(user_id, wpe_request) {
         throw new APIError(`Workout plan exercise with id ${workout_plan_exercise_id} doesn't exist under workout plan with id ${workout_plan_id}`, 400);
     }
 
+    const ex = await exercise.get_exercise_by_id_data_layer(wpe_request.exercise_id);
+    if (ex === null) {
+        throw new APIError(`Exercise with id ${wpe_request.exercise_id} does not exist`, 400);
+    }
+
     return workout_management.update_workout_exercise(wpe_request);
 }
 
@@ -249,7 +254,7 @@ function _validate_create_client_workout_plan_request(wp_request) {
 // TODO: Validate exercises property
 function _validate_create_workout_plan_exercise_request(wpe_request) {
     let message = "";
-    const weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    const weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
     const time_regex = /^(([0-1]\d)|(2[0-3]))(:[0-5]\d){2}$/;
     if (!weekdays.includes(wpe_request.weekday)) {
         message = "Workout plan exercise `weekday` must be one of the days of the week";
@@ -261,15 +266,15 @@ function _validate_create_workout_plan_exercise_request(wpe_request) {
         message = "Workout plan exercise `exercise_id` must be an integer";
     } else if (wpe_request.reps_per_set !== null && !Number.isInteger(wpe_request.reps_per_set)) {
         message = "Workout plan exercise `reps_per_set` must be an integer or null";
-    } else if (wpe_request.reps_per_set <= 0) {
+    } else if (wpe_request.reps_per_set !== null && wpe_request.reps_per_set <= 0) {
         message = "Workout plan exercise `reps_per_set` must be a positive integer";
     } else if (wpe_request.num_sets !== null && !Number.isInteger(wpe_request.num_sets)) {
         message = "Workout plan exercise `num_sets` must be an integer or null";
-    } else if (wpe_request.num_sets <= 0) {
+    } else if (wpe_request.num_sets !== null && wpe_request.num_sets <= 0) {
         message = "Workout plan exercise `num_sets` must be a positive integer";
     } else if (wpe_request.weight !== null && !Number.isInteger(wpe_request.weight)) {
         message = "Workout plan exercise `weight` must be an integer or null";
-    } else if (wpe_request.weight <= 0) {
+    } else if (wpe_request.weight !== null && wpe_request.weight <= 0) {
         message = "Workout plan exercise `weight` must be a positive integer";
     }
 

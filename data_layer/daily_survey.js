@@ -29,7 +29,7 @@ async function insert_daily_survey_data_layer({
     .replace("T", " ");
 
   let sql = `
-      INSERT INTO user_daily_survey (calories_consumed, weight, calories_burned, created, modified, date, user_id, water_intake, mood) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO User_Daily_Survey (calories_consumed, weight, calories_burned, created, modified, date, user_id, water_intake, mood) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
   return new Promise((resolve, reject) => {

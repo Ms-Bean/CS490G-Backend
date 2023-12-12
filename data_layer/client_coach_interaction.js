@@ -8,10 +8,30 @@ const con = connection.con;
  */
 function get_clients_of_coach_data_layer(coach_id) {
     const sql = `
-        SELECT cc.client_id, CONCAT(u.first_name, ' ', u.last_name) AS client_name
-        FROM Client_Coach cc
-        JOIN users u ON cc.client_id = u.user_id
-        WHERE cc.coach_id = ?;
+    SELECT 
+        cc.client_id, 
+        CONCAT(u.first_name, ' ', u.last_name) AS client_name,
+        up.profile_picture,
+        COALESCE(SUBSTRING(m.content, 1, 40), 'No message') AS message,
+        m.created
+    FROM 
+        Client_Coach cc
+    JOIN 
+        Users u ON cc.client_id = u.user_id
+    JOIN 
+        User_Profile up ON u.user_id = up.user_id
+    LEFT JOIN 
+        Messages m ON (u.user_id = m.sender_id OR u.user_id = m.receiver_id)
+    WHERE 
+        cc.coach_id = ?
+        AND cc.requested = 0
+        AND (m.created IS NULL OR m.created = (
+            SELECT MAX(created) 
+            FROM Messages 
+            WHERE sender_id = u.user_id OR receiver_id = u.user_id
+        ));
+
+
     `;
     
     return new Promise((resolve, reject) => {
@@ -23,6 +43,9 @@ function get_clients_of_coach_data_layer(coach_id) {
                 const clientData = results.map(r => ({
                     id: r.client_id,
                     name: r.client_name,
+                    profile_picture: r.profile_picture,
+                    message_content: r.message,
+                    message_created: r.created,
                 }));
                 resolve(clientData);
             }
@@ -37,10 +60,28 @@ function get_clients_of_coach_data_layer(coach_id) {
  */
 function get_coaches_of_client_data_layer(client_id) {
     const sql = `
-        SELECT c.coach_id, CONCAT(u.first_name, ' ', u.last_name) AS coach_name
-        FROM Client_Coach c
-        JOIN users u ON c.coach_id = u.user_id
-        WHERE c.client_id = ?;
+    SELECT 
+        c.coach_id, 
+        CONCAT(u.first_name, ' ', u.last_name) AS coach_name,
+        up.profile_picture,
+        COALESCE(SUBSTRING(m.content, 1, 40), 'No message') AS message,
+        m.created
+    FROM 
+        Client_Coach c
+    JOIN 
+        Users u ON c.coach_id = u.user_id
+    JOIN 
+        User_Profile up ON u.user_id = up.user_id
+    LEFT JOIN 
+        Messages m ON (u.user_id = m.sender_id OR u.user_id = m.receiver_id)
+    WHERE 
+        c.client_id = ?
+        AND c.requested = 0
+        AND (m.created IS NULL OR m.created = (
+            SELECT MAX(created) 
+            FROM Messages 
+            WHERE sender_id = u.user_id OR receiver_id = u.user_id
+        ));
     `;
     
     return new Promise((resolve, reject) => {
@@ -52,6 +93,9 @@ function get_coaches_of_client_data_layer(client_id) {
                 const coachData = results.map(r => ({
                     id: r.coach_id,
                     name: r.coach_name,
+                    profile_picture: r.profile_picture,
+                    message_content: r.message,
+                    message_created: r.created,
                 }));
                 resolve(coachData);
             }
