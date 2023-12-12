@@ -5,11 +5,11 @@ const exercise_bank = require("../data_layer/exercise");
  * @returns {Promise<Array>} - Resolves with an array of exercises.
  */
 async function get_all_exercises_business_layer() {
-  return exercise_bank.get_all_exercises_data_layer();
+    return exercise_bank.get_all_exercises_data_layer();
 }
 
 async function get_exercise_by_id_business_layer(exerciseId) {
-  return exercise_bank.get_exercise_by_id_data_layer(exerciseId);
+    return exercise_bank.get_exercise_by_id_data_layer(exerciseId);
 }
 
 /**
@@ -20,28 +20,28 @@ async function get_exercise_by_id_business_layer(exerciseId) {
  * @throws {Promise<string>} - Rejects with an error message if the update operation fails.
  */
 async function update_exercise_business_layer(exerciseData) {
-  return exercise_bank.update_exercise_data_layer(exerciseData);
+    return exercise_bank.update_exercise_data_layer(exerciseData);
 }
 
 async function delete_exercise_business_layer(exerciseId) {
-  return exercise_bank.delete_exercise_data_layer(exerciseId);
+    return exercise_bank.delete_exercise_data_layer(exerciseId);
 }
 
 async function add_exercise_business_layer(exerciseData) {
-  return exercise_bank.add_exercise_data_layer(exerciseData);
+    return exercise_bank.add_exercise_data_layer(exerciseData);
 }
 
 async function get_all_equipment_business_layer() {
-  return exercise_bank.get_all_equipment_data_layer();
+    return exercise_bank.get_all_equipment_data_layer();
 }
 
 async function get_all_muscle_groups_business_layer() {
-  return exercise_bank.get_all_muscle_groups_data_layer();
+    return exercise_bank.get_all_muscle_groups_data_layer();
 }
 
 async function check_exercise_references_business_layer(exerciseId) {
-  return exercise_bank.check_exercise_references_data_layer(exerciseId);
-} 
+    return exercise_bank.check_exercise_references_data_layer(exerciseId);
+}
 
 module.exports.check_exercise_references_business_layer = check_exercise_references_business_layer;
 module.exports.get_exercise_by_id_business_layer = get_exercise_by_id_business_layer;
