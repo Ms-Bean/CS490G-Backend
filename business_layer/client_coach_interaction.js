@@ -95,7 +95,16 @@ async function _check_if_client_of(user_id1, user_id2) {
     return user1_coaches.includes(user_id2);
 }
 
+/**
+ * @param {number} coach_id 
+ * @returns {Promise<Array>} - Resolves with an array of clients.
+ */
+async function get_clients_of_coach_business_layer(coach_id) {
+    return client_coach_interaction.get_clients_of_coach_data_layer(coach_id);
+}
+
 module.exports.request_coach_business_layer = request_coach_business_layer;
 module.exports.accept_client_business_layer = accept_client_business_layer;
 module.exports._check_if_coach_of = _check_if_coach_of;
 module.exports._check_if_client_of = _check_if_client_of;
+module.exports.get_clients_of_coach_business_layer = get_clients_of_coach_business_layer;

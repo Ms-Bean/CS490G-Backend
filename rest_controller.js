@@ -12,7 +12,9 @@ const workout_management = require("./business_layer/workout_management");
 const coach_dashboard = require("./business_layer/coach_dashboard");
 const exercise = require("./business_layer/exercise");
 const goal = require("./business_layer/goals");
-const client_dashboard = require("./business_layer/client_dashboard");
+const workout_progress = require("./business_layer/workout_progress")
+
+
 async function health_check(req, res) {
   res.status(200).send("Hello, world!");
 }
@@ -268,7 +270,32 @@ async function get_client_coach_list_controller(req, res) {
   }
 }
 
+async function get_users_clients(req, res)
+{  
+  try {
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
 
+    // Check if the user is logged in
+    if (req.session.user === undefined || req.session.user["user_id"] == undefined) {
+      throw new Error("User is not logged in");
+    }
+
+    // Get the role of the user
+    const userRole = await user_info.get_role_business_layer(req.session.user["user_id"]);
+
+    if (userRole === "coach"){
+      const clientList = await client_coach_interaction.get_clients_of_coach_business_layer(req.session.user["user_id"]);
+
+      res.status(200).json({clientList});
+    }
+    else{
+      throw new Error("Not a Coach")
+    }
+  } catch (error) {
+    console.error(error.message);
+    res.status(400).json({ message: error.message });
+  }
+};
 
 async function get_client_coach_messages_controller(req, res) {
   res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
@@ -1015,6 +1042,26 @@ async function check_exercise_references_controller(req, res) {
   }
 }
 
+async function create_new_workout_progress(req, res) {
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot create workout progress without logging in"});
+    return;
+  }
+  console.log(req.body);
+
+  const user_id = req.session.user.user_id;
+  try {
+    const wp = await workout_progress.create_workout_progress(user_id, req.body);
+    res.json({wp});
+  } catch (e) {
+    console.log("here", e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
 
 module.exports.check_exercise_references_controller = check_exercise_references_controller;
 module.exports.get_exercise_by_id_controller = get_exercise_by_id_controller;
@@ -1053,4 +1100,6 @@ module.exports.create_workout_plan_exercise = create_workout_plan_exercise;
 module.exports.update_workout_plan_exercise = update_workout_plan_exercise;
 module.exports.get_workout_plan_exercise_by_id = get_workout_plan_exercise_by_id;
 module.exports.delete_workout_plan_exercise = delete_workout_plan_exercise;
+module.exports.create_new_workout_progress = create_new_workout_progress;
+module.exports.get_users_clients = get_users_clients;
 module.exports.get_client_dashboard_info = get_client_dashboard_info;
