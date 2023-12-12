@@ -17,41 +17,74 @@ class APIError extends Error {
     }
 }
 
-
 async function create_workout_plan(user_id, wp_request) {
-    _validate_create_workout_plan_request(wp_request);
-    const {name, author_id} = wp_request;
-    // not using `user_id` for the author by default just in case a user can create workout
-    // plans on others behalf (like an admin, for example)
-    if (user_id !== author_id) {
-        throw new APIError(`User with ID ${user_id} cannot create workout plans on other's behalf`, 403);
+    try{
+        _validate_create_workout_plan_request(wp_request);
+        const {name, author_id} = wp_request;
+
+        if (user_id !== author_id) {
+            const type = await user_info.get_role(user_id);
+            if(type !== "coach"){
+                throw new APIError(`User with ID ${user_id} cannot create workout plans on other's behalf`, 403);
+            }
+            const clientList = await client_coach_interaction.get_clients_of_coach_data_layer(user_id);
+            const isClient = clientList.some((client) => client.id === author_id);
+            if(!isClient){
+                throw new APIError(`User with ID ${user_id} cannot create workout plan for User with ID ${author_id}`, 403);
+            }
+        }
+        const wp = new workout_management.WorkoutPlan({
+            workout_plan_id: 0,
+            name: name,
+            author_id: author_id,
+        });
+
+        return workout_management.create_workout_plan(wp);
+    } catch (error){
+        throw error;
     }
-    const wp = new workout_management.WorkoutPlan({
-        workout_plan_id: 0,
-        name: name,
-        author_id: author_id,
+}
+
+async function create_user_workout_plan(uwp_request){
+    const {user_id, workout_plan_id} = uwp_request;
+
+    const uwp = new workout_management.UserWorkoutPlan({
+        user_id : user_id,
+        workout_plan_id : workout_plan_id
     });
 
-    return workout_management.create_workout_plan(wp);
+    return workout_management.create_user_workout_plan(uwp);
 }
 
 async function create_workout_plan_exercise(user_id, wpe_request) {
-    _validate_create_workout_plan_exercise_request(wpe_request);
-    const ex = await exercise.get_exercise_by_id_data_layer(wpe_request.exercise_id);
-    if (ex === null) {
-        throw new APIError(`No exercise with ID ${wpe_request.exercise_id} exists!`, 400);
-    }
-    
-    wpe_request.exercise = ex;
-    const wpe = new workout_management.WorkoutPlanExercise(wpe_request);
-    const wp = await workout_management.get_workout_by_id(wpe.workout_plan_id);
-    if (wp === null) {
-        throw new APIError(`Workout plan with id ${wpe.workout_plan_id} does not exist`, 400);
-    } else if (wp.author_id !== user_id) {
-        throw new APIError(`User unauthorized to create exercise for workout plan with id ${wp.workout_plan_id} because they don't own the workout plan`, 403);
-    }
+    try{
+        _validate_create_workout_plan_exercise_request(wpe_request);
+        const ex = await exercise.get_exercise_by_id_data_layer(wpe_request.exercise_id);
+        if (ex === null) {
+            throw new APIError(`No exercise with ID ${wpe_request.exercise_id} exists!`, 400);
+        }
+        
+        wpe_request.exercise = ex;
+        const wpe = new workout_management.WorkoutPlanExercise(wpe_request);
+        const wp = await workout_management.get_workout_by_id(wpe.workout_plan_id);
+        if (wp === null) {
+            throw new APIError(`Workout plan with id ${wpe.workout_plan_id} does not exist`, 400);
+        } else if (wp.author_id !== user_id) {
+            const type = await user_info.get_role(user_id);
+            if(type !== "coach"){
+                throw new APIError(`User unauthorized to create exercise for workout plan with id ${wp.workout_plan_id} because they don't own the workout plan`, 403);
+            }
+            const clientList = await client_coach_interaction.get_clients_of_coach_data_layer(user_id);
+            const isClient = clientList.some((client) => client.id === wp.author_id);
+            if(!isClient){
+                throw new APIError(`User with ID ${user_id} cannot create workout plan exericse for User with ID ${wp.author_id}`, 403);
+            }
+        }
 
-    return workout_management.create_workout_exercise(wpe);
+        return workout_management.create_workout_exercise(wpe);
+    } catch(error){
+        throw error;
+    }
 }
 
 
@@ -199,6 +232,23 @@ function _validate_create_workout_plan_request(wp_request) {
     }
 }
 
+function _validate_create_client_workout_plan_request(wp_request) {
+    let message = "";
+    if (typeof wp_request.name !== "string") {
+        message = "Workout plan name must be a string";
+    } else if (wp_request.name.trim().length === 0) {
+        message = "Workout plan name must not be empty";
+    } else if (!Number.isInteger(wp_request.author_id)) {
+        message = "Workout plan author_id must be an integer";
+    } else if (wp_request.exercises === null) {
+        message = "Workout plan's exericses cannot be null";
+    }
+
+    if (message) {
+        throw new APIError(message, 400);
+    }
+}
+
 
 // TODO: Clean up and refactor
 // TODO: Validate exercises property
@@ -244,4 +294,5 @@ module.exports = {
     get_workout_plan_by_id,
     get_workout_plans_by_owner,
     get_workout_plan_exercise_by_id,
+    create_user_workout_plan
 };

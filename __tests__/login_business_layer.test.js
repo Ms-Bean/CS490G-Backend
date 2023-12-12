@@ -9,7 +9,7 @@ chai.use(chaiAsPromised);
 const { expect } = chai;
 
 // Mocking the data layer
-const loginDataLayer = require('..\\data_layer\\login');
+const loginDataLayer = require('..\\data_layer\\login.js');
 const sinonLogin = sinon.stub(loginDataLayer, 'login_data_layer');
 
 // Test data

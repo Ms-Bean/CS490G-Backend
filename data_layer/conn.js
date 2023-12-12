@@ -6,7 +6,7 @@ let database_name = "cs490_database" // Replace with your database name
 const con = mysql.createConnection({ 
     host: process.env.DB_HOST || "localhost",
     user: process.env.DB_USER || "root",
-    password: process.env.DB_PASS || "Gokussb@10",
+    password: process.env.DB_PASS || "password",
     database: database_name
 });
 
