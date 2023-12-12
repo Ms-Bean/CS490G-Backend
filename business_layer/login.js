@@ -34,7 +34,7 @@ async function login_business_layer(username, password) {
                 }
                 else
                 {
-                    reject("Invalid credentials");
+                    reject("Invalid username, or password.");
                 }
             });
         }).catch((error) => {
