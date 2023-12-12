@@ -82,6 +82,7 @@ app.get('/muscle-groups', controller.get_all_muscle_groups_controller);
 app.get('/equipment', controller.get_all_equipment_controller);
 app.get("/exercise/:exercise_id", controller.get_exercise_by_id_controller);
 app.get("/exercise/:exercise_id/references", controller.check_exercise_references_controller);
+app.post("/workout_progress/new", controller.create_new_workout_progress);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {
