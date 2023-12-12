@@ -13,7 +13,7 @@ const coach_dashboard = require("./business_layer/coach_dashboard");
 const exercise = require("./business_layer/exercise");
 const goal = require("./business_layer/goals");
 const workout_progress = require("./business_layer/workout_progress")
-
+const client_dashboard = require("./business_layer/client_dashboard");
 
 async function health_check(req, res) {
   res.status(200).send("Hello, world!");
