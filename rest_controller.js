@@ -43,14 +43,14 @@ async function insert_user_controller(req, res) {
       );
     }
 
-    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
     res.header("Access-Control-Allow-Credentials", "true");
     res.status(200).send({ message: userResponse.message });
 
   } catch (error_message) {
     console.error(error_message);
     if (!res.headersSent) {
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
       res.status(400).send({ message: error_message });
     }
   }
@@ -62,7 +62,7 @@ async function login_controller(req, res) {
       .login_business_layer(req.body.username, req.body.password)
       .then((response) => {
         req.session.user = { username: req.body.username, user_id: response.user_id};
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.header("Access-Control-Allow-Credentials", "true");
         res.status(200).send({
           success: true,
@@ -70,7 +70,7 @@ async function login_controller(req, res) {
         });
       })
       .catch((error_message) => {
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(400).send({
           message: error_message,
         });
@@ -89,7 +89,7 @@ async function logout_controller(req, res) {
 async function accept_client_survey_controller(req, res) {
   if(req.session.user === undefined || req.session.user.user_id == undefined)
   {
-    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
     res.header("Access-Control-Allow-Credentials", "true");
     res.status(400).send({
       message: "User is not logged in."
@@ -107,7 +107,7 @@ async function accept_client_survey_controller(req, res) {
       )
       .then((response) =>{
         res.header("Access-Control-Allow-Credentials", "true");
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(200).send({
           message: response
         });
@@ -115,7 +115,7 @@ async function accept_client_survey_controller(req, res) {
       .catch((error_message) =>{
         console.log(error_message);
         res.header("Access-Control-Allow-Credentials", "true");
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(400).send({
           message: error_message
         });
@@ -132,14 +132,14 @@ async function accept_coach_survey_controller(req, res) {
       req.body.experience
     )
     .then((response) =>{
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
       res.status(200).send({
         message: response
       });
     })
     .catch((error_message) =>{
       console.log(error_message);
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
       res.status(400).send({
         message: error_message
       });
@@ -154,14 +154,14 @@ async function request_coach_controller(req, res)
       req.session.user["user_id"]
     )    
     .then((response) =>{
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
       res.status(200).send({
         message: response
       });
     })
     .catch((error) =>{
       console.log(error.message);
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
       res.status(400).send({
         message: error.message
       });
@@ -176,14 +176,14 @@ async function accept_client_controller(req, res)
       req.body.client_id
     )
     .then((response) =>{
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
       res.status(200).send({
         message: response
       });
     })
     .catch((error) =>{
       console.log(error);
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
       res.status(400).send({
         message: error?.message ?? error
       });
@@ -203,13 +203,13 @@ async function get_role_controller(req, res)
         req.session.user["user_id"]
       )
       .then((response) =>{
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(200).send({
           message: response
         });
       }).catch((error_message) =>{
         console.log(error_message);
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(400).send({
           message: error_message
         });
@@ -218,7 +218,7 @@ async function get_role_controller(req, res)
 }
 
 async function insert_message_controller(req, res) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   messaging.insert_message_business_layer(
     req.session.user['user_id'],
     req.body.recipient_id,
@@ -228,7 +228,7 @@ async function insert_message_controller(req, res) {
 }
 async function get_client_coach_list_controller(req, res) {
   try {
-    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
     // Check if the user is logged in
     if (req.session.user === undefined || req.session.user["user_id"] == undefined) {
@@ -298,7 +298,7 @@ async function get_users_clients(req, res)
 };
 
 async function get_client_coach_messages_controller(req, res) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   messaging.get_client_coach_messages_business_layer(
     req.session.user['user_id'],
     Number(req.query.other_user_id),
@@ -325,14 +325,14 @@ async function get_user_account_info_controller(req, res)
       req.session.user["user_id"],
     )
     .then((response) =>{
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
       res.status(200).send({
         response
       });
     })
     .catch((error_message) =>{
       console.log(error_message);
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
       res.status(400).send({
         message: error_message
       });
@@ -366,14 +366,14 @@ async function alter_account_info_controller(req, res)
         req.body.zip_code
       )
       .then((response) =>{
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(200).send({
           message: response
         });
       })
       .catch((err) =>{
         console.log(err);
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(400).send({
           message: err
         });
@@ -382,7 +382,7 @@ async function alter_account_info_controller(req, res)
 }
 
 async function search_coaches_controller(req, res) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   let coach_data;
   try {
     coach_data = await coach_search.search_coaches_business_layer(req.body);
@@ -398,7 +398,7 @@ async function search_coaches_controller(req, res) {
 }
 
 async function insert_daily_survey_controller(req, res) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   
   if(req.session.user === undefined || req.session.user["user_id"] == undefined)
   {  
@@ -433,7 +433,7 @@ async function insert_daily_survey_controller(req, res) {
 
 async function get_user_profile(req, res)
 {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   if(req.session.user === undefined || req.session.user["user_id"] == undefined)
   {  
     res.status(400).send({
@@ -447,14 +447,14 @@ async function get_user_profile(req, res)
         req.session.user["user_id"],
       )
       .then((response) =>{
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(200).send({
           response: response
         });
       })
       .catch((err) =>{
         console.log(err);
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(400).send({
           message: err
         });
@@ -464,7 +464,7 @@ async function get_user_profile(req, res)
 
 async function set_user_profile(req, res)
 {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   if(req.session.user === undefined || req.session.user["user_id"] == undefined)
   {  
     res.status(400).send({
@@ -493,14 +493,14 @@ async function set_user_profile(req, res)
         req.body.coaching_experience_level
       )
       .then((response) =>{
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(200).send({
           response: "Information updated"
         });
       })
       .catch((err) =>{
         console.log(err);
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(400).send({
           message: err
         });
@@ -764,7 +764,7 @@ async function delete_workout_plan_exercise(req, res) {
 
 async function get_coach_dashboard_info(req, res)
 {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   if(req.session.user === undefined || req.session.user["user_id"] == undefined)
   {  
     res.status(400).send({
@@ -779,12 +779,12 @@ async function get_coach_dashboard_info(req, res)
         req.session.user["user_id"]
       )
       .then((response) =>{
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(200).send(response);
       })
       .catch((err) =>{
         console.log(err);
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
         res.status(400).send({
           message: err
         });
@@ -794,7 +794,7 @@ async function get_coach_dashboard_info(req, res)
 
 async function get_client_dashboard_info(req, res)
 {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   if(req.session.user["user_id"] == undefined)
   {  
     res.status(400).send({
@@ -811,12 +811,12 @@ async function get_client_dashboard_info(req, res)
           req.headers.client_id
         )
         .then((response) =>{
-          res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
           res.status(200).send(response);
         })
         .catch((err) =>{
           console.log(err);
-          res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
           res.status(400).send({
             message: err
           });
@@ -829,12 +829,12 @@ async function get_client_dashboard_info(req, res)
           req.session.user["user_id"]
         )
         .then((response) =>{
-          res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
           res.status(200).send(response);
         })
         .catch((err) =>{
           console.log(err);
-          res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
           res.status(400).send({
             message: err
           });
@@ -850,7 +850,7 @@ function is_logged_in(req) {
 module.exports.get_client_coach_list_controller = get_client_coach_list_controller;
 // Get all exercises
 async function get_all_exercises_controller(req, res) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   // if (!req.session.user || !req.session.user["user_id"]) {
   //   console.log("Access denied: User is not logged in");
   //   return res.status(403).send({ message: "Access denied: User is not logged in" });
@@ -867,7 +867,7 @@ async function get_all_exercises_controller(req, res) {
 // Update exercise (admin only)
 async function update_exercise_controller(req, res) {
   console.log("Received request to update an exercise", req.body);
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
   if (!req.session.user || !req.session.user["user_id"]) {
     console.log("Access denied: User is not logged in");
@@ -901,7 +901,7 @@ async function update_exercise_controller(req, res) {
 // Delete exercise (admin only)
 async function delete_exercise_controller(req, res) {
   console.log("Received request to delete an exercise", req.params);
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
   if (!req.session.user || !req.session.user["user_id"]) {
     console.log("Access denied: User is not logged in");
@@ -928,7 +928,7 @@ async function delete_exercise_controller(req, res) {
 // Add exercise (admin only)
 async function add_exercise_controller(req, res) {
   console.log("Received request to add a new exercise", req.body);
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
   if (!req.session.user || !req.session.user["user_id"]) {
     console.log("Access denied: User is not logged in");
@@ -964,7 +964,7 @@ async function goal_name_by_id_controller(req, res) {
 }
 
 async function get_all_goals_controller(req, res) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
   try {
     const goals = await goal.get_all_goals_business_layer();
@@ -975,7 +975,7 @@ async function get_all_goals_controller(req, res) {
 }
 
 async function get_all_muscle_groups_controller(req, res) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
   try {
     const muscleGroups = await exercise.get_all_muscle_groups_business_layer();
@@ -986,7 +986,7 @@ async function get_all_muscle_groups_controller(req, res) {
 }
 
 async function get_all_equipment_controller(req, res) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
   try {
     const equipmentItems = await exercise.get_all_equipment_business_layer();
@@ -998,7 +998,7 @@ async function get_all_equipment_controller(req, res) {
 
 async function get_exercise_by_id_controller(req, res) {
   console.log("Received request to get exercise by ID", req.params);
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
   const exerciseId = req.params.exercise_id;
 
@@ -1023,7 +1023,7 @@ async function get_exercise_by_id_controller(req, res) {
 
 async function check_exercise_references_controller(req, res) {
   console.log("Received request to check exercise references", req.params);
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
   const exerciseId = req.params.exercise_id;
 

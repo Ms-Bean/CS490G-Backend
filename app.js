@@ -4,16 +4,17 @@ const cors = require("cors");
 const app = express();
 const session = require("express-session");
 const bodyParser = require("body-parser");
+require('dotenv').config();
 
 const controller = require("./rest_controller");
 const profile_management = require("./business_layer/profile_management");
 const client_dashboard = require("./business_layer/client_dashboard");
 
 // set server port
-const PORT = 3500 || process.env.PORT;
+const PORT = 3500;
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL,
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   optionsSuccessStatus: 204,
