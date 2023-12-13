@@ -30,6 +30,10 @@ async function delete_exercise_business_layer(exerciseId) {
 }
 
 async function add_exercise_business_layer(exerciseData) {
+    const validation_result = await _validate_add_exercise_request(exerciseData);
+    if (validation_result !== null) {
+        throw new Error(validation_result);
+    }
     return exercise_bank.add_exercise_data_layer(exerciseData);
 }
 
@@ -46,13 +50,60 @@ async function check_exercise_references_business_layer(exerciseId) {
 }
 
 
+async function _validate_add_exercise_request(exercise_data) {
+    const validation_funcs = {
+        name: _validate_name,
+        description: _validate_description,
+        user_who_created_it: _validate_author,
+        difficulty: _validate_difficulty,
+        video_link: _validate_video_link,
+        goal_id: _validate_goal,
+        equipmentItems: _validate_equipment_items,
+        muscleGroups: _validate_muscle_groups
+    };
+
+    for (const [k, func] of Object.entries(validation_funcs)) {
+        const result = await func(exercise_data[k]);
+        if (result) {
+            return result;
+        }
+    }
+
+    return null;
+}
+
+
+async function _is_authorized(user_id) {
+    if (!Number.isInteger(Number(user_id))) {
+        return `\`user_id\` must be an integer, not ${user_id}`;
+    }
+
+    // Check that the user exists
+    let role;
+    try {
+        role = await user_info.get_role(user_id);
+    } catch (e) {
+        if (e.message === "User not found") {
+            return `User with ID ${user_id} does not exist`;
+        }
+        throw e;
+    }
+
+    if (role !== "admin") {
+        return `User must be an admin to perform this action`;
+    }
+
+    return null;
+}
+
+
 /**
  * Takes the `name` property of an exercise and returns the appropriate error message
  * that the property contains, if there is an error
  * @param {any} name The name attribute of an exercise
  * @returns {string|null}
  */
-function validate_name(name) {
+function _validate_name(name) {
     if (typeof name !== "string") {
         return `\`name\` must be a string, not ${typeof name}`; 
     } else if (name.trim().length === 0) {
@@ -69,7 +120,7 @@ function validate_name(name) {
  * @param {any} description The description attribute of an exercise
  * @returns {string|null}
  */
-function validate_description(description) {
+function _validate_description(description) {
     if (typeof description !== "string") {
         return `\`description\` must be a string, not ${typeof description}`; 
     } else if (description.trim().length === 0) {
@@ -86,7 +137,7 @@ function validate_description(description) {
  * @param {any} user_who_created_it ID of the author of the exercise
  * @returns {Promise<string|null>}
  */
-async function validate_author(user_who_created_it) {
+async function _validate_author(user_who_created_it) {
     const author_id = Number(user_who_created_it);
     if (!Number.isInteger(author_id)) {
         return `\`user_who_created_it\` must be an integer, not ${user_who_created_it}`;
@@ -112,10 +163,11 @@ async function validate_author(user_who_created_it) {
  * @param {any} difficulty Level of difficulty of the exercise
  * @returns {string|null}
  */
-function validate_difficulty(difficulty) {
+function _validate_difficulty(difficulty) {
+    const original_diff = difficulty;
     difficulty = Number(difficulty);
     if (!Number.isInteger(difficulty) || difficulty < 0) {
-        return `\`difficulty\` must be a nonnegative integer, not ${difficulty}`;
+        return `\`difficulty\` must be a nonnegative integer, not ${original_diff}`;
     }
     return null;
 }
@@ -127,7 +179,7 @@ function validate_difficulty(difficulty) {
  * @param {any} video_link The `video_link` attribute of an exercise`
  * @returns {string|null}
  */
-function validate_video_link(video_link) {
+function _validate_video_link(video_link) {
     return URL.canParse(video_link) ? null : `\`video_link\` must be a valid URL, not ${video_link}`;
 }
 
@@ -138,10 +190,11 @@ function validate_video_link(video_link) {
  * @param {any} goal_id `goal_id` property of an exercise
  * @returns {Promise<string|null>}
  */
-async function validate_goal(goal_id) {
+async function _validate_goal(goal_id) {
+    const original_goal_id = goal_id;
     goal_id = Number(goal_id);
     if (!Number.isInteger(goal_id)) {
-        return `\`goal_id\` must be an integer, not ${goal_id}`;
+        return `\`goal_id\` must be an integer, not ${original_goal_id}`;
     }
 
     const goal = await goals.goal_name_by_id_data_layer(goal_id);
@@ -159,7 +212,7 @@ async function validate_goal(goal_id) {
  * @param {any} active The `active` fields of an exercise
  * @returns {string|null}
  */
-function validate_active(active) {
+function _validate_active(active) {
     const original_val = active;
     active = typeof active !== "boolean" ? Number(active) : active;
     if (typeof active !== "boolean" || ![0, 1].includes(active)) {
@@ -170,17 +223,37 @@ function validate_active(active) {
 }
 
 
+function _increment_counter(counter, element) {
+    if (counter[element] === undefined) {
+        counter[element] = 0;
+    }
+    counter[element]++;
+    return counter;
+};
+
+
 /**
  * Validates the `muscleGroups` property of an exercise and returns the appropriate error message
  * that the property contains, if there is an error
  * @param {any} muscleGroups The `muscleGroups` attribute of an exercise
  * @returns {string|null}
  */
-function validate_muscle_group(muscleGroups) {
-    if (!Array.isArray(muscleGroups) || muscleGroups.some(m => typeof m !== "string")) {
-        return `\`muscleGroups\` must be an array of strings; got ${muscleGroups}`; 
-    } else if (muscleGroups.some(m => m.trim().length === 0)) {
-        return `\`All elements of \`muscleGroups\` must be non-blank`;
+function _validate_muscle_groups(muscleGroups) {
+    if (!Array.isArray(muscleGroups)) {
+        return `\`muscleGroups\` must be an array of strings; got ${muscleGroups}`;
+    }
+
+    const nonStringIdx = muscleGroups.findIndex(e => typeof e !== "string");
+    if (nonStringIdx !== -1) {
+        return `\`muscleGroups\` must be an array of strings; found ${JSON.stringify(muscleGroups[nonStringIdx])}`; 
+    } else if (muscleGroups.some(e => e.trim().length === 0)) {
+        return `All elements of \`muscleGroups\` must be non-blank`;
+    }
+
+    const counter = muscleGroups.reduce(_increment_counter, {});
+    const [duplicate_muscle_group] = Object.entries(counter).find(([_, v]) => v > 1) ?? [null];
+    if (duplicate_muscle_group !== null) {
+        return `All muscle groups must be unique; found duplicate muscle group: ${duplicate_muscle_group}`;
     }
 
     return null;
@@ -193,11 +266,22 @@ function validate_muscle_group(muscleGroups) {
  * @param {any} equipmentItems The `equipmentItems` attribute of an exercise
  * @returns {string|null}
  */
-function validate_equipment_items(equipmentItems) {
-    if (!Array.isArray(equipmentItems) || equipmentItems.some(e => typeof e !== "string")) {
-        return `\`equipmentItems\` must be an array of strings; got ${equipmentItems}`; 
+function _validate_equipment_items(equipmentItems) {
+    if (!Array.isArray(equipmentItems)) {
+        return `\`equipmentItems\` must be an array of strings; got ${equipmentItems}`;
+    }
+
+    const nonStringIdx = equipmentItems.findIndex(e => typeof e !== "string");
+    if (nonStringIdx !== -1) {
+        return `\`equipmentItems\` must be an array of strings; found ${JSON.stringify(equipmentItems[nonStringIdx])}`; 
     } else if (equipmentItems.some(e => e.trim().length === 0)) {
-        return `\`All elements of \`equipmentItems\` must be non-blank`;
+        return `All elements of \`equipmentItems\` must be non-blank`;
+    }
+
+    const counter = equipmentItems.reduce(_increment_counter, {});
+    const [duplicate_equipment_items] = Object.entries(counter).find(([_, v]) => v > 1) ?? [null];
+    if (duplicate_equipment_items !== null) {
+        return `All equipment items must be unique; found duplicate equipment item: ${duplicate_equipment_items}`;
     }
 
     return null;
@@ -214,11 +298,4 @@ module.exports.delete_exercise_business_layer = delete_exercise_business_layer;
 module.exports.update_exercise_business_layer = update_exercise_business_layer;
 
 // TODO: Consider removing these before merging
-module.exports.validate_author = validate_author;
-module.exports.validate_description = validate_description;
-module.exports.validate_difficulty = validate_difficulty;
-module.exports.validate_equipment_items = validate_equipment_items;
-module.exports.validate_goal = validate_goal;
-module.exports.validate_muscle_group = validate_muscle_group;
-module.exports.validate_name = validate_name;
-module.exports.validate_video_link = validate_video_link;
+module.exports.validate_add_exercise_request = _validate_add_exercise_request;
