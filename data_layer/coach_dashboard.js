@@ -17,6 +17,104 @@ async function get_coach_dashboard_info(coach_id)
     });
 }
 
+async function getAllCoachRequest() {
+    const sql = `select Coaches.user_id, Users.first_name, Users.last_name, Users.phone_number, Users.email, Coaches.availability, Coaches.hourly_rate, Coaches.coaching_history, Coaches.experience_level, Coaches.created from Coaches
+                inner join Users on Users.user_id = Coaches.user_id
+                where accepted = 0;`
+
+    try {
+        const results = await new Promise((resolve, reject) => {
+            con.query(sql, [], (err, rows) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(rows);
+            });
+        });
+
+        if (results.length === 0) {
+            return null;
+        }
+
+        // Map the database results to WorkoutProgress instances
+        const coachList = results.map((row) => {
+            return {
+                userId: row.user_id,
+                firstName: row.first_name,
+                lastName: row.last_name,
+                phoneNumber: row.phone_number,
+                email: row.email,
+                availability: row.availability,
+                hourlyRate: row.hourly_rate,
+                coachingHistory: row.coaching_history,
+                experienceLevel: row.experience_level,
+                date : new Date(row.created)
+            };
+        });
+        return coachList;
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function accept_coach(coach_id){
+    const sql = `UPDATE Coaches
+                SET accepted = 1
+                WHERE user_id = ?`
+    try {
+        const results = await new Promise((resolve, reject) => {
+            con.query(sql, [coach_id], (err, rows) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(rows);
+            });
+        });
+
+        return results;
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function reject_coach(coach_id) {
+    try {
+        // Delete the coach
+        const deleteCoachQuery = `DELETE FROM Coaches WHERE user_id = ${coach_id}`;
+        const deleteCoachResult = await new Promise((resolve, reject) => {
+            con.query(deleteCoachQuery, (err, result) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(result);
+            });
+        });
+
+        // Update user role to "client"
+        const updateUserQuery = `UPDATE Users SET role = "client" WHERE user_id = ${coach_id}`;
+        const updateUserResult = await new Promise((resolve, reject) => {
+            con.query(updateUserQuery, (err, result) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(result);
+            });
+        });
+
+        // Return some information about the operations if needed
+        return {
+            deleteCoachResult,
+            updateUserResult,
+        };
+    } catch (error) {
+        throw error;
+    }
+}
+
 async function accept_reject_clients_data_layer(coach_id, client_id, accept_reject_response) {
     return new Promise((resolve, reject) => {
         let sql;
@@ -56,3 +154,6 @@ async function accept_reject_clients_data_layer(coach_id, client_id, accept_reje
 
 module.exports.accept_reject_clients_data_layer = accept_reject_clients_data_layer;
 module.exports.get_coach_dashboard_info = get_coach_dashboard_info;
+module.exports.getAllCoachRequest = getAllCoachRequest;
+module.exports.accept_coach = accept_coach;
+module.exports.reject_coach = reject_coach;

@@ -1063,6 +1063,78 @@ async function create_new_workout_progress(req, res) {
   }
 }
 
+async function get_all_coach_request(req, res){
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot get coach requests without logging in"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+
+  try {
+    const coachList = await coach_dashboard.get_all_coach_request(user_id);
+    res.json({coachList});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+async function accept_coach(req, res){
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot get coach requests without logging in"});
+    return;
+  }
+
+  console.log(req.params);
+
+  const user_id = req.session.user.user_id;
+  const coach_id = req.params.coach_id;
+
+  console.log(coach_id)
+
+  try {
+    const result = await coach_dashboard.accept_coach(user_id, coach_id)
+    res.json({result});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
+async function reject_coach(req, res){
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  if (!is_logged_in(req)) {
+    res.status(401).json({message: "Cannot get coach requests without logging in"});
+    return;
+  }
+
+  const user_id = req.session.user.user_id;
+  const coach_id = req.params.coach_id;
+
+  try {
+    const result = await coach_dashboard.reject_coach(user_id, coach_id)
+    res.json({result});
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({message: "Oops! Something went wrong on our end"});
+    } else {
+      res.status(e.status_code).json({message: e.message});
+    }
+  }
+}
+
 module.exports.check_exercise_references_controller = check_exercise_references_controller;
 module.exports.get_exercise_by_id_controller = get_exercise_by_id_controller;
 module.exports.get_all_equipment_controller = get_all_equipment_controller;
@@ -1103,3 +1175,6 @@ module.exports.delete_workout_plan_exercise = delete_workout_plan_exercise;
 module.exports.create_new_workout_progress = create_new_workout_progress;
 module.exports.get_users_clients = get_users_clients;
 module.exports.get_client_dashboard_info = get_client_dashboard_info;
+module.exports.get_all_coach_request = get_all_coach_request;
+module.exports.accept_coach = accept_coach;
+module.exports.reject_coach = reject_coach;
