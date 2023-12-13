@@ -22,6 +22,10 @@ async function get_exercise_by_id_business_layer(exerciseId) {
  * @throws {Promise<string>} - Rejects with an error message if the update operation fails.
  */
 async function update_exercise_business_layer(exerciseData) {
+    const validation_result = await _validate_update_exercise_request(exerciseData);
+    if (validation_result !== null) {
+        throw new Error(validation_result);
+    }
     return exercise_bank.update_exercise_data_layer(exerciseData);
 }
 
@@ -50,26 +54,54 @@ async function check_exercise_references_business_layer(exerciseId) {
 }
 
 
-async function _validate_add_exercise_request(exercise_data) {
-    const validation_funcs = {
-        name: _validate_name,
-        description: _validate_description,
-        user_who_created_it: _validate_author,
-        difficulty: _validate_difficulty,
-        video_link: _validate_video_link,
-        goal_id: _validate_goal,
-        equipmentItems: _validate_equipment_items,
-        muscleGroups: _validate_muscle_groups
-    };
-
-    for (const [k, func] of Object.entries(validation_funcs)) {
-        const result = await func(exercise_data[k]);
+/**
+ * Validates the properties of `obj` that are present in the `validations` object
+ * @param {Object.<string, (any) => string|null|Promise<string, null>} validations Object that associates properties in `obj` with a validation function
+ * @param {Object} obj The object to be validated
+ * @returns {Promise<string|null>} An validation error message pertaining to one of the properties of `obj` or null if there are no validation errors for any of the `obj`'s properties
+ */
+async function _validate_obj(validations, obj) {
+    for (const [k, func] of Object.entries(validations)) {
+        const result = await func(obj[k]);
         if (result) {
             return result;
         }
     }
 
     return null;
+}
+
+
+async function _validate_add_exercise_request(exercise_data) {
+    const validation_funcs = {
+        name: _validate_name,
+        description: _validate_description,
+        difficulty: _validate_difficulty,
+        video_link: _validate_video_link,
+        equipmentItems: _validate_equipment_items,
+        muscleGroups: _validate_muscle_groups,
+        goal_id: _validate_goal,
+        user_who_created_it: _validate_author
+    };
+
+    return _validate_obj(validation_funcs, exercise_data);
+}
+
+async function _validate_update_exercise_request(exercise_data) {
+    const validation_funcs = {
+        name: _validate_name,
+        active: _validate_active,
+        description: _validate_description,
+        difficulty: _validate_difficulty,
+        video_link: _validate_video_link,
+        equipmentItems: _validate_equipment_items,
+        muscleGroups: _validate_muscle_groups,
+        goal_id: _validate_goal,
+        user_who_created_it: _validate_author,
+        exercise_id: _validate_exercise_id
+    };
+
+    return _validate_obj(validation_funcs, exercise_data);
 }
 
 
@@ -184,6 +216,22 @@ function _validate_video_link(video_link) {
 }
 
 
+async function _validate_exercise_id(exercise_id) {
+    const original_exercise_id = exercise_id;
+    exercise_id = Number(exercise_id);
+    if (!Number.isInteger(exercise_id)) {
+        return `\`exercise_id\` must be an integer, not ${original_exercise_id}`;
+    }
+
+    const exercise = await exercise_bank.get_exercise_by_id_data_layer(exercise_id);
+    if (exercise === null) {
+        return `No exercise with ID ${exercise_id} exists`;
+    }
+
+    return null;
+}
+
+
 /**
  * Validates the `goal_id` property of an exercise and returns an error message
  * if an error has been found
@@ -214,8 +262,8 @@ async function _validate_goal(goal_id) {
  */
 function _validate_active(active) {
     const original_val = active;
-    active = typeof active !== "boolean" ? Number(active) : active;
-    if (typeof active !== "boolean" || ![0, 1].includes(active)) {
+    active = ["true", "false"].includes(active) ? Number(active === "true") : Number(active);
+    if (![0, 1].includes(active)) {
         return `\`active\` must be a boolean, not ${original_val}`;
     }
 
