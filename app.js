@@ -85,6 +85,10 @@ app.get('/equipment', controller.get_all_equipment_controller);
 app.get("/exercise/:exercise_id", controller.get_exercise_by_id_controller);
 app.get("/exercise/:exercise_id/references", controller.check_exercise_references_controller);
 app.post("/workout_progress/new", controller.create_new_workout_progress);
+app.get("/get_coach_dashboard_info/coach_request", controller.get_all_coach_request);
+app.route("/get_coach_dashboard_info/coach_request/:coach_id")
+  .put(controller.accept_coach)
+  .delete(controller.reject_coach);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {
