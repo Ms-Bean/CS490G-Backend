@@ -30,6 +30,10 @@ async function update_exercise_business_layer(exerciseData) {
 }
 
 async function delete_exercise_business_layer(exerciseId) {
+    const validation_result = await _validate_exercise_id(exerciseId);
+    if (validation_result !== null) {
+        throw new Error(validation_result);
+    }
     return exercise_bank.delete_exercise_data_layer(exerciseId);
 }
 
