@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'BACKEND_BRANCH', defaultValue: 'docker', description: 'Branch to checkout for Backend')
+        string(name: 'BACKEND_BRANCH', defaultValue: 'dev', description: 'Branch to checkout for Backend')
     }
 
     environment {
-        DB_HOST = '172.19.0.3'
+        DB_HOST = '172.19.0.3' // GCP Cloud SQL IP
         DB_NAME = 'moxi'
         DB_USER = '' // Define in Jenkins Credentials
         DB_PASS = '' // Define in Jenkins Credentials
