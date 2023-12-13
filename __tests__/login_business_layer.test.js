@@ -51,7 +51,7 @@ describe('login_business_layer', () => {
     sinon.stub(bcrypt, 'compare').yields(null, false);
 
     // Call the login_business_layer function
-    await expect(loginBusinessLayer(userData.username, userData.password)).to.be.rejectedWith('Invalid credentials');
+    await expect(loginBusinessLayer(userData.username, userData.password)).to.be.rejectedWith('Invalid username, or password');
   });
 
   it('should reject with an error message on data layer error', async () => {
