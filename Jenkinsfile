@@ -37,14 +37,15 @@ pipeline {
                         sh 'docker build -t moxi-backend .'
                         sh """
                         docker run -d --name moxi-backend \
-                        -e DB_HOST=\${params.DB_HOST} \
-                        -e DB_NAME=\${params.DB_NAME} \
+                        -e DB_HOST=${params.DB_HOST} \
+                        -e DB_NAME=${params.DB_NAME} \
                         -e DB_USER=\$DB_USER \
                         -e DB_PASS=\$DB_PASS \
-                        -e FRONTEND_URL=\${params.FRONTEND_URL} \
+                        -e FRONTEND_URL=${params.FRONTEND_URL} \
                         -p 3500:3500 \
                         moxi-backend
                         """
+
                     }
                 }
             }
