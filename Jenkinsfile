@@ -3,14 +3,14 @@ pipeline {
 
     parameters {
         string(name: 'BACKEND_BRANCH', defaultValue: 'dev', description: 'Branch to checkout for Backend')
+        string(name: 'DB_HOST', defaultValue: '172.19.0.3', description: 'Database Host')
+        string(name: 'DB_NAME', defaultValue: 'moxi', description: 'Database Name')
+        string(name: 'FRONTEND_URL', defaultValue: 'http://moxi.akifbayram.com', description: 'Frontend URL')
     }
 
     environment {
-        DB_HOST = '172.19.0.3' // GCP Cloud SQL IP
-        DB_NAME = 'moxi'
         DB_USER = '' // Define in Jenkins Credentials
         DB_PASS = '' // Define in Jenkins Credentials
-        FRONTEND_URL = 'http://moxi.akifbayram.com'
     }
 
     stages {
@@ -34,15 +34,14 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')]) {
                     dir('CS490G-Backend') {
-
                         sh 'docker build -t moxi-backend .'
                         sh """
                         docker run -d --name moxi-backend \
-                        -e DB_HOST=\$DB_HOST \
+                        -e DB_HOST=\${params.DB_HOST} \
+                        -e DB_NAME=\${params.DB_NAME} \
                         -e DB_USER=\$DB_USER \
                         -e DB_PASS=\$DB_PASS \
-                        -e DB_NAME=\$DB_NAME \
-                        -e FRONTEND_URL=\$FRONTEND_URL \
+                        -e FRONTEND_URL=\${params.FRONTEND_URL} \
                         -p 3500:3500 \
                         moxi-backend
                         """
