@@ -9,6 +9,8 @@ require('dotenv').config();
 const controller = require("./rest_controller");
 const profile_management = require("./business_layer/profile_management");
 const client_dashboard = require("./business_layer/client_dashboard");
+const swaggerUI = require("swagger-ui-express"), swaggerDocument = require("./swagger.json")
+
 
 // set server port
 const PORT = 3500;
@@ -38,6 +40,8 @@ app.use(
 app.use((req, res, next) => {
   next();
 });
+app.use("/api-documentation",swaggerUI.serve,swaggerUI.setup(swaggerDocument));
+
 
 // Define API endpoints
 app.post("/insert_user", controller.insert_user_controller);

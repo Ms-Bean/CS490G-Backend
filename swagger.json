@@ -1,0 +1,25 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title" : "MOXI",
+        "description": "API Documentation",
+        "license":{
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        }
+    },
+    "host": "localhost:4000", 
+    "basePath" : "/",
+    "tags": [
+        {
+            "name": "A",
+            "description":"A"
+        }
+
+    ],
+    "schemes":["http"],
+    "consumes": ["application/json"],
+    "proudces" :["application/json"]
+
+}
