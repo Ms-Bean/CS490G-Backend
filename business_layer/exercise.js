@@ -76,6 +76,11 @@ async function _validate_obj(validations, obj) {
 }
 
 
+/**
+ * Validates new exercise request for errors
+ * @param {Object} exercise_data Object to be validated before being used to create a new exercise
+ * @returns {string|null} The validation error present for one of the request's properties, or null if there are no validation errors
+ */
 async function _validate_add_exercise_request(exercise_data) {
     const validation_funcs = {
         name: _validate_name,
@@ -91,6 +96,12 @@ async function _validate_add_exercise_request(exercise_data) {
     return _validate_obj(validation_funcs, exercise_data);
 }
 
+
+/**
+ * Validates update exercise request for errors
+ * @param {Object} exercise_data Object to be validated before being used to update an existing exercise
+ * @returns {string|null} The validation error present for one of the request's properties, or null if there are no validation errors
+ */
 async function _validate_update_exercise_request(exercise_data) {
     const validation_funcs = {
         name: _validate_name,
@@ -106,30 +117,6 @@ async function _validate_update_exercise_request(exercise_data) {
     };
 
     return _validate_obj(validation_funcs, exercise_data);
-}
-
-
-async function _is_authorized(user_id) {
-    if (!Number.isInteger(Number(user_id))) {
-        return `\`user_id\` must be an integer, not ${user_id}`;
-    }
-
-    // Check that the user exists
-    let role;
-    try {
-        role = await user_info.get_role(user_id);
-    } catch (e) {
-        if (e.message === "User not found") {
-            return `User with ID ${user_id} does not exist`;
-        }
-        throw e;
-    }
-
-    if (role !== "admin") {
-        return `User must be an admin to perform this action`;
-    }
-
-    return null;
 }
 
 
@@ -275,6 +262,12 @@ function _validate_active(active) {
 }
 
 
+/**
+ * Helper function to count the occurences of strings in an iterable to determine duplicate elements
+ * @param {Object.<string, number>} counter An object that counts the occurences of strings in an iterable
+ * @param {string} element The element whose count in `counter` will be incremented by 1
+ * @returns {Object.<string, number>} The `counter` so it can be used within `Array.reduce`
+ */
 function _increment_counter(counter, element) {
     if (counter[element] === undefined) {
         counter[element] = 0;
@@ -348,6 +341,3 @@ module.exports.add_exercise_business_layer = add_exercise_business_layer;
 module.exports.get_all_exercises_business_layer = get_all_exercises_business_layer;
 module.exports.delete_exercise_business_layer = delete_exercise_business_layer;
 module.exports.update_exercise_business_layer = update_exercise_business_layer;
-
-// TODO: Consider removing these before merging
-module.exports.validate_add_exercise_request = _validate_add_exercise_request;
