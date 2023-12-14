@@ -180,5 +180,26 @@ async function check_is_coach(client_id, coach_id)
     });
 }
 
+async function get_client_target_weight(client_id) {
+    return new Promise((resolve, reject) => {
+      let sql = "SELECT target_weight FROM User_Profile WHERE user_id = ?";
+      con.query(sql, [client_id], function(err, result) {
+        if (err) {
+          console.log(err);
+          reject("SQL error occurred");
+        } else {
+          if (result.length > 0) {
+            resolve(result[0].target_weight);
+          } else {
+            reject("Client not found");
+          }
+        }
+      });
+    });
+  }
+
 module.exports.get_client_dashboard_info = get_client_dashboard_info;
 module.exports.check_is_coach = check_is_coach;
+module.exports.get_client_target_weight = get_client_target_weight;
+  
+  

@@ -42,4 +42,15 @@ async function get_client_dashboard_info(requester_id, client_id)
         
     })
 }
+
+async function get_client_target_weight_business_layer(client_id) {
+    return client_dashboard.get_client_target_weight(client_id)
+      .then(targetWeight => targetWeight)
+      .catch(err => {
+        throw err;
+      });
+  }
+
 module.exports.get_client_dashboard_info = get_client_dashboard_info;
+module.exports.get_client_target_weight_business_layer = get_client_target_weight_business_layer;
+  

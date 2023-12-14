@@ -1135,6 +1135,37 @@ async function reject_coach(req, res){
   }
 }
 
+async function get_client_target_weight(req, res) {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  if (req.session.user["user_id"] === undefined) {
+    res.status(400).send({
+      message: "User is not logged in"
+    });
+  } else {
+    const client_id = req.params.client_id; // Extracting client_id from path parameters
+    if (client_id) {
+      client_dashboard
+        .get_client_target_weight_business_layer(client_id)
+        .then((targetWeight) => {
+          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+          res.status(200).send({ target_weight: targetWeight });
+        })
+        .catch((err) => {
+          console.log(err);
+          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+          res.status(400).send({
+            message: err
+          });
+        });
+    } else {
+      res.status(400).send({
+        message: "Client ID is not provided"
+      });
+    }
+  }
+}
+
+module.exports.get_client_target_weight = get_client_target_weight;
 module.exports.check_exercise_references_controller = check_exercise_references_controller;
 module.exports.get_exercise_by_id_controller = get_exercise_by_id_controller;
 module.exports.get_all_equipment_controller = get_all_equipment_controller;

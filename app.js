@@ -94,6 +94,7 @@ app.get("/get_coach_dashboard_info/coach_request", controller.get_all_coach_requ
 app.route("/get_coach_dashboard_info/coach_request/:coach_id")
   .put(controller.accept_coach)
   .delete(controller.reject_coach);
+  app.get("/get_client_target_weight/:client_id", controller.get_client_target_weight);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {
@@ -101,7 +102,7 @@ app.get("/check_session", (req, res) => {
   } else {
     res.status(200).send({ isLoggedIn: false });
   }
-});
+}); 
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT.toString());
 });
@@ -110,4 +111,4 @@ client_dashboard.get_client_dashboard_info(45).then((response) =>{
   console.log(response);
 }).catch((err) =>{
   console.log(err);
-});
+}); 
