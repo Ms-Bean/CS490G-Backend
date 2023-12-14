@@ -296,6 +296,20 @@ async function remove_coach_data_layer(client_id, coach_id) {
         });
     });
 }
+
+/*Returns the id of the client's hired or requested coach*/
+function get_clients_coach_or_request(client_id) {
+    const sql = "SELECT coach_id FROM Client_Coach WHERE client_id = ?";
+    return new Promise((resolve, reject) => {
+        con.query(sql, [client_id], (err, results) => {
+            if (err) {
+                reject(err);
+                return;
+            };
+            resolve(results);
+        });
+    });
+}
 module.exports.get_requested_clients_of_coach_data_layer = get_requested_clients_of_coach_data_layer;
 module.exports.get_coaches_of_client_data_layer = get_coaches_of_client_data_layer;
 module.exports.accept_client_data_layer = accept_client_data_layer;
@@ -305,3 +319,4 @@ module.exports.get_User_Profile_By_Id_Data_Layer = get_User_Profile_By_Id_Data_L
 module.exports.request_coach_data_layer = request_coach_data_layer;
 module.exports.get_clients_of_coach_data_layer = get_clients_of_coach_data_layer;
 module.exports.remove_coach_data_layer = remove_coach_data_layer;
+module.exports.get_clients_coach_or_request = get_clients_coach_or_request;
