@@ -792,12 +792,19 @@ async function get_coach_dashboard_info(req, res)
   }
 }
 
-async function get_client_dashboard_info(req, res)
-{
+async function get_client_dashboard_info(req, res) {
   res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-  if(req.session.user["user_id"] == undefined)
-  {  
-    res.status(400).send({
+
+  // Check if session or user is undefined
+  if (!req.session?.user) {
+    return res.status(400).send({
+      message: "Session or user information is missing"
+    });
+  }
+
+  // Check if user_id is undefined
+  if (req.session.user["user_id"] === undefined) {
+    return res.status(400).send({
       message: "User is not logged in"
     });
   }
