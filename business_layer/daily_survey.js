@@ -25,7 +25,7 @@ async function insert_daily_survey_business_layer(surveyData) {
     console.log(currentDate);
 
     if (surveyDate > currentDate) {
-      throw new Error('Cannot do future surveys.');
+      throw new Error('You cannot add future surveys.');
     }
 
 
