@@ -49,11 +49,24 @@ async function request_coach_business_layer(coach_id, client_id)
         {
             reject("Invalid coach id");
         }
-        client_coach_interaction.request_coach_data_layer(coach_id, client_id).then(response =>{
-            resolve(response);
+        client_coach_interaction.get_clients_coach_or_request(client_id).then(requests_response =>{
+            console.log(requests_response);
+            if(requests_response.length > 0)
+            {
+                reject("Duplicate coach request");
+            }
+            else
+            {
+                client_coach_interaction.request_coach_data_layer(coach_id, client_id).then(response =>{
+                    resolve(response);
+                }).catch((error) =>{
+                    reject(error);
+                });
+            }
         }).catch((error) =>{
+            console.log(error);
             reject(error);
-        });
+        })
     })
 }
 
