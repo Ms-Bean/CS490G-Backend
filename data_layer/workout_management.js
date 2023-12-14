@@ -128,9 +128,18 @@ function _get_workouts(sql, params) {
 
 async function get_exercises_of_workouts(workout_plan_ids) {
     const sql = `SELECT wpe.id, wpe.workout_plan_id, wpe.exercise_id, wpe.weekday, wpe.time,
-        wpe.reps_per_set, wpe.num_sets, wpe.weight
-    FROM workout_plan_exercises wpe
-    WHERE workout_plan_id IN (?)
+        wpe.reps_per_set, wpe.num_sets, wpe.weight,
+        eb.exercise_id, eb.name, eb.description, 
+        eb.user_who_created_it AS creator_id, eb.difficulty, eb.video_link,
+        GROUP_CONCAT(DISTINCT Exercise_Equipment.equipment_item) AS equipment_items, GROUP_CONCAT(DISTINCT Exercise_Muscle_Group.muscle_group) AS muscle_groups,
+        GROUP_CONCAT(DISTINCT Goals.name) AS goals
+    FROM Workout_Plan_Exercises wpe
+        INNER JOIN Exercise_Bank eb USING (exercise_id)
+        LEFT JOIN Exercise_Equipment USING (exercise_id)
+        LEFT JOIN Exercise_Muscle_Group USING (exercise_id)
+        LEFT JOIN Exercise_Fitness_Goals USING (exercise_id)
+        LEFT JOIN Goals ON Goals.goal_id = Exercise_Fitness_Goals.goal_id
+        WHERE workout_plan_id IN (?)
     GROUP BY wpe.id`;
     const results = await new Promise((resolve, reject) => {
         con.query(sql, [workout_plan_ids], (err, results) => {
