@@ -1181,6 +1181,41 @@ async function get_client_target_weight(req, res) {
   }
 }
 
+async function get_User_Profile_By_Id_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  // Check if the user is logged in
+  if (!is_logged_in(req)) {
+    res.status(401).json({ message: "Cannot get user profile without logging in" });
+    return;
+  }
+
+  try {
+    const user_id = req.params.user_id;
+
+    // Check if user_id parameter is provided
+    if (!user_id) {
+      res.status(400).json({ message: "Missing required parameter: user_id" });
+      return;
+    }
+
+    const user_profile = await client_coach_interaction.get_User_Profile_By_Id_business_layer(user_id);
+    res.json({ user_profile });
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({ message: "Something went wrong in the business layer." });
+    } else {
+      res.status(e.status_code).json({ message: e.message });
+    }
+  }
+}
+
+
+
+
+
+module.exports.get_User_Profile_By_Id_controller = get_User_Profile_By_Id_controller;
 module.exports.get_client_target_weight = get_client_target_weight;
 module.exports.check_exercise_references_controller = check_exercise_references_controller;
 module.exports.get_exercise_by_id_controller = get_exercise_by_id_controller;
