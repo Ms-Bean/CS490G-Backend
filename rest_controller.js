@@ -58,24 +58,29 @@ async function insert_user_controller(req, res) {
 
 async function login_controller(req, res) {
   console.log("Hello");
-    login
-      .login_business_layer(req.body.username, req.body.password)
+  login.login_business_layer(req.body.username, req.body.password)
       .then((response) => {
-        req.session.user = { username: req.body.username, user_id: response.user_id};
-        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-        res.header("Access-Control-Allow-Credentials", "true");
-        res.status(200).send({
-          success: true,
-          message: response.message,
-        });
+          // Set user in session
+          const user = { username: req.body.username, user_id: response.user_id };
+          req.session.user = user;
+
+          // Include the user object in the response
+          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+          res.header("Access-Control-Allow-Credentials", "true");
+          res.status(200).send({
+              success: true,
+              message: response.message,
+              user: user  // Send the user object to the client
+          });
       })
       .catch((error_message) => {
-        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-        res.status(400).send({
-          message: error_message,
-        });
+          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+          res.status(400).send({
+              message: error_message,
+          });
       });
 }
+
 async function logout_controller(req, res) {
   req.session.destroy((err) => {
     if(err) {
