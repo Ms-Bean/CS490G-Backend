@@ -21,7 +21,7 @@ async function get_requested_clients_of_coach_business_layer(coach_id){
 
 /**
  * @param {number} user_id
- * @returns {Promise<Array>} - Resolves with an array of clients.
+ * @returns {Promise<Array>} 
  */
 async function get_User_Profile_By_Id_business_layer(user_id) {
     return client_coach_interaction.get_User_Profile_By_Id_Data_Layer(user_id)
