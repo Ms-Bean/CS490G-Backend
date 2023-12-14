@@ -37,6 +37,7 @@ pipeline {
                         sh 'docker build -t moxi-backend .'
                         sh """
                         docker run -d --name moxi-backend \
+                        --restart=unless-stopped \
                         -e DB_HOST=${params.DB_HOST} \
                         -e DB_NAME=${params.DB_NAME} \
                         -e DB_USER=\$DB_USER \

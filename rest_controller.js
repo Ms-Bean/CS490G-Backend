@@ -219,6 +219,10 @@ async function get_role_controller(req, res)
 
 async function insert_message_controller(req, res) {
   res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ message: "User session not found" });
+  }
   messaging.insert_message_business_layer(
     req.session.user['user_id'],
     req.body.recipient_id,
@@ -299,6 +303,10 @@ async function get_users_clients(req, res)
 
 async function get_client_coach_messages_controller(req, res) {
   res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ message: "User session not found" });
+  }
   messaging.get_client_coach_messages_business_layer(
     req.session.user['user_id'],
     Number(req.query.other_user_id),
