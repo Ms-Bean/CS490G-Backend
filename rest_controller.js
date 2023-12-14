@@ -490,6 +490,7 @@ async function set_user_profile(req, res)
     profile_management
       .set_profile_info(
         req.session.user["user_id"],
+        req.body.pfp_link,
         req.body.about_me,
         req.body.experience_level,
         req.body.height,
