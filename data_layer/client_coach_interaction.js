@@ -43,7 +43,40 @@ async function get_User_Profile_By_Id_Data_Layer(user_id) {
     });
   }
   
-  
+/**
+ * @param {number} coach_id
+ * @returns {Promise<Array<{ id: number, name: string }>>}
+ */
+function get_requested_clients_of_coach_data_layer(coach_id) {
+    const sql = `
+    SELECT 
+        cc.client_id, 
+        CONCAT(u.first_name, ' ', u.last_name) AS client_name
+    FROM 
+        Client_Coach cc
+    JOIN 
+        Users u ON cc.client_id = u.user_id
+    WHERE 
+        cc.coach_id = ?
+        AND cc.requested = 1;
+    `;
+
+    return new Promise((resolve, reject) => {
+        con.query(sql, [coach_id], (err, results) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                const clientData = results.map(r => ({
+                    id: r.client_id,
+                    name: r.client_name,
+                }));
+                resolve(clientData);
+            }
+        });
+    });
+}
+
 /**
  * 
  * @param {number} coach_id 
@@ -257,6 +290,7 @@ async function remove_coach_data_layer(client_id, coach_id) {
         });
     });
 }
+module.exports.get_requested_clients_of_coach_data_layer = get_requested_clients_of_coach_data_layer;
 module.exports.get_coaches_of_client_data_layer = get_coaches_of_client_data_layer;
 module.exports.accept_client_data_layer = accept_client_data_layer;
 module.exports.check_if_client_coach_request_exists = check_if_client_coach_request_exists;

@@ -7,6 +7,13 @@ const client_coach_interaction = require("../data_layer/client_coach_interaction
 const messaging = require("../data_layer/messaging")
 
 
+/**
+ * @param {number} coach_id
+ * @returns {Promise<Array>} - Resolves with an array of clients.
+ */
+async function get_requested_clients_of_coach_business_layer(coach_id){
+    return client_coach_interaction.get_requested_clients_of_coach_data_layer(coach_id);
+}
 
 /**
  * @param {number} user_id
@@ -113,6 +120,7 @@ async function _check_if_client_of(user_id1, user_id2) {
 async function get_clients_of_coach_business_layer(coach_id) {
     return client_coach_interaction.get_clients_of_coach_data_layer(coach_id);
 }
+module.exports.get_requested_clients_of_coach_business_layer = get_requested_clients_of_coach_business_layer
 module.exports.get_User_Profile_By_Id_business_layer = get_User_Profile_By_Id_business_layer;
 module.exports.request_coach_business_layer = request_coach_business_layer;
 module.exports.accept_client_business_layer = accept_client_business_layer;
