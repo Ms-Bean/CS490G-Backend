@@ -289,7 +289,7 @@ function delete_exercises_of_workout(workout_plan_id) {
 async function get_workout_exercise_by_id(workout_plan_exercise_id) {
     const sql = `SELECT wpe.id, wpe.workout_plan_id, wpe.exercise_id, wpe.weekday, wpe.time,
         wpe.reps_per_set, wpe.num_sets, wpe.weight
-    FROM workout_plan_exercises wpe
+    FROM Workout_Plan_Exercises wpe
     WHERE wpe.id = ?
     GROUP BY wpe.id`;
 
