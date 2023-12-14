@@ -43,7 +43,40 @@ async function get_User_Profile_By_Id_Data_Layer(user_id) {
     });
   }
   
-  
+/**
+ * @param {number} coach_id
+ * @returns {Promise<Array<{ id: number, name: string }>>}
+ */
+function get_requested_clients_of_coach_data_layer(coach_id) {
+    const sql = `
+    SELECT 
+        cc.client_id, 
+        CONCAT(u.first_name, ' ', u.last_name) AS client_name
+    FROM 
+        Client_Coach cc
+    JOIN 
+        Users u ON cc.client_id = u.user_id
+    WHERE 
+        cc.coach_id = ?
+        AND cc.requested = 1;
+    `;
+
+    return new Promise((resolve, reject) => {
+        con.query(sql, [coach_id], (err, results) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                const clientData = results.map(r => ({
+                    id: r.client_id,
+                    name: r.client_name,
+                }));
+                resolve(clientData);
+            }
+        });
+    });
+}
+
 /**
  * 
  * @param {number} coach_id 
@@ -55,7 +88,7 @@ function get_clients_of_coach_data_layer(coach_id) {
         cc.client_id, 
         CONCAT(u.first_name, ' ', u.last_name) AS client_name,
         up.profile_picture,
-        COALESCE(SUBSTRING(m.content, 1, 40), 'No message') AS message,
+        COALESCE(SUBSTRING(m.content, 1, 40), 'Send a new message') AS message,
         m.created
     FROM 
         Client_Coach cc
@@ -64,15 +97,19 @@ function get_clients_of_coach_data_layer(coach_id) {
     JOIN 
         User_Profile up ON u.user_id = up.user_id
     LEFT JOIN 
-        Messages m ON (u.user_id = m.sender_id OR u.user_id = m.receiver_id)
+        Messages m ON (m.sender_id = cc.client_id OR m.receiver_id = cc.client_id)
+                AND m.created = (
+                    SELECT MAX(created) 
+                    FROM Messages 
+                    WHERE (sender_id = cc.client_id and receiver_id = cc.coach_id) 
+            OR (sender_id = cc.coach_id and receiver_id = cc.client_id)
+                )
     WHERE 
         cc.coach_id = ?
         AND cc.requested = 0
-        AND (m.created IS NULL OR m.created = (
-            SELECT MAX(created) 
-            FROM Messages 
-            WHERE sender_id = u.user_id OR receiver_id = u.user_id
-        ));
+    GROUP BY 
+        cc.client_id, client_name, up.profile_picture, message, m.created;
+
 
 
     `;
@@ -107,7 +144,7 @@ function get_coaches_of_client_data_layer(client_id) {
         c.coach_id, 
         CONCAT(u.first_name, ' ', u.last_name) AS coach_name,
         up.profile_picture,
-        COALESCE(SUBSTRING(m.content, 1, 40), 'No message') AS message,
+        COALESCE(SUBSTRING(m.content, 1, 40), 'Send a new message') AS message,
         m.created
     FROM 
         Client_Coach c
@@ -117,14 +154,16 @@ function get_coaches_of_client_data_layer(client_id) {
         User_Profile up ON u.user_id = up.user_id
     LEFT JOIN 
         Messages m ON (u.user_id = m.sender_id OR u.user_id = m.receiver_id)
+                AND m.created = (
+                    SELECT MAX(created) 
+                    FROM Messages 
+                    WHERE (sender_id = c.client_id and receiver_id = c.coach_id) 
+            OR (sender_id = c.coach_id and receiver_id = c.client_id)
+                )
     WHERE 
         c.client_id = ?
-        AND c.requested = 0
-        AND (m.created IS NULL OR m.created = (
-            SELECT MAX(created) 
-            FROM Messages 
-            WHERE sender_id = u.user_id OR receiver_id = u.user_id
-        ));
+        AND c.requested = 0;
+
     `;
     
     return new Promise((resolve, reject) => {
@@ -257,6 +296,7 @@ async function remove_coach_data_layer(client_id, coach_id) {
         });
     });
 }
+module.exports.get_requested_clients_of_coach_data_layer = get_requested_clients_of_coach_data_layer;
 module.exports.get_coaches_of_client_data_layer = get_coaches_of_client_data_layer;
 module.exports.accept_client_data_layer = accept_client_data_layer;
 module.exports.check_if_client_coach_request_exists = check_if_client_coach_request_exists;

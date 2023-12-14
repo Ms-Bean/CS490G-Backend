@@ -1224,10 +1224,32 @@ async function get_User_Profile_By_Id_controller(req, res) {
   }
 }
 
+async function get_requested_clients_of_coach_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+
+  try {
+    if (!is_logged_in(req)) {
+      res.status(401).json({ message: "Cannot get coach requests without logging in" });
+      return;
+    }
+
+    const coach_id = req.session.user.user_id;
+
+    const requested_clients = await client_coach_interaction.get_requested_clients_of_coach_business_layer(coach_id);
+    res.json({ requested_clients });
+  } catch (e) {
+    console.log(e.message);
+    if (!e.status_code) {
+      res.status(500).json({ message: "Something went wrong in the business layer." });
+    } else {
+      res.status(e.status_code).json({ message: e.message });
+    }
+  }
+}
 
 
 
-
+module.exports.get_requested_clients_of_coach_controller = get_requested_clients_of_coach_controller;
 module.exports.get_User_Profile_By_Id_controller = get_User_Profile_By_Id_controller;
 module.exports.get_client_target_weight = get_client_target_weight;
 module.exports.check_exercise_references_controller = check_exercise_references_controller;

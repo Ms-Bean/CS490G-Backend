@@ -120,7 +120,7 @@ async function insert_user_data_layer(first_name, last_name, username, email, pa
                             }
                             if(role === 'coach')
                             {
-                                sql = "INSERT INTO Coaches (user_id, accepting_new_clients, availability, hourly_rate, coaching_history, experience_level) VALUES (? , 0, 'This coach has not indicated their availability', 0, 'This coach has not indicated their experience', 0)"; 
+                                sql = "INSERT INTO Coaches (user_id, accepting_new_clients, availability, hourly_rate, coaching_history, experience_level) VALUES (? , 1, 'This coach has not indicated their availability', 0, 'This coach has not indicated their experience', 0)"; 
                                 con.query(sql, [user_id], function(err, result){
                                     if(err)
                                     {
