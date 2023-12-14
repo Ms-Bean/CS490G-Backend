@@ -54,6 +54,7 @@ app.post("/request_coach", controller.request_coach_controller);
 app.post("/accept_client", controller.accept_client_controller);
 app.get("/get_clients/:coach_id", controller.get_users_clients);
 app.get("/get_role", controller.get_role_controller);
+app.get("/get_profile_info", controller.get_User_Profile_By_Id_controller);
 app.get("/get_user_account_info", controller.get_user_account_info_controller);
 app.post("/alter_account_info", controller.alter_account_info_controller);
 app.get("/get_client_dashboard_info", controller.get_client_dashboard_info);
