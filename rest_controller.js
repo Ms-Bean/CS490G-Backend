@@ -273,7 +273,7 @@ async function get_client_coach_list_controller(req, res) {
 async function get_users_clients(req, res)
 {  
   try {
-    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
     // Check if the user is logged in
     if (req.session.user === undefined || req.session.user["user_id"] == undefined) {
@@ -1064,7 +1064,7 @@ async function create_new_workout_progress(req, res) {
 }
 
 async function get_all_coach_request(req, res){
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   if (!is_logged_in(req)) {
     res.status(401).json({message: "Cannot get coach requests without logging in"});
     return;
@@ -1086,7 +1086,7 @@ async function get_all_coach_request(req, res){
 }
 
 async function accept_coach(req, res){
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   if (!is_logged_in(req)) {
     res.status(401).json({message: "Cannot get coach requests without logging in"});
     return;
