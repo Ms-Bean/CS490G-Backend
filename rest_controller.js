@@ -1157,7 +1157,7 @@ async function reject_coach(req, res){
 
 async function get_client_target_weight(req, res) {
   res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-  
+
   // Check if session or user is undefined
   if (!req.session?.user) {
     return res.status(400).send({
@@ -1171,26 +1171,21 @@ async function get_client_target_weight(req, res) {
       message: "User is not logged in"
     });
   } else {
-    const client_id = req.params.client_id; // Extracting client_id from path parameters
-    if (client_id) {
-      client_dashboard
-        .get_client_target_weight_business_layer(client_id)
-        .then((targetWeight) => {
-          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-          res.status(200).send({ target_weight: targetWeight });
-        })
-        .catch((err) => {
-          console.log(err);
-          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-          res.status(400).send({
-            message: err
-          });
+    const client_id = req.params.client_id || req.session.user["user_id"]; // Use session user_id if client_id is not provided
+
+    client_dashboard
+      .get_client_target_weight_business_layer(client_id)
+      .then((targetWeight) => {
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+        res.status(200).send({ target_weight: targetWeight });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+        res.status(400).send({
+          message: err
         });
-    } else {
-      res.status(400).send({
-        message: "Client ID is not provided"
       });
-    }
   }
 }
 
