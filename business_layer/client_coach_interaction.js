@@ -12,6 +12,10 @@ const messaging = require("../data_layer/messaging")
  * @returns {Promise<Array>} - Resolves with an array of clients.
  */
 async function get_requested_clients_of_coach_business_layer(coach_id){
+    const role = await user_info.get_role(coach_id);
+    if (role !== 'coach') {
+        return Promise.reject(new Error("Only coach can check their client requests."));
+    }
     return client_coach_interaction.get_requested_clients_of_coach_data_layer(coach_id);
 }
 
