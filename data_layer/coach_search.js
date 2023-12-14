@@ -23,7 +23,8 @@ function _build_search_coach_filter_clauses({name, accepting_new_clients, hourly
     const experience_level_cond = experience_level ? "Coaches.experience_level BETWEEN ? AND ?" : "";
     const cities_cond = location?.city ? "Addresses.city LIKE ?" : "";
     const states_cond = location?.state ? "Addresses.state LIKE ?" : "";
-    const where_conds = [name_cond, accepting_new_clients_cond, hourly_rate_cond, experience_level_cond, cities_cond, states_cond].filter(s => s).join(" AND ");
+    const accepted_cond = "Coaches.accepted = 1";
+    const where_conds = [name_cond, accepting_new_clients_cond, hourly_rate_cond, experience_level_cond, cities_cond, states_cond, accepted_cond].filter(s => s).join(" AND ");
 
     const sql_args = [];
     if (name_cond) sql_args.push(`${name}%`);
