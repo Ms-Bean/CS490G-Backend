@@ -56,6 +56,25 @@ async function create_user_workout_plan(uwp_request){
     return workout_management.create_user_workout_plan(uwp);
 }
 
+
+async function get_user_workout_plan(user_id, assignee_id) {
+    if (user_id !== assignee_id && !await client_coach_interaction.check_if_client_has_hired_coach(user_id, assignee_id)) {
+        throw new APIError(`User with ID ${user_id} not authorized to view workout assignment of the user with ID ${assignee_id}`, 403);
+    }
+
+    return workout_management.get_user_workout_plan(assignee_id);
+}
+
+
+async function delete_user_workout_plan(user_id, assignee_id) {
+    if (user_id !== assignee_id && !await client_coach_interaction.check_if_client_has_hired_coach(user_id, assignee_id)) {
+        throw new APIError(`User with ID ${user_id} not authorized to delete workout assignment of the user with ID ${assignee_id}`, 403);
+    }
+
+    await workout_management.delete_user_workout_plan(assignee_id);
+}
+
+
 async function create_workout_plan_exercise(user_id, wpe_request) {
     try{
         _validate_create_workout_plan_exercise_request(wpe_request);
@@ -294,5 +313,7 @@ module.exports = {
     get_workout_plan_by_id,
     get_workout_plans_by_owner,
     get_workout_plan_exercise_by_id,
-    create_user_workout_plan
+    create_user_workout_plan,
+    delete_user_workout_plan,
+    get_user_workout_plan
 };

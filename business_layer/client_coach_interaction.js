@@ -5,7 +5,8 @@ const coach_search = require("../data_layer/coach_search");
 const daily_survey = require("../data_layer/daily_survey");
 const client_coach_interaction = require("../data_layer/client_coach_interaction");
 const messaging = require("../data_layer/messaging");
-const workout_management = require("../data_layer/workout_management");
+const workout_management_data_layer = require("../data_layer/workout_management");
+const workout_management_business_layer = require("./workout_management");
 
 
 /**
@@ -171,8 +172,15 @@ async function terminate_client_coach(user_id, terminatee_id) {
         throw error;
     }
 
+    try {
+        await workout_management_business_layer.delete_user_workout_plan(coach_id, client_id);
+    } catch (e) {
+        if (e.status_code !== 403) {
+            throw e;
+        }
+    }
+
     await messaging.delete_messages_between_users(user_id, terminatee_id);
-    await workout_management.delete_user_workout_plan(client_id);
     await client_coach_interaction.delete_client_coach_row(client_id);
 }
 
