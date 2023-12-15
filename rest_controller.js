@@ -198,7 +198,7 @@ async function reject_client_controller(req, res) {
     return res.status(401).json({message: "You must be logged in to reject a client"});
   }
 
-  if (Number.isNaN(Number(req.body.client_id))) {
+  if (!Number.isInteger(Number(req.body.client_id))) {
     return res.status(400).json({message: "Invalid client_id"});
   }
 
@@ -1259,8 +1259,8 @@ async function terminate_client_coach(req, res) {
     return res.status(401).json({message: "You must be logged in to terminate user"});
   }
 
-  if (Number.isNaN(Number(req.params.terminatee_id))) {
-    return res.status(400).json({message: "Bad `terminatee_id`"});
+  if (!Number.isInteger(Number(req.params.terminatee_id))) {
+    return res.status(400).json({message: "Bad terminatee_id"});
   }
 
   const user_id = req.session.user.user_id;
