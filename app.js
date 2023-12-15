@@ -9,7 +9,8 @@ require('dotenv').config();
 const controller = require("./rest_controller");
 const profile_management = require("./business_layer/profile_management");
 const client_dashboard = require("./business_layer/client_dashboard");
-const swaggerUI = require("swagger-ui-express"), swaggerDocument = require("./swagger.json")
+const swaggerUI = require("swagger-ui-express");
+const swaggerDocument = require("./swagger-output.json")
 
 
 // set server port
@@ -26,6 +27,8 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 app.use(bodyParser.json());
+
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 // session handling
 app.use(
