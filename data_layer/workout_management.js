@@ -46,8 +46,8 @@ class UserWorkoutPlan {
 async function assign_workout_plan(user_id, workout_plan_id) {
     return new Promise((resolve, reject) =>{
 
-        const sql = "INSERT INTO User_Workout_Plan (user_id, workout_plan_id) VALUES (?, ?)";
-        con.query(sql, [user_id, workout_plan_id], (err, results) => {
+        const sql = "INSERT INTO User_Workout_Plan (user_id, workout_plan_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE workout_plan_id = ?";
+        con.query(sql, [user_id, workout_plan_id, workout_plan_id], (err, results) => {
             if (err) {
                 reject(err);
                 return;
