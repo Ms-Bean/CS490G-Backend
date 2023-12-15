@@ -15,15 +15,15 @@ describe('insert_daily_survey_data_layer', () => {
         mood: 'Sad',
       },
       {
-        calories_consumed: 1800,
-        weight: 160,
-        calories_burned: 250,
-        created: '2023-11-22T10:00:00Z',
-        modified: '2023-11-22T10:30:00Z',
-        date: '2023-11-22',
+        calories_consumed: 3478,
+        weight: 259,
+        calories_burned: 2452,
+        created: '2023-11-10T05:00:00.000Z',
+        modified: '2023-11-10T05:00:00.000Z',
+        date: '2023-11-10',
         user_id: 1004,
-        water_intake: 6,
-        mood: 'Neutral',
+        water_intake: 7,
+        mood: 'great',
       },
     ];
 

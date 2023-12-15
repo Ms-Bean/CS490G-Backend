@@ -9,8 +9,10 @@ require('dotenv').config();
 const controller = require("./rest_controller");
 const profile_management = require("./business_layer/profile_management");
 const client_dashboard = require("./business_layer/client_dashboard");
-const swaggerUI = require("swagger-ui-express");
+
+const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger-output.json")
+
 
 
 // set server port
@@ -23,12 +25,27 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 
+// // Swagger options
+// const options = {
+//   definition: {
+//     openapi: '3.0.0',
+//     info: {
+//       title: 'Your API Documentation',
+//       version: '1.0.0',
+//       description: 'A sample API documentation for your Node.js backend',
+//     },
+//   },
+//   apis: ['./routes/*.js'], // Path to the API routes
+// };
+
+
+
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 app.use(bodyParser.json());
 
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // session handling
 app.use(
@@ -43,7 +60,6 @@ app.use(
 app.use((req, res, next) => {
   next();
 });
-app.use("/api-documentation",swaggerUI.serve,swaggerUI.setup(swaggerDocument));
 
 
 // Define API endpoints
