@@ -158,6 +158,11 @@ async function get_clients_of_coach_business_layer(coach_id) {
 }
 
 
+async function check_if_client_has_hired_coach(client_id, coach_id) {
+    return client_coach_interaction.check_if_client_has_hired_coach(coach_id, client_id);
+}
+
+
 async function terminate_client_coach(user_id, terminatee_id) {
     let coach_id, client_id;
     if (await client_coach_interaction.check_if_client_has_hired_coach(user_id, terminatee_id)) {
@@ -189,6 +194,7 @@ module.exports.get_requested_clients_of_coach_business_layer = get_requested_cli
 module.exports.get_User_Profile_By_Id_business_layer = get_User_Profile_By_Id_business_layer;
 module.exports.request_coach_business_layer = request_coach_business_layer;
 module.exports.accept_client_business_layer = accept_client_business_layer;
+module.exports.check_if_client_has_hired_coach = check_if_client_has_hired_coach;
 module.exports._check_if_coach_of = _check_if_coach_of;
 module.exports._check_if_client_of = _check_if_client_of;
 module.exports.get_clients_of_coach_business_layer = get_clients_of_coach_business_layer;
