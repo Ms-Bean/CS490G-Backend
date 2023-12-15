@@ -99,7 +99,7 @@ async function get_client_dashboard_info(user_id)
                             "exercises": []
                         });
                     }
-                    let get_exercises_sql = "SELECT Workout_Plan_Exercises.exercise_id, Exercise_Bank.name, Workout_Plan_Exercises.weekday, Workout_Plan_Exercises.time, Workout_Plan_Exercises.reps_per_set, Workout_Plan_Exercises.num_sets, Workout_Plan_Exercises.weight, Workout_Plan_Exercises.id FROM Workout_Plan_Exercises INNER JOIN Exercise_Bank ON Workout_Plan_Exercises.exercise_id = Exercise_Bank.exercise_id WHERE Workout_Plan_Exercises.workout_plan_id = ? AND ( Workout_Plan_Exercises.weekday = ? OR Workout_Plan_Exercises.weekday = ? OR Workout_Plan_Exercises.weekday = ? OR Workout_Plan_Exercises.weekday = ? OR Workout_Plan_Exercises.weekday = ?)";
+                    let get_exercises_sql = "SELECT Workout_Plan_Exercises.exercise_id, Exercise_Bank.name, Workout_Plan_Exercises.weekday, Workout_Plan_Exercises.time, Workout_Plan_Exercises.reps_per_set, Workout_Plan_Exercises.num_sets, Workout_Plan_Exercises.weight, Workout_Plan_Exercises.id FROM Workout_Plan_Exercises INNER JOIN Exercise_Bank ON Workout_Plan_Exercises.exercise_id = Exercise_Bank.exercise_id WHERE Workout_Plan_Exercises.workout_plan_id = ? AND ( Workout_Plan_Exercises.weekday = ? OR Workout_Plan_Exercises.weekday = ? OR Workout_Plan_Exercises.weekday = ? OR Workout_Plan_Exercises.weekday = ? OR Workout_Plan_Exercises.weekday = ?  OR Workout_Plan_Exercises.weekday = ?)";
                     con.query(get_exercises_sql, 
                         [
                         workout_plan_id, 
