@@ -94,6 +94,24 @@ function insert_message_data_layer(sender_id, receiver_id, content) {
         });
     });
 }
+
+
+async function delete_messages_between_users(user_id1, user_id2) {
+    const sql = `DELETE FROM Messages
+        WHERE (sender_id = ? AND receiver_id = ?) OR (receiver_id = ? AND sender_id = ?)`;
+    await new Promise((resolve, reject) => {
+        con.query(sql, [user_id1, user_id2, user_id2, user_id1], (err) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve();
+        });
+    });
+}
+
+
 module.exports.insert_message_data_layer = insert_message_data_layer;
 module.exports.get_client_coach_message_page_data_layer = get_client_coach_message_page_data_layer;
 module.exports.count_client_coach_messages_data_layer = count_client_coach_messages_data_layer;
+module.exports.delete_messages_between_users = delete_messages_between_users;
