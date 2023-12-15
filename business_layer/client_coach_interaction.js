@@ -99,6 +99,23 @@ async function accept_client_business_layer(current_user_id, client_id) {
     return Promise.resolve("You have accepted the client");  // TODO: Return name of client
 }
 
+
+async function reject_client_business_layer(current_user_id, client_id) {
+    const role = await user_info.get_role(current_user_id);
+    if (role !== "coach") {
+        const error = new Error(`User with ID ${current_user_id} unauthorized to accept and reject coach requests`);
+        error.code = 403;
+        throw error;
+    } else if (!await client_coach_interaction.check_if_client_coach_request_exists(current_user_id, client_id)) {
+        const error = new Error(`Request from client with ID ${client_id} to coach with ID ${current_user_id} does not exist`);
+        error.code = 400;
+        throw error;
+    }
+
+    await client_coach_interaction.delete_client_coach_row(client_id);
+}
+
+
 // Function to check if one user is the coach of another
 /**
  * @param {number} user_id1 - ID of the first user.
@@ -156,7 +173,7 @@ async function terminate_client_coach(user_id, terminatee_id) {
 
     await messaging.delete_messages_between_users(user_id, terminatee_id);
     await workout_management.delete_user_workout_plan(client_id);
-    await client_coach_interaction.terminate_client_coach(client_id);
+    await client_coach_interaction.delete_client_coach_row(client_id);
 }
 
 
@@ -168,3 +185,4 @@ module.exports._check_if_coach_of = _check_if_coach_of;
 module.exports._check_if_client_of = _check_if_client_of;
 module.exports.get_clients_of_coach_business_layer = get_clients_of_coach_business_layer;
 module.exports.terminate_client_coach = terminate_client_coach;
+module.exports.reject_client_business_layer = reject_client_business_layer;

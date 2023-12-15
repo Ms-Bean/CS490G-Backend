@@ -53,6 +53,7 @@ app.post("/onboarding/coach", controller.accept_coach_survey_controller);
 app.post("/request_coach", controller.request_coach_controller);
 app.get("/requested_clients", controller.get_requested_clients_of_coach_controller);
 app.post("/accept_client", controller.accept_client_controller);
+app.post("/reject_client", controller.reject_client_controller);
 app.get("/get_clients/:coach_id", controller.get_users_clients);
 app.get("/get_role", controller.get_role_controller);
 app.get("/get_profile_info", controller.get_User_Profile_By_Id_controller);

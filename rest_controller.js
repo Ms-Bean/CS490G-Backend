@@ -195,6 +195,31 @@ async function accept_client_controller(req, res)
     });
 }
 
+
+async function reject_client_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  if (!is_logged_in(req)) {
+    return res.status(401).json({message: "You must be logged in to reject a client"});
+  }
+
+  if (Number.isNaN(Number(req.body.client_id))) {
+    return res.status(400).json({message: "Invalid client_id"});
+  }
+
+  const user_id = req.session.user.user_id;
+  const client_id = Number(req.body.client_id);
+
+  try {
+    await client_coach_interaction.reject_client_business_layer(user_id, client_id);
+    return res.json({message: `Coach with ID ${user_id} has successfully rejected client with ID ${client_id}`});
+  } catch (e) {
+    const code = e.code ?? 500;
+    console.log(e.message);
+    return res.status(code).json({message: code !== 500 ? e.message : "Oops! Something went wrong!"});
+  }
+}
+
+
 async function get_role_controller(req, res)
 {
   if(req.session.user === undefined)
@@ -1274,6 +1299,7 @@ module.exports.update_exercise_controller = update_exercise_controller;
 module.exports.insert_daily_survey_controller = insert_daily_survey_controller;
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
 module.exports.accept_client_controller = accept_client_controller;
+module.exports.reject_client_controller = reject_client_controller;
 module.exports.logout_controller = logout_controller;
 module.exports.insert_user_controller = insert_user_controller;
 module.exports.health_check = health_check;
