@@ -16,7 +16,39 @@ class APIError extends Error {
         this.name = APIError.name;
     }
 }
+async function assign_workout_plan(assigner_id, client_id, workout_plan_id)
+{
+    return new Promise((resolve, reject) =>{
 
+        if(assigner_id == client_id)
+        {
+            workout_management.assign_workout_plan(client_id, workout_plan_id).then((response) =>{
+                resolve("assigned");
+            }).catch((err) =>{
+                console.log(err);
+                reject("sql failure");
+            })
+        }
+        else
+        {
+            client_coach_interaction.check_if_client_has_hired_coach(assigner_id, client_id).then((response_bool) =>{
+                if(response_bool)
+                {
+                    workout_management.assign_workout_plan(client_id, workout_plan_id).then((response) =>{
+                        resolve("assigned");
+                    }).catch((err) =>{
+                        console.log(err);
+                        reject("sql failure");
+                    })
+                }
+                else
+                {
+                    reject("Permission denied");
+                }
+            });
+        }
+    });
+}
 async function create_workout_plan(user_id, wp_request) {
     try{
         _validate_create_workout_plan_request(wp_request);
@@ -315,5 +347,6 @@ module.exports = {
     get_workout_plan_exercise_by_id,
     create_user_workout_plan,
     delete_user_workout_plan,
-    get_user_workout_plan
+    get_user_workout_plan,
+    assign_workout_plan
 };

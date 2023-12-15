@@ -43,6 +43,21 @@ class UserWorkoutPlan {
 }
 
 
+async function assign_workout_plan(user_id, workout_plan_id) {
+    return new Promise((resolve, reject) =>{
+
+        const sql = "INSERT INTO User_Workout_Plan (user_id, workout_plan_id) VALUES (?, ?)";
+        con.query(sql, [name, author_id], (err, results) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve("success");
+        });
+
+    })
+}
+
 async function create_workout_plan(wp) {
     const sql = "INSERT INTO Workout_Plans (name, user_who_created_it) VALUES (?, ?)";
     const {name, author_id} = wp;
@@ -391,6 +406,7 @@ module.exports = {
     create_user_workout_plan,
     get_user_workout_plan,
     delete_user_workout_plan,
+    assign_workout_plan,
     WorkoutPlanExercise,
     WorkoutPlan,
     UserWorkoutPlan

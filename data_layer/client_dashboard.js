@@ -8,6 +8,7 @@ async function get_client_dashboard_info(user_id)
 {
     return new Promise((resolve, reject) => {
         let workout_schedule = {
+            workout_id: undefined,
             workout_plan_name: undefined,
             "daily_surveys": [
                 /*{
@@ -79,10 +80,11 @@ async function get_client_dashboard_info(user_id)
                     resolve(workout_schedule);
                     return;
                 }
-                console.log(workout_plan_id_result)
+        
                 let workout_plan_id = workout_plan_id_result[0].workout_plan_id;
                 let workout_plan_name = workout_plan_id_result[0].name;
                 workout_schedule.workout_plan_name = workout_plan_name;
+                workout_schedule.workout_plan_id = workout_plan_id;
                 
                 let weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 

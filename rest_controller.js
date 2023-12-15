@@ -1300,6 +1300,54 @@ async function terminate_client_coach(req, res) {
   } 
 }
 
+async function assign_workout_plan(req, res) {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+
+  // Check if session or user is undefined
+  if (!req.session?.user) {
+    return res.status(400).send({
+      message: "Session or user information is missing"
+    });
+  }
+
+  // Check if user_id is undefined
+  if (req.session.user["user_id"] === undefined) {
+    return res.status(400).send({
+      message: "User is not logged in"
+    });
+  }
+  else
+  {
+    if(req.headers.assigner_id !== undefined && req.headers.client_id !== undefined)
+    {
+      workout_management
+        .assign_workout_plan(
+          req.session.user["user_id"],
+          req.headers.client_id,
+          req.headers.workout_plan_id
+        )
+        .then((response) =>{
+          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+          res.status(200).send("Workout plan selected.");
+        })
+        .catch((err) =>{
+          console.log(err);
+          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+          res.status(400).send({
+            message: err
+          });
+        })
+    }
+    else
+    {      
+      res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+      res.status(400).send({
+        message: "Invalid headers"
+      });
+    }
+  }
+}
+
 
 
 module.exports.get_requested_clients_of_coach_controller = get_requested_clients_of_coach_controller;
@@ -1351,3 +1399,4 @@ module.exports.get_all_coach_request = get_all_coach_request;
 module.exports.accept_coach = accept_coach;
 module.exports.reject_coach = reject_coach;
 module.exports.terminate_client_coach = terminate_client_coach;
+module.exports.assign_workout_plan = assign_workout_plan;
