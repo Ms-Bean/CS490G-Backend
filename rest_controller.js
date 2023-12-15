@@ -151,26 +151,22 @@ async function accept_coach_survey_controller(req, res) {
     })
 }
 
-async function request_coach_controller(req, res)
-{
-  client_coach_interaction
-    .request_coach_business_layer(
+async function request_coach_controller(req, res) {
+  client_coach_interaction.request_coach_business_layer(
       req.body.coach_id,
       req.session.user["user_id"]
-    )    
-    .then((response) =>{
+  )
+  .then((response) => {
       res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-      res.status(200).send({
-        message: response
-      });
-    })
-    .catch((error) =>{
-      console.log(error.message);
+      res.status(200).send({ message: response });
+  })
+  .catch((error) => {
+      console.error("Error in request_coach_controller:", error);
       res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-      res.status(400).send({
-        message: error.message
-      });
-    });
+      // Ensure that error messages are strings
+      const errorMessage = typeof error === 'string' ? error : (error.message || "Unknown error occurred");
+      res.status(400).send({ message: errorMessage });
+  });
 }
 
 async function accept_client_controller(req, res)
