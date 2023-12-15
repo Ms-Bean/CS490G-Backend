@@ -47,7 +47,7 @@ async function assign_workout_plan(user_id, workout_plan_id) {
     return new Promise((resolve, reject) =>{
 
         const sql = "INSERT INTO User_Workout_Plan (user_id, workout_plan_id) VALUES (?, ?)";
-        con.query(sql, [name, author_id], (err, results) => {
+        con.query(sql, [user_id, workout_plan_id], (err, results) => {
             if (err) {
                 reject(err);
                 return;

@@ -1318,7 +1318,7 @@ async function assign_workout_plan(req, res) {
   }
   else
   {
-    if(req.headers.assigner_id !== undefined && req.headers.client_id !== undefined)
+    if(req.headers.workout_plan_id !== undefined && req.headers.client_id !== undefined)
     {
       workout_management
         .assign_workout_plan(
