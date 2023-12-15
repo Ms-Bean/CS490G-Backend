@@ -16,8 +16,8 @@ async function get_coach_dashboard_info(coach_id) {
                 LatestSurvey.weight
             FROM 
                 Client_Coach 
-                INNER JOIN User_Workout_Plan ON Client_Coach.client_id = User_Workout_Plan.user_id 
-                INNER JOIN Workout_Plans ON User_Workout_Plan.workout_plan_id = Workout_Plans.workout_plan_id 
+                LEFT JOIN User_Workout_Plan ON Client_Coach.client_id = User_Workout_Plan.user_id 
+                LEFT JOIN Workout_Plans ON User_Workout_Plan.workout_plan_id = Workout_Plans.workout_plan_id 
                 INNER JOIN Users ON Users.user_id = Client_Coach.client_id 
                 LEFT JOIN (
                     SELECT 
