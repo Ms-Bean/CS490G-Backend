@@ -341,6 +341,20 @@ async function create_user_workout_plan(uwp) {
 }
 
 
+async function delete_user_workout_plan(user_id) {
+    const sql = `DELETE FROM User_Workout_Plan
+        WHERE user_id = ?`;
+    await new Promise((resolve, reject) => {
+        con.query(sql, [user_id], (err) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve();
+        });
+    });
+}
+
 
 module.exports = {
     create_workout_plan,
@@ -356,6 +370,7 @@ module.exports = {
     delete_exercises_of_workout,
     get_workout_exercise_by_id,
     create_user_workout_plan,
+    delete_user_workout_plan,
     WorkoutPlanExercise,
     WorkoutPlan,
     UserWorkoutPlan

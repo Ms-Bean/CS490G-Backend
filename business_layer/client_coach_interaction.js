@@ -4,7 +4,8 @@ const user_info = require("../data_layer/user_info");
 const coach_search = require("../data_layer/coach_search");
 const daily_survey = require("../data_layer/daily_survey");
 const client_coach_interaction = require("../data_layer/client_coach_interaction");
-const messaging = require("../data_layer/messaging")
+const messaging = require("../data_layer/messaging");
+const workout_management = require("../data_layer/workout_management");
 
 
 /**
@@ -119,9 +120,9 @@ async function _check_if_coach_of(user_id1, user_id2) {
  * @returns {Promise<boolean>} - Resolves with true if user 1 is a client of user 2 (coach); otherwise, resolves with false.
  */
 async function _check_if_client_of(user_id1, user_id2) {
-    const role1 = await user_info.get_role(user_id1);
+    const role2 = await user_info.get_role(user_id2);
 
-    if (role1 !== 'client') {
+    if (role2 !== 'coach') {
         return false;
     }
 
@@ -137,6 +138,28 @@ async function _check_if_client_of(user_id1, user_id2) {
 async function get_clients_of_coach_business_layer(coach_id) {
     return client_coach_interaction.get_clients_of_coach_data_layer(coach_id);
 }
+
+
+async function terminate_client_coach(user_id, terminatee_id) {
+    let coach_id, client_id;
+    if (await client_coach_interaction.check_if_client_has_hired_coach(user_id, terminatee_id)) {
+        coach_id = user_id;
+        client_id = terminatee_id;
+    } else if (await client_coach_interaction.check_if_client_has_hired_coach(terminatee_id, user_id)) {
+        coach_id = terminatee_id;
+        client_id = user_id;
+    } else {
+        const error = new Error(`User with ID ${user_id} cannot terminate relationship with user with ID ${terminatee_id}`);
+        error.code = 403;
+        throw error;
+    }
+
+    await messaging.delete_messages_between_users(user_id, terminatee_id);
+    await workout_management.delete_user_workout_plan(client_id);
+    await client_coach_interaction.terminate_client_coach(client_id);
+}
+
+
 module.exports.get_requested_clients_of_coach_business_layer = get_requested_clients_of_coach_business_layer
 module.exports.get_User_Profile_By_Id_business_layer = get_User_Profile_By_Id_business_layer;
 module.exports.request_coach_business_layer = request_coach_business_layer;
@@ -144,3 +167,4 @@ module.exports.accept_client_business_layer = accept_client_business_layer;
 module.exports._check_if_coach_of = _check_if_coach_of;
 module.exports._check_if_client_of = _check_if_client_of;
 module.exports.get_clients_of_coach_business_layer = get_clients_of_coach_business_layer;
+module.exports.terminate_client_coach = terminate_client_coach;
