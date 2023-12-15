@@ -45,13 +45,14 @@ async function get_User_Profile_By_Id_Data_Layer(user_id) {
   
 /**
  * @param {number} coach_id
- * @returns {Promise<Array<{ id: number, name: string }>>}
+ * @returns {Promise<Array<{ id: number, name: string, username: string }>>}
  */
 function get_requested_clients_of_coach_data_layer(coach_id) {
     const sql = `
     SELECT 
         cc.client_id, 
-        CONCAT(u.first_name, ' ', u.last_name) AS client_name
+        CONCAT(u.first_name, ' ', u.last_name) AS client_name,
+        u.username
     FROM 
         Client_Coach cc
     JOIN 
@@ -70,6 +71,7 @@ function get_requested_clients_of_coach_data_layer(coach_id) {
                 const clientData = results.map(r => ({
                     id: r.client_id,
                     name: r.client_name,
+                    username: r.username
                 }));
                 resolve(clientData);
             }
