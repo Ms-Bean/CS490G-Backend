@@ -89,7 +89,7 @@ async function get_client_dashboard_info(user_id)
                 let get_weekday_sql = "SELECT WEEKDAY(CURDATE()) AS weekday";
                 con.query(get_weekday_sql, function(err, get_weekday_result){
                     let current_weekday = get_weekday_result[0].weekday;
-                    for(let days_ago = 4; days_ago >= 0; days_ago--)
+                    for(let days_ago = 5; days_ago >= 0; days_ago--)
                     {
                         let weekday = weekdays[mod(current_weekday - days_ago, 7)];
                         workout_schedule["days"].push({
@@ -105,7 +105,8 @@ async function get_client_dashboard_info(user_id)
                         weekdays[(current_weekday - 1) % 7], 
                         weekdays[(current_weekday - 2) % 7], 
                         weekdays[(current_weekday - 3) % 7], 
-                        weekdays[(current_weekday - 4) % 7]
+                        weekdays[(current_weekday - 4) % 7],
+                        weekdays[(current_weekday - 5) % 7]
                         ],
                         function(err, get_exercises_result){
                             if(err)
@@ -132,7 +133,7 @@ async function get_client_dashboard_info(user_id)
                                     }
                                 }
                             }
-                            let get_activity_logs_sql = "SELECT Exercise_Bank.name, Workout_Plan_Exercises.weekday, Workout_Plan_Exercises.time, Workout_Progress.weight, Workout_Progress.reps, Workout_Progress.set_number, DATEDIFF(CURDATE(), Workout_Progress.date) AS days_ago, Workout_Plan_Exercises.id FROM Workout_Progress INNER JOIN Workout_Plan_Exercises ON Workout_Progress.workout_exercise_id = Workout_Plan_Exercises.id INNER JOIN Exercise_Bank ON Workout_Plan_Exercises.exercise_id = Exercise_Bank.exercise_id WHERE Workout_Progress.user_id=? AND Workout_Progress.date > DATE_ADD(CURDATE(), INTERVAL -5 DAY)";
+                            let get_activity_logs_sql = "SELECT Exercise_Bank.name, Workout_Plan_Exercises.weekday, Workout_Plan_Exercises.time, Workout_Progress.weight, Workout_Progress.reps, Workout_Progress.set_number, DATEDIFF(CURDATE(), Workout_Progress.date) AS days_ago, Workout_Plan_Exercises.id FROM Workout_Progress INNER JOIN Workout_Plan_Exercises ON Workout_Progress.workout_exercise_id = Workout_Plan_Exercises.id INNER JOIN Exercise_Bank ON Workout_Plan_Exercises.exercise_id = Exercise_Bank.exercise_id WHERE Workout_Progress.user_id=? AND Workout_Progress.date > DATE_ADD(CURDATE(), INTERVAL -6 DAY)";
                             con.query(get_activity_logs_sql, [user_id], function(err, get_activity_logs_result){
                                 if(err)
                                 {
@@ -149,7 +150,7 @@ async function get_client_dashboard_info(user_id)
                                             {
                                                 if(workout_schedule["days"][j].exercises[k].workout_exercise_id == get_activity_logs_result[i].id)
                                                 {
-                                                    console.log("SHABANG!!!!");
+                                                    // console.log("SHABANG!!!!");
                                                     workout_schedule["days"][j].exercises[k].logged_sets.push({
                                                         logged_reps: get_activity_logs_result[i].reps,
                                                         logged_weight: get_activity_logs_result[i].weight
