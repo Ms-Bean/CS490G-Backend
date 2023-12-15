@@ -787,7 +787,6 @@ async function get_coach_dashboard_info(req, res)
   }
   else
   {
-    console.log(req.body);
     coach_dashboard
       .get_coach_dashboard_info(
         req.session.user["user_id"]
