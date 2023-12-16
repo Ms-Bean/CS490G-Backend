@@ -22,10 +22,6 @@ const location_info = {
 };
 
 
-beforeAll(() => {
-    server.close();
-});
-
 // To check whether inserted user is in the session
 beforeAll(() => {
     app.get("/get-session", (req, res) => {
@@ -34,9 +30,19 @@ beforeAll(() => {
 })
 
 
+beforeEach(() => {
+    server.close();
+});
+
+
 afterEach(() => {
     jest.clearAllMocks();
 })
+
+
+afterEach(() => {
+    server.close();
+});
 
 
 test("Successful insert", async () => {
