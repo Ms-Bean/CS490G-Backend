@@ -20,4 +20,4 @@ ENV DB_PASS=moxi
 ENV DB_NAME=moxi
 
 # Run app.js when the container launches
-CMD ["node", "app.js"]
+CMD ["node", "server.js"]
