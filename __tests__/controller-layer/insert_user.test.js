@@ -34,6 +34,11 @@ beforeAll(() => {
 })
 
 
+afterEach(() => {
+    jest.clearAllMocks();
+})
+
+
 test("Successful insert", async () => {
     const request_body = {...user_credentials, ...location_info};
     const expected_user_id = 5;
@@ -49,7 +54,7 @@ test("Successful insert", async () => {
         .accept("application/json")
         .expect(200);
     expect(insert_response.body).toEqual(expected_response);
-    expect(set_user_address_business_layer).toBeCalledWith(
+    expect(set_user_address_business_layer).toHaveBeenCalledWith(
         expected_user_id,
         location_info.street_address, location_info.city, location_info.state, location_info.zip_code
     );
@@ -58,4 +63,26 @@ test("Successful insert", async () => {
         .get("/get-session")
         .expect(200);
     expect(session_response.body?.session?.user).toEqual(expected_session_user);
+});
+
+
+test("Unsuccessful insert", async () => {
+    const request_body = {...user_credentials, ...location_info};
+    const expected_response = {message: "Some type of error message"};
+
+    insert_user_business_layer.mockRejectedValue(expected_response.message);
+    const agent = request.agent(app);
+
+    const insert_response = await agent
+        .post("/insert_user")
+        .send(request_body)
+        .accept("application/json")
+        .expect(400);
+    expect(insert_response.body).toEqual(expected_response);
+    expect(set_user_address_business_layer).not.toHaveBeenCalled();
+
+    const session_response = await agent
+        .get("/get-session")
+        .expect(200);
+    expect(session_response.body?.session?.user).toBeUndefined();
 });
