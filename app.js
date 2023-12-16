@@ -127,13 +127,16 @@ app.get("/check_session", (req, res) => {
   } else {
     res.status(200).send({ isLoggedIn: false });
   }
-}); 
-app.listen(PORT, () => {
+});
+
+
+// So tests can close the server before executing
+const server = app.listen(PORT, () => {
   console.log("Server running on port " + PORT.toString());
 });
 
-client_dashboard.get_client_dashboard_info(45).then((response) =>{
-  console.log(response);
-}).catch((err) =>{
-  console.log(err);
-}); 
+
+module.exports = {
+  app,
+  server
+};

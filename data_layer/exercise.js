@@ -435,18 +435,6 @@ async function check_exercise_references_data_layer(exerciseId) {
   });
 }
 
-function executeQuery(sql, exerciseId) {
-  return new Promise((resolve, reject) => {
-    con.query(sql, [exerciseId], (err, result) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(result);
-      }
-    });
-  });
-}
-
 module.exports.check_exercise_references_data_layer = check_exercise_references_data_layer;
 module.exports.get_exercise_by_id_data_layer = get_exercise_by_id_data_layer;
 module.exports.get_all_equipment_data_layer = get_all_equipment_data_layer;
