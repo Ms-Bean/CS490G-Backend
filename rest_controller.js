@@ -1320,6 +1320,8 @@ async function assign_workout_plan(req, res) {
   {
     if(req.headers.workout_plan_id !== undefined && req.headers.client_id !== undefined)
     {
+      console.log("Assign client id");
+      console.log(req.headers.client_id);
       workout_management
         .assign_workout_plan(
           req.session.user["user_id"],

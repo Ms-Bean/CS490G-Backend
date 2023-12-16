@@ -32,6 +32,9 @@ async function assign_workout_plan(assigner_id, client_id, workout_plan_id)
         else
         {
             client_coach_interaction.check_if_client_has_hired_coach(assigner_id, client_id).then((response_bool) =>{
+                console.log(response_bool);
+                console.log(assigner_id);
+                console.log(client_id);
                 if(response_bool)
                 {
                     workout_management.assign_workout_plan(client_id, workout_plan_id).then((response) =>{
@@ -221,9 +224,7 @@ async function get_workout_plan_by_id({user_id, wp_id, include_exercises}) {
     const wp = await workout_management.get_workout_by_id(wp_id);
     if (wp === null) {
         throw new APIError(`No workout plan with id ${wp_id} exists`, 404);
-    } else if (wp.author_id !== user_id) {
-        throw new APIError(`User unauthorized to view workout plan with id ${wp_id} because they don't own the workout plan`, 403);
-    }
+    } 
 
     if (!include_exercises) {
         return wp;
