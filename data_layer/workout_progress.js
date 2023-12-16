@@ -37,8 +37,8 @@ WorkoutProgress.create = async (newWorkProgress) => {
                     add = setnum[0].set_number;
                 }
                 console.log("ABOUT TO INSERT");
-                console.log(sql, [user_id, workout_exercise_id, add + 1, date, weight, reps])
-                con.query(sql, [user_id, workout_exercise_id, add + 1, date, weight, reps], (err, results) => {
+                console.log(sql, [user_id, workout_exercise_id, set_number + add, date, weight, reps])
+                con.query(sql, [user_id, workout_exercise_id, set_number + add, date, weight, reps], (err, results) => {
                     if (err) {
                         reject(err);
                         return;
