@@ -22,16 +22,17 @@ const location_info = {
 };
 
 
-beforeAll(() => {
-    server.close();
-});
-
 // To check whether inserted user is in the session
 beforeAll(() => {
     app.get("/get-session", (req, res) => {
         res.json({session: req.session});
     });
 })
+
+
+beforeEach(() => {
+    server.close();
+});
 
 
 afterEach(() => {
