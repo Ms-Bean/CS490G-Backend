@@ -1,10 +1,6 @@
-const { app, server } = require("../../app");
+const { app } = require("../../app");
 const request = require("supertest");
 
-
-beforeAll(() => {
-    server.close();
-});
 
 test("Test health check endpoint", async () => {
     const response = await request(app)

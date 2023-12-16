@@ -130,13 +130,7 @@ app.get("/check_session", (req, res) => {
 });
 
 
-// So tests can close the server before executing
-const server = app.listen(PORT, () => {
-  console.log("Server running on port " + PORT.toString());
-});
-
-
 module.exports = {
   app,
-  server
+  PORT
 };

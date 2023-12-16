@@ -1,4 +1,4 @@
-const { app, server } = require("../../app");
+const { app } = require("../../app");
 const request = require("supertest");
 
 const { insert_user_business_layer, set_user_address_business_layer } = require("../../business_layer/registration");
@@ -30,18 +30,8 @@ beforeAll(() => {
 })
 
 
-beforeEach(() => {
-    server.close();
-});
-
-
 afterEach(() => {
     jest.clearAllMocks();
-})
-
-
-afterEach(() => {
-    server.close();
 });
 
 
