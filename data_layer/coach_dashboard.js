@@ -2,13 +2,45 @@ const { request } = require("express");
 let connection = require("./conn");
 let con = connection.con;
 
-async function get_coach_dashboard_info(coach_id)
-{
+async function get_coach_dashboard_info(coach_id) {
     return new Promise((resolve, reject) => {
-        const sql = "SELECT Client_Coach.coach_id, Client_Coach.client_id, Workout_Plans.name, Users.username FROM Client_Coach INNER JOIN User_Workout_Plan ON Client_Coach.client_id = User_Workout_Plan.user_id INNER JOIN Workout_Plans ON User_Workout_Plan.workout_plan_id = Workout_Plans.workout_plan_id INNER JOIN Users ON Users.user_id = Client_Coach.client_id WHERE coach_id = ? AND Client_Coach.requested=0";
+        const sql = `
+            SELECT 
+                Client_Coach.coach_id, 
+                Client_Coach.client_id, 
+                Workout_Plans.name, 
+                Users.username, 
+                Users.first_name, 
+                Users.last_name,
+                LatestSurvey.mood,
+                LatestSurvey.weight
+            FROM 
+                Client_Coach 
+                LEFT JOIN User_Workout_Plan ON Client_Coach.client_id = User_Workout_Plan.user_id 
+                LEFT JOIN Workout_Plans ON User_Workout_Plan.workout_plan_id = Workout_Plans.workout_plan_id 
+                INNER JOIN Users ON Users.user_id = Client_Coach.client_id 
+                LEFT JOIN (
+                    SELECT 
+                        User_Daily_Survey.user_id, 
+                        User_Daily_Survey.mood,
+                        User_Daily_Survey.weight
+                    FROM 
+                        User_Daily_Survey
+                    INNER JOIN (
+                        SELECT 
+                            user_id, 
+                            MAX(date) AS max_date 
+                        FROM 
+                            User_Daily_Survey 
+                        GROUP BY 
+                            user_id
+                    ) AS MaxDates ON User_Daily_Survey.user_id = MaxDates.user_id AND User_Daily_Survey.date = MaxDates.max_date
+                ) AS LatestSurvey ON LatestSurvey.user_id = Client_Coach.client_id
+            WHERE 
+                coach_id = ? AND Client_Coach.requested = 0`;
+
         con.query(sql, [coach_id], function(err, result) {
-            if(err)
-            {
+            if(err) {
                 console.log(err);
                 reject("Something went wrong in our database.");
             }

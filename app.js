@@ -9,7 +9,10 @@ require('dotenv').config();
 const controller = require("./rest_controller");
 const profile_management = require("./business_layer/profile_management");
 const client_dashboard = require("./business_layer/client_dashboard");
-const swaggerUI = require("swagger-ui-express"), swaggerDocument = require("./swagger.json")
+
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger-output.json")
+
 
 
 // set server port
@@ -22,10 +25,27 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 
+// // Swagger options
+// const options = {
+//   definition: {
+//     openapi: '3.0.0',
+//     info: {
+//       title: 'Your API Documentation',
+//       version: '1.0.0',
+//       description: 'A sample API documentation for your Node.js backend',
+//     },
+//   },
+//   apis: ['./routes/*.js'], // Path to the API routes
+// };
+
+
+
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 app.use(bodyParser.json());
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // session handling
 app.use(
@@ -40,7 +60,6 @@ app.use(
 app.use((req, res, next) => {
   next();
 });
-app.use("/api-documentation",swaggerUI.serve,swaggerUI.setup(swaggerDocument));
 
 
 // Define API endpoints
@@ -53,6 +72,8 @@ app.post("/onboarding/coach", controller.accept_coach_survey_controller);
 app.post("/request_coach", controller.request_coach_controller);
 app.get("/requested_clients", controller.get_requested_clients_of_coach_controller);
 app.post("/accept_client", controller.accept_client_controller);
+app.post("/reject_client", controller.reject_client_controller);
+app.get("/has_hired_coach/:coach_id", controller.check_if_client_has_hired_coach);
 app.get("/get_clients/:coach_id", controller.get_users_clients);
 app.get("/get_role", controller.get_role_controller);
 app.get("/get_profile_info", controller.get_User_Profile_By_Id_controller);
@@ -97,6 +118,8 @@ app.route("/get_coach_dashboard_info/coach_request/:coach_id")
   .put(controller.accept_coach)
   .delete(controller.reject_coach);
 app.get("/get_client_target_weight/:client_id?", controller.get_client_target_weight);
+app.post("/assign_workout_plan", controller.assign_workout_plan);
+app.delete("/terminate/:terminatee_id", controller.terminate_client_coach);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {

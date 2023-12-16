@@ -18,6 +18,9 @@
     "express-session": "^1.17.3",
     "mysql": "^2.18.1",
     "nodejs": "^0.0.0",
+    "swagger-autogen": "^2.23.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui": "^5.10.5",
     "swagger-ui-express": "^5.0.0"
   },
   "keywords": [],

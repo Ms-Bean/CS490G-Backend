@@ -6,7 +6,7 @@ const con = connection.con;
  * @returns {Promise<Array<{ user_id: number, about_me: string, experience_level: string, created: Date, modified: Date, height: number, weight: number, medical_conditions: string, budget: number, goals: string, target_weight: number, profile_picture: string, birthday: Date}>>}
  */
 async function get_User_Profile_By_Id_Data_Layer(user_id) {
-    let sql = "SELECT user_id, about_me, experience_level, created, modified, height, weight, medical_conditions, budget, goals, target_weight, profile_picture, birthday FROM user_profile WHERE user_id = ?";
+    let sql = "SELECT user_id, about_me, experience_level, created, modified, height, weight, medical_conditions, budget, goals, target_weight, pfp_link, birthday FROM user_profile WHERE user_id = ?";
     
     return new Promise((resolve, reject) => {
       con.query(sql, [user_id], function (err, [result]) {
@@ -32,7 +32,7 @@ async function get_User_Profile_By_Id_Data_Layer(user_id) {
               budget: result.budget,
               goals: result.goals,
               target_weight: result.target_weight,
-              profile_picture: result.profile_picture,
+              profile_picture: result.pfp_link,
               birthday: result.birthday
             }
           ];
@@ -45,13 +45,14 @@ async function get_User_Profile_By_Id_Data_Layer(user_id) {
   
 /**
  * @param {number} coach_id
- * @returns {Promise<Array<{ id: number, name: string }>>}
+ * @returns {Promise<Array<{ id: number, name: string, username: string }>>}
  */
 function get_requested_clients_of_coach_data_layer(coach_id) {
     const sql = `
     SELECT 
         cc.client_id, 
-        CONCAT(u.first_name, ' ', u.last_name) AS client_name
+        CONCAT(u.first_name, ' ', u.last_name) AS client_name,
+        u.username
     FROM 
         Client_Coach cc
     JOIN 
@@ -70,6 +71,7 @@ function get_requested_clients_of_coach_data_layer(coach_id) {
                 const clientData = results.map(r => ({
                     id: r.client_id,
                     name: r.client_name,
+                    username: r.username
                 }));
                 resolve(clientData);
             }
@@ -87,7 +89,7 @@ function get_clients_of_coach_data_layer(coach_id) {
     SELECT 
         cc.client_id, 
         CONCAT(u.first_name, ' ', u.last_name) AS client_name,
-        up.profile_picture,
+        up.pfp_link,
         COALESCE(SUBSTRING(m.content, 1, 40), 'Send a new message') AS message,
         m.created
     FROM 
@@ -108,7 +110,7 @@ function get_clients_of_coach_data_layer(coach_id) {
         cc.coach_id = ?
         AND cc.requested = 0
     GROUP BY 
-        cc.client_id, client_name, up.profile_picture, message, m.created;
+        cc.client_id, client_name, up.pfp_link, message, m.created;
 
 
 
@@ -123,7 +125,7 @@ function get_clients_of_coach_data_layer(coach_id) {
                 const clientData = results.map(r => ({
                     id: r.client_id,
                     name: r.client_name,
-                    profile_picture: r.profile_picture,
+                    profile_picture: r.pfp_link,
                     message_content: r.message,
                     message_created: r.created,
                 }));
@@ -143,7 +145,7 @@ function get_coaches_of_client_data_layer(client_id) {
     SELECT 
         c.coach_id, 
         CONCAT(u.first_name, ' ', u.last_name) AS coach_name,
-        up.profile_picture,
+        up.pfp_link,
         COALESCE(SUBSTRING(m.content, 1, 40), 'Send a new message') AS message,
         m.created
     FROM 
@@ -175,7 +177,7 @@ function get_coaches_of_client_data_layer(client_id) {
                 const coachData = results.map(r => ({
                     id: r.coach_id,
                     name: r.coach_name,
-                    profile_picture: r.profile_picture,
+                    profile_picture: r.pfp_link,
                     message_content: r.message,
                     message_created: r.created,
                 }));
@@ -310,6 +312,22 @@ function get_clients_coach_or_request(client_id) {
         });
     });
 }
+
+
+async function delete_client_coach_row(client_id) {
+    const sql = `DELETE FROM Client_Coach WHERE client_id = ?`;
+    await new Promise((resolve, reject) => {
+        con.query(sql, [client_id], (err) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve();
+        });
+    });
+}
+
+
 module.exports.get_requested_clients_of_coach_data_layer = get_requested_clients_of_coach_data_layer;
 module.exports.get_coaches_of_client_data_layer = get_coaches_of_client_data_layer;
 module.exports.accept_client_data_layer = accept_client_data_layer;
@@ -320,3 +338,4 @@ module.exports.request_coach_data_layer = request_coach_data_layer;
 module.exports.get_clients_of_coach_data_layer = get_clients_of_coach_data_layer;
 module.exports.remove_coach_data_layer = remove_coach_data_layer;
 module.exports.get_clients_coach_or_request = get_clients_coach_or_request;
+module.exports.delete_client_coach_row = delete_client_coach_row;

@@ -16,7 +16,42 @@ class APIError extends Error {
         this.name = APIError.name;
     }
 }
+async function assign_workout_plan(assigner_id, client_id, workout_plan_id)
+{
+    return new Promise((resolve, reject) =>{
 
+        if(assigner_id == client_id)
+        {
+            workout_management.assign_workout_plan(client_id, workout_plan_id).then((response) =>{
+                resolve("assigned");
+            }).catch((err) =>{
+                console.log(err);
+                reject("sql failure");
+            })
+        }
+        else
+        {
+            client_coach_interaction.check_if_client_has_hired_coach(assigner_id, client_id).then((response_bool) =>{
+                console.log(response_bool);
+                console.log(assigner_id);
+                console.log(client_id);
+                if(response_bool)
+                {
+                    workout_management.assign_workout_plan(client_id, workout_plan_id).then((response) =>{
+                        resolve("assigned");
+                    }).catch((err) =>{
+                        console.log(err);
+                        reject("sql failure");
+                    })
+                }
+                else
+                {
+                    reject("Permission denied");
+                }
+            });
+        }
+    });
+}
 async function create_workout_plan(user_id, wp_request) {
     try{
         _validate_create_workout_plan_request(wp_request);
@@ -55,6 +90,25 @@ async function create_user_workout_plan(uwp_request){
 
     return workout_management.create_user_workout_plan(uwp);
 }
+
+
+async function get_user_workout_plan(user_id, assignee_id) {
+    if (user_id !== assignee_id && !await client_coach_interaction.check_if_client_has_hired_coach(user_id, assignee_id)) {
+        throw new APIError(`User with ID ${user_id} not authorized to view workout assignment of the user with ID ${assignee_id}`, 403);
+    }
+
+    return workout_management.get_user_workout_plan(assignee_id);
+}
+
+
+async function delete_user_workout_plan(user_id, assignee_id) {
+    if (user_id !== assignee_id && !await client_coach_interaction.check_if_client_has_hired_coach(user_id, assignee_id)) {
+        throw new APIError(`User with ID ${user_id} not authorized to delete workout assignment of the user with ID ${assignee_id}`, 403);
+    }
+
+    await workout_management.delete_user_workout_plan(assignee_id);
+}
+
 
 async function create_workout_plan_exercise(user_id, wpe_request) {
     try{
@@ -170,9 +224,7 @@ async function get_workout_plan_by_id({user_id, wp_id, include_exercises}) {
     const wp = await workout_management.get_workout_by_id(wp_id);
     if (wp === null) {
         throw new APIError(`No workout plan with id ${wp_id} exists`, 404);
-    } else if (wp.author_id !== user_id) {
-        throw new APIError(`User unauthorized to view workout plan with id ${wp_id} because they don't own the workout plan`, 403);
-    }
+    } 
 
     if (!include_exercises) {
         return wp;
@@ -294,5 +346,8 @@ module.exports = {
     get_workout_plan_by_id,
     get_workout_plans_by_owner,
     get_workout_plan_exercise_by_id,
-    create_user_workout_plan
+    create_user_workout_plan,
+    delete_user_workout_plan,
+    get_user_workout_plan,
+    assign_workout_plan
 };

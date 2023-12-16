@@ -43,6 +43,21 @@ class UserWorkoutPlan {
 }
 
 
+async function assign_workout_plan(user_id, workout_plan_id) {
+    return new Promise((resolve, reject) =>{
+
+        const sql = "INSERT INTO User_Workout_Plan (user_id, workout_plan_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE workout_plan_id = ?";
+        con.query(sql, [user_id, workout_plan_id, workout_plan_id], (err, results) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve("success");
+        });
+
+    })
+}
+
 async function create_workout_plan(wp) {
     const sql = "INSERT INTO Workout_Plans (name, user_who_created_it) VALUES (?, ?)";
     const {name, author_id} = wp;
@@ -341,6 +356,39 @@ async function create_user_workout_plan(uwp) {
 }
 
 
+async function get_user_workout_plan(user_id) {
+    const sql = `SELECT workout_plan_id FROM User_Workouts WHERE user_id = ?`;
+    const workout_plan_id = await new Promise((resolve, reject) => {
+        con.query(sql, [user_id], (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve(results?.[0]?.workout_plan_id ?? null);
+        });
+    });
+
+    if (workout_plan_id === null) {
+        return null;
+    }
+
+    return get_workout_by_id(workout_plan_id);
+}
+
+
+async function delete_user_workout_plan(user_id) {
+    const sql = `DELETE FROM User_Workout_Plan
+        WHERE user_id = ?`;
+    await new Promise((resolve, reject) => {
+        con.query(sql, [user_id], (err) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve();
+        });
+    });
+}
+
 
 module.exports = {
     create_workout_plan,
@@ -356,6 +404,9 @@ module.exports = {
     delete_exercises_of_workout,
     get_workout_exercise_by_id,
     create_user_workout_plan,
+    get_user_workout_plan,
+    delete_user_workout_plan,
+    assign_workout_plan,
     WorkoutPlanExercise,
     WorkoutPlan,
     UserWorkoutPlan

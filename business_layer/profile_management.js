@@ -37,7 +37,7 @@ async function get_profile_info(user_id)
         })
     });
 }
-async function set_profile_info(user_id, about_me, experience_level, height, weight, medical_conditions, budget, goals, target_weight, birthday, availability, hourly_rate, coaching_history, accepting_new_clients, coaching_experience_level)
+async function set_profile_info(user_id, pfp_link, about_me, experience_level, height, weight, medical_conditions, budget, goals, target_weight, birthday, availability, hourly_rate, coaching_history, accepting_new_clients, coaching_experience_level)
 {
     return new Promise((resolve, reject) =>{
         user_info.get_role(user_id).then((role) =>{
@@ -49,9 +49,9 @@ async function set_profile_info(user_id, about_me, experience_level, height, wei
             return_data = {}
 
 
-            if(experience_level !== undefined || height !== undefined || weight !== undefined || medical_conditions !== undefined || budget !== undefined || goals !== undefined || target_weight !== undefined || birthday !== undefined)
+            if(pfp_link !== undefined || experience_level !== undefined || height !== undefined || weight !== undefined || medical_conditions !== undefined || budget !== undefined || goals !== undefined || target_weight !== undefined || birthday !== undefined)
             {
-                profile_management.set_client_profile_info(user_id, about_me, experience_level, height, weight, medical_conditions, budget, goals, target_weight, birthday).then((response) =>{
+                profile_management.set_client_profile_info(user_id, about_me, experience_level, height, weight, medical_conditions, budget, goals, target_weight, birthday,pfp_link).then((response) =>{
                     resolve("Information updated")
                 }).catch((err) =>{
                     reject(err);

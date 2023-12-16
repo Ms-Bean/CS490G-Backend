@@ -151,26 +151,22 @@ async function accept_coach_survey_controller(req, res) {
     })
 }
 
-async function request_coach_controller(req, res)
-{
-  client_coach_interaction
-    .request_coach_business_layer(
+async function request_coach_controller(req, res) {
+  client_coach_interaction.request_coach_business_layer(
       req.body.coach_id,
       req.session.user["user_id"]
-    )    
-    .then((response) =>{
+  )
+  .then((response) => {
       res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-      res.status(200).send({
-        message: response
-      });
-    })
-    .catch((error) =>{
-      console.log(error.message);
+      res.status(200).send({ message: response });
+  })
+  .catch((error) => {
+      console.error("Error in request_coach_controller:", error);
       res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-      res.status(400).send({
-        message: error.message
-      });
-    });
+      // Ensure that error messages are strings
+      const errorMessage = typeof error === 'string' ? error : (error.message || "Unknown error occurred");
+      res.status(400).send({ message: errorMessage });
+  });
 }
 
 async function accept_client_controller(req, res)
@@ -194,6 +190,55 @@ async function accept_client_controller(req, res)
       });
     });
 }
+
+
+async function reject_client_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  if (!is_logged_in(req)) {
+    return res.status(401).json({message: "You must be logged in to reject a client"});
+  }
+
+  if (!Number.isInteger(Number(req.body.client_id))) {
+    return res.status(400).json({message: "Invalid client_id"});
+  }
+
+  const user_id = req.session.user.user_id;
+  const client_id = Number(req.body.client_id);
+
+  try {
+    await client_coach_interaction.reject_client_business_layer(user_id, client_id);
+    return res.json({message: `Coach with ID ${user_id} has successfully rejected client with ID ${client_id}`});
+  } catch (e) {
+    const code = e.code ?? 500;
+    console.log(e.message);
+    return res.status(code).json({message: code !== 500 ? e.message : "Oops! Something went wrong!"});
+  }
+}
+
+
+async function check_if_client_has_hired_coach(req, res) {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  if (!is_logged_in(req)) {
+    return res.status(401).json({message: "User must be logged in to check if they've hired coach"});
+  }
+
+  if (!Number.isInteger(Number(req.params.coach_id))) {
+    return res.status(400).json({message: "Invalid coach_id"});
+  }
+
+  const user_id = req.session.user.user_id;
+  const coach_id = Number(req.params.coach_id);
+
+  try {
+    const result = await client_coach_interaction.check_if_client_has_hired_coach(user_id, coach_id);
+    return res.json({ result });
+  } catch (e) {
+    const code = e.code ?? 500;
+    console.error(e.message);
+    return res.status(code).json({message: code !== 500 ? e.message : "Oops! Something went wrong!"});
+  }
+}
+
 
 async function get_role_controller(req, res)
 {
@@ -490,6 +535,7 @@ async function set_user_profile(req, res)
     profile_management
       .set_profile_info(
         req.session.user["user_id"],
+        req.body.pfp_link,
         req.body.about_me,
         req.body.experience_level,
         req.body.height,
@@ -786,7 +832,6 @@ async function get_coach_dashboard_info(req, res)
   }
   else
   {
-    console.log(req.body);
     coach_dashboard
       .get_coach_dashboard_info(
         req.session.user["user_id"]
@@ -1190,37 +1235,25 @@ async function get_client_target_weight(req, res) {
 }
 
 async function get_User_Profile_By_Id_controller(req, res) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
-  // Check if the user is logged in
-  if (!is_logged_in(req)) {
-    res.status(401).json({ message: "Cannot get user profile without logging in" });
-    return;
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ message: "User session not found" });
   }
 
-  try {
-    const user_id = req.params.user_id;
-
-    // Check if user_id parameter is provided
-    if (!user_id) {
-      res.status(400).json({ message: "Missing required parameter: user_id" });
-      return;
-    }
-
-    const user_profile = await client_coach_interaction.get_User_Profile_By_Id_business_layer(user_id);
-    res.json({ user_profile });
-  } catch (e) {
-    console.log(e.message);
-    if (!e.status_code) {
-      res.status(500).json({ message: "Something went wrong in the business layer." });
-    } else {
-      res.status(e.status_code).json({ message: e.message });
-    }
-  }
+  await client_coach_interaction.get_User_Profile_By_Id_business_layer(
+    Number(req.query.user_id)
+  )
+    .then((dto) => {
+      res.json(dto);
+    })
+    .catch((err) => res.status(400).json({ message: err.message }));
 }
 
+
+
 async function get_requested_clients_of_coach_controller(req, res) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
   try {
     if (!is_logged_in(req)) {
@@ -1244,6 +1277,81 @@ async function get_requested_clients_of_coach_controller(req, res) {
 
 
 
+async function terminate_client_coach(req, res) {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  if (!is_logged_in(req)) {
+    return res.status(401).json({message: "You must be logged in to terminate user"});
+  }
+
+  if (!Number.isInteger(Number(req.params.terminatee_id))) {
+    return res.status(400).json({message: "Bad terminatee_id"});
+  }
+
+  const user_id = req.session.user.user_id;
+  const terminatee_id = Number(req.params.terminatee_id);
+
+  try {
+    await client_coach_interaction.terminate_client_coach(user_id, terminatee_id);
+    res.status(200).json({message: `User with ID ${user_id} has successfully terminated user with ID ${terminatee_id}`});
+  } catch (e) {
+    const code = e.code ?? 500;
+    console.log(e.message);
+    return res.status(code).json({message: code !== 500 ? e.message : "Oops! Something went wrong on our end!"});
+  } 
+}
+
+async function assign_workout_plan(req, res) {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+
+  // Check if session or user is undefined
+  if (!req.session?.user) {
+    return res.status(400).send({
+      message: "Session or user information is missing"
+    });
+  }
+
+  // Check if user_id is undefined
+  if (req.session.user["user_id"] === undefined) {
+    return res.status(400).send({
+      message: "User is not logged in"
+    });
+  }
+  else
+  {
+    if(req.headers.workout_plan_id !== undefined && req.headers.client_id !== undefined)
+    {
+      console.log("Assign client id");
+      console.log(req.headers.client_id);
+      workout_management
+        .assign_workout_plan(
+          req.session.user["user_id"],
+          req.headers.client_id,
+          req.headers.workout_plan_id
+        )
+        .then((response) =>{
+          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+          res.status(200).send("Workout plan selected.");
+        })
+        .catch((err) =>{
+          console.log(err);
+          res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+          res.status(400).send({
+            message: err
+          });
+        })
+    }
+    else
+    {      
+      res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+      res.status(400).send({
+        message: "Invalid headers"
+      });
+    }
+  }
+}
+
+
+
 module.exports.get_requested_clients_of_coach_controller = get_requested_clients_of_coach_controller;
 module.exports.get_User_Profile_By_Id_controller = get_User_Profile_By_Id_controller;
 module.exports.get_client_target_weight = get_client_target_weight;
@@ -1260,6 +1368,8 @@ module.exports.update_exercise_controller = update_exercise_controller;
 module.exports.insert_daily_survey_controller = insert_daily_survey_controller;
 module.exports.get_user_account_info_controller = get_user_account_info_controller;
 module.exports.accept_client_controller = accept_client_controller;
+module.exports.reject_client_controller = reject_client_controller;
+module.exports.check_if_client_has_hired_coach = check_if_client_has_hired_coach;
 module.exports.logout_controller = logout_controller;
 module.exports.insert_user_controller = insert_user_controller;
 module.exports.health_check = health_check;
@@ -1290,3 +1400,5 @@ module.exports.get_client_dashboard_info = get_client_dashboard_info;
 module.exports.get_all_coach_request = get_all_coach_request;
 module.exports.accept_coach = accept_coach;
 module.exports.reject_coach = reject_coach;
+module.exports.terminate_client_coach = terminate_client_coach;
+module.exports.assign_workout_plan = assign_workout_plan;
