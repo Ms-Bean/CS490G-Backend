@@ -17,14 +17,35 @@ WorkoutProgress.create = async (newWorkProgress) => {
     const { user_id, workout_exercise_id, set_number, date, weight, reps } = newWorkProgress;
 
     try {
+        console.log("HERE GOES");
         const result = await new Promise((resolve, reject) => {
-            con.query(sql, [user_id, workout_exercise_id, set_number, date, weight, reps], (err, results) => {
-                if (err) {
+            con.query("SELECT set_number FROM Workout_Progress WHERE user_id = ? AND workout_exercise_id = ? AND date = ? ORDER BY set_number DESC LIMIT 1", [user_id, workout_exercise_id, date], (err, setnum) =>{
+                if(err)
+                {
+                    console.log(err);
                     reject(err);
                     return;
                 }
-                resolve(results.insertId);
-            });
+                console.log(setnum);
+                let add;
+                if(setnum.length == 0)
+                {
+                    add = 0
+                }
+                else
+                {
+                    add = setnum[0].set_number;
+                }
+                console.log("ABOUT TO INSERT");
+                console.log(sql, [user_id, workout_exercise_id, add + 1, date, weight, reps])
+                con.query(sql, [user_id, workout_exercise_id, add + 1, date, weight, reps], (err, results) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve(results.insertId);
+                });
+            })
         });
 
         return new WorkoutProgress({ ...newWorkProgress, workout_progress_id: result });
