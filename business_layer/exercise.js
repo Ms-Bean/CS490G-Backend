@@ -87,8 +87,8 @@ async function _validate_add_exercise_request(exercise_data) {
         description: _validate_description,
         difficulty: _validate_difficulty,
         video_link: _validate_video_link,
-        equipmentItems: _validate_equipment_items,
-        muscleGroups: _validate_muscle_groups,
+        equipment_items: _validate_equipment_items,
+        muscle_groups: _validate_muscle_groups,
         goal_id: _validate_goal,
         user_who_created_it: _validate_author
     };
@@ -109,8 +109,8 @@ async function _validate_update_exercise_request(exercise_data) {
         description: _validate_description,
         difficulty: _validate_difficulty,
         video_link: _validate_video_link,
-        equipmentItems: _validate_equipment_items,
-        muscleGroups: _validate_muscle_groups,
+        equipment_items: _validate_equipment_items,
+        muscle_groups: _validate_muscle_groups,
         goal_id: _validate_goal,
         user_who_created_it: _validate_author,
         exercise_id: _validate_exercise_id
@@ -203,7 +203,7 @@ function _validate_difficulty(difficulty) {
  * @returns {string|null}
  */
 function _validate_video_link(video_link) {
-    return URL.canParse(video_link) ? null : `\`video_link\` must be a valid URL, not ${video_link}`;
+    return typeof video_link !== "string" ? null : `\`video_link\` must be a valid URL, not ${video_link}`;
 }
 
 
@@ -288,6 +288,7 @@ function _validate_muscle_groups(muscleGroups) {
         return `\`muscleGroups\` must be an array of strings; got ${muscleGroups}`;
     }
 
+    muscleGroups = muscleGroups.map(e => e.value);
     const nonStringIdx = muscleGroups.findIndex(e => typeof e !== "string");
     if (nonStringIdx !== -1) {
         return `\`muscleGroups\` must be an array of strings; found ${JSON.stringify(muscleGroups[nonStringIdx])}`; 
@@ -316,6 +317,7 @@ function _validate_equipment_items(equipmentItems) {
         return `\`equipmentItems\` must be an array of strings; got ${equipmentItems}`;
     }
 
+    equipmentItems = equipmentItems.map(e => e.value);
     const nonStringIdx = equipmentItems.findIndex(e => typeof e !== "string");
     if (nonStringIdx !== -1) {
         return `\`equipmentItems\` must be an array of strings; found ${JSON.stringify(equipmentItems[nonStringIdx])}`; 

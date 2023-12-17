@@ -120,6 +120,7 @@ app.route("/get_coach_dashboard_info/coach_request/:coach_id")
 app.get("/get_client_target_weight/:client_id?", controller.get_client_target_weight);
 app.post("/assign_workout_plan", controller.assign_workout_plan);
 app.delete("/terminate/:terminatee_id", controller.terminate_client_coach);
+app.get("/get_coach", controller.get_coach);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {
@@ -127,13 +128,10 @@ app.get("/check_session", (req, res) => {
   } else {
     res.status(200).send({ isLoggedIn: false });
   }
-}); 
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT.toString());
 });
 
-client_dashboard.get_client_dashboard_info(45).then((response) =>{
-  console.log(response);
-}).catch((err) =>{
-  console.log(err);
-}); 
+
+module.exports = {
+  app,
+  PORT
+};

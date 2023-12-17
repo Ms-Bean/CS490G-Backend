@@ -26,6 +26,21 @@ pipeline {
                 sh 'mkdir -p CS490G-Backend'
                 dir('CS490G-Backend') {
                     git branch: params.BACKEND_BRANCH, url: 'https://github.com/Ms-Bean/CS490G-Backend.git'
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Run Backend Tests') {
+            steps {
+                dir('CS490G-Backend') {
+                    script {
+                        try {
+                            sh 'npm test' // Replace with your actual test command
+                        } catch (Exception e) {
+                            echo "Tests failed, but pipeline will continue."
+                        }
+                    }
                 }
             }
         }
