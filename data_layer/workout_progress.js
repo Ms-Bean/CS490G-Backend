@@ -158,5 +158,75 @@ WorkoutProgress.getByKeys = async (user_id, workout_exercise_id, set_number, dat
     }
 };
 
+function _get_update_args(args) {
+    const kept_args = [];
+    const query_parts = [];
+    Object.entries(args).forEach(([key, val]) => {
+        if (val === undefined) {
+            return;
+        }
+
+        kept_args.push(val);
+        query_parts.push(`${key} = ?`);
+    });
+
+    return {set_clause: query_parts.join(", "), args: kept_args};
+}
+
+WorkoutProgress.update = async (workout_progress) => {
+    const {user_id, workout_exercise_id, set_number, date, weight, reps} = workout_progress;
+    const {set_clause, args} = _get_update_args({set_number, weight, reps});
+
+    const sql = `UPDATE Workout_Progress
+                SET ${set_clause}
+                WHERE user_id = ?
+                AND workout_exercise_id = ?
+                AND date = ?`
+    args.push(user_id);
+    args.push(workout_exercise_id);
+    args.push(date);
+
+    try {
+        // Execute the update query
+        const result = await new Promise((resolve, reject) => {
+            con.query(sql, args, (err, result) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(result);
+            });
+        });
+
+        // Return the result if needed
+        return result;
+    } catch (error) {
+        // Handle any errors that may have occurred during the update
+        console.error('Error updating workout progress:', error);
+        throw error; // Rethrow the error to propagate it to the calling code if needed
+    }
+    
+}
+
+WorkoutProgress.deleteByKeys = async (user_id, workout_exercise_id, set_number, date) => {
+    const sql = "DELETE FROM Workout_Progress WHERE user_id = ? AND workout_exercise_id = ? AND set_number = ? AND date = ?";
+
+    try {
+        const result = await new Promise((resolve, reject) => {
+            your_pool.query(sql, [user_id, workout_exercise_id, set_number, date], (err, results) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(results.affectedRows);
+            });
+        });
+
+        return result > 0; // Return true if at least one row was deleted
+    } catch (error) {
+        throw error;
+    }
+};
+
 
 module.exports = WorkoutProgress;

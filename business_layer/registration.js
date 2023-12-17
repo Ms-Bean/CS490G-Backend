@@ -14,8 +14,8 @@ async function insert_user_business_layer(first_name, last_name, username, email
         return Promise.reject("That username is already taken.");
     } 
     else {
-        if(!/^([a-zA-Z]|[0-9]|[_])+$/.test(username))
-            return Promise.reject("Username containing characters other than letters, numbers, or underscores entered.");}
+    if(!/^([a-zA-Z]|[0-9]|[_])+$/.test(username))
+        return Promise.reject("Username containing characters other than letters, numbers, or underscores entered.");}
     if(!/^[a-zA-Z\-]+$/.test(first_name))
         return Promise.reject("First name must contain letters or hyphens only");
     if(first_name.length > 255)

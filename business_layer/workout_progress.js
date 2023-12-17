@@ -46,6 +46,29 @@ async function create_workout_progress(userId, workout_progress_request) {
     return Workout_Progress.create(new_workout_progress);
 }
 
+// async function update_workout_progress(userId, workout_progress_request){
+//     //_validate_workout_progress_request(workout_progress_request);
+
+//     //check if the exercise exists
+//     const wpe = await workout_management.get_workout_exercise_by_id(workout_progress_request.workout_exercise_id);
+//     if (wpe === null) {
+//         throw new APIError(`Workout exercise with id ${workout_progress_request.workout_plan_exercise_id} does not exist`, 400);
+//     }
+
+//     return Workout_Progress.update(workout_progress_request);
+// }
+
+// async function get_workout_progress_by_user_id({userId}) {
+//     const workout_progress = await Workout_Progress.getAllByUserId(user_id);
+//     if (workout_progress === null) {
+//         throw new APIError(`No workout progress with id ${user_id} exists`, 404);
+//     } else if (workout_progress.user_id !== userId) {
+//         throw new APIError(`User unauthorized to view workout progress with id ${wp_id} because they don't own the workout progress`, 403);
+//     }
+
+//     return workout_progress;
+// }
+
 function _validate_workout_progress_request(workout_progress_request) {
     console.log("validating...")
     let message = "";
