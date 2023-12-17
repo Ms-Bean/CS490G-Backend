@@ -1183,7 +1183,7 @@ async function accept_coach(req, res){
 }
 
 async function reject_coach(req, res){
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   if (!is_logged_in(req)) {
     res.status(401).json({message: "Cannot get coach requests without logging in"});
     return;
