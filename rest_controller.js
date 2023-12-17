@@ -1323,7 +1323,7 @@ async function assign_workout_plan(req, res) {
   }
   else
   {
-    if(req.headers.workout_plan_id !== undefined && req.headers.client_id !== undefined)
+    if(req.headers.workout_plan_id !== undefined && req.headers.client_id !== undefined && req.headers.client_id !== "null")
     {
       console.log("Assign client id");
       console.log(req.headers.client_id);
