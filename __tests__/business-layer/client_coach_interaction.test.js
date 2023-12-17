@@ -121,3 +121,104 @@ describe("Testing requests for coaches", () => {
         expect(business_layer.request_coach_business_layer(coach_id, client_id)).resolves.toEqual(expected_message);
     });
 });
+
+
+describe("Testing acceptance of clients", () => {
+    test("Rejection of acceptance of client due to bad client or user ids", () => {
+        const null_user_id = null;
+        const bad_type_user_id = "trh";
+        const bad_type_client_id = null;
+        const good_user_id = 2;
+        const good_client_id = 3;
+
+        expect(business_layer.accept_client_business_layer(null_user_id, good_client_id)).rejects.toThrow("User is not logged in");
+        expect(business_layer.accept_client_business_layer(bad_type_user_id, good_client_id)).rejects.toThrow("Invalid user id");
+        expect(business_layer.accept_client_business_layer(good_user_id, bad_type_client_id)).rejects.toThrow("Invalid client id");
+    });
+
+    test("Reject acceptance of client due to no coach request", async () => {
+        const user_id = 2;
+        const client_id = 3;
+        
+        data_layer.check_if_client_coach_request_exists.mockResolvedValue(false);
+        expect(business_layer.accept_client_business_layer(user_id, client_id)).rejects.toThrow("Request from client to coach does not exist");
+    });
+
+    test("Reject acceptance of client due to coach already hiring client", async () => {
+        const user_id = 2;
+        const client_id = 3;
+        
+        data_layer.check_if_client_coach_request_exists.mockResolvedValue(true);
+        data_layer.check_if_client_has_hired_coach.mockResolvedValue(true);
+        expect(business_layer.accept_client_business_layer(user_id, client_id)).rejects.toThrow("Coach cannot accept request from one of their current clients");
+    });
+
+    test("Reject acceptance of client due to failure in data layer", async () => {
+        const user_id = 2;
+        const client_id = 3;
+        const expected_error_message = "Something went wrong :(";
+        
+        data_layer.check_if_client_coach_request_exists.mockResolvedValue(true);
+        data_layer.check_if_client_has_hired_coach.mockResolvedValue(false);
+        data_layer.accept_client_data_layer.mockRejectedValue(new Error(expected_error_message));
+        expect(business_layer.accept_client_business_layer(user_id, client_id)).rejects.toThrow(expected_error_message);
+    });
+
+    test("Test acceptance of client", async () => {
+        const user_id = 2;
+        const client_id = 3;
+        const data_layer_message = "Client successfully accepted";
+        const expected_message = "You have accepted the client";
+        
+        data_layer.check_if_client_coach_request_exists.mockResolvedValue(true);
+        data_layer.check_if_client_has_hired_coach.mockResolvedValue(false);
+        data_layer.accept_client_data_layer.mockResolvedValue(data_layer_message);
+        expect(business_layer.accept_client_business_layer(user_id, client_id)).resolves.toEqual(expected_message);
+    });
+});
+
+
+describe("Test client rejection by coach", () => {
+    test("Test rejection due to wrong role", async () => {
+        const user_id = 3;
+        const client_id = 6;
+        const expected_message = `User with ID ${user_id} unauthorized to accept and reject coach requests`;
+        const expected_code = 403;
+
+        get_role.mockResolvedValue("client");
+        try {
+            await business_layer.reject_client_business_layer(user_id, client_id);
+            expect(1).toBe(0);
+        } catch (e) {
+            expect(e.message).toEqual(expected_message);
+            expect(e.code).toEqual(expected_code);
+        }
+    });
+
+    test("Test rejection due to no request existing", async () => {
+        const user_id = 3;
+        const client_id = 6;
+        const expected_message = `Request from client with ID ${client_id} to coach with ID ${user_id} does not exist`;
+        const expected_code = 400;
+
+        get_role.mockResolvedValue("coach");
+        data_layer.check_if_client_coach_request_exists.mockResolvedValue(false);
+        try {
+            await business_layer.reject_client_business_layer(user_id, client_id);
+            expect(1).toBe(0);
+        } catch (e) {
+            expect(e.message).toEqual(expected_message);
+            expect(e.code).toEqual(expected_code);
+        }
+    });
+
+    test("Test success of coach rejecting client", async () => {
+        const user_id = 3;
+        const client_id = 6;
+
+        get_role.mockResolvedValue("coach");
+        data_layer.check_if_client_coach_request_exists.mockResolvedValue(true);
+        data_layer.delete_client_coach_row.mockResolvedValue();
+        expect(business_layer.reject_client_business_layer(user_id, client_id)).resolves.toBeUndefined();
+    });
+});
