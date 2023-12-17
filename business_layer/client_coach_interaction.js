@@ -1,11 +1,6 @@
-const login = require("../data_layer/login");
-const registration = require("../data_layer/registration");
 const user_info = require("../data_layer/user_info");
-const coach_search = require("../data_layer/coach_search");
-const daily_survey = require("../data_layer/daily_survey");
 const client_coach_interaction = require("../data_layer/client_coach_interaction");
 const messaging = require("../data_layer/messaging");
-const workout_management_data_layer = require("../data_layer/workout_management");
 const workout_management_business_layer = require("./workout_management");
 
 
@@ -80,7 +75,7 @@ async function request_coach_business_layer(coach_id, client_id)
  * @throws {Promise<string>} - Rejects with an error message if acceptance fails.
  */
 async function accept_client_business_layer(current_user_id, client_id) {
-    if (current_user_id === undefined || current_user_id === null) {
+    if (current_user_id == null) {
         return Promise.reject(new Error("User is not logged in"));
     }
 
