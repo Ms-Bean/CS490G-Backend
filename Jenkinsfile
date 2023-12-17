@@ -30,6 +30,20 @@ pipeline {
             }
         }
 
+        stage('Run Backend Tests') {
+            steps {
+                dir('CS490G-Backend') {
+                    script {
+                        try {
+                            sh 'npm test' // Replace with your actual test command
+                        } catch (Exception e) {
+                            echo "Tests failed, but pipeline will continue."
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Build and Run Backend') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')]) {
