@@ -39,3 +39,24 @@ test("Successful login", async () => {
         .expect(200);
     expect(session_response.body?.session?.user).toEqual(expected_user);
 });
+
+
+test("Unsuccessful login", async () => {
+    const expected_message = "Some error message";
+    const expected_response = {message: expected_message};
+
+    login_business_layer.mockRejectedValue(expected_message);
+
+    const agent = request.agent(app);
+    const login_response = await agent
+        .post("/login")
+        .accept("application/json")
+        .send(login_credentials)
+        .expect(400);
+    expect(login_response.body).toEqual(expected_response);
+
+    const session_response = await agent
+        .get("/get-session")
+        .expect(200);
+    expect(session_response.body?.session?.user).toBeUndefined();
+});
