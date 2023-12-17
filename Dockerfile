@@ -10,9 +10,6 @@ COPY . .
 # Install any needed packages
 RUN npm install
 
-# Generate Swagger documentation
-RUN node swagger.js
-
 # Make port available to the world outside this container
 EXPOSE 3500
 

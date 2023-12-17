@@ -53,6 +53,14 @@ pipeline {
                 }
             }
         }
+
+        stage('Generate API Documentation') {
+            steps {
+                dir('CS490G-Backend') {
+                    sh 'node swagger.js'
+                }
+            }
+        }
     }
 
     post {
