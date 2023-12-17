@@ -189,7 +189,15 @@ async function terminate_client_coach(user_id, terminatee_id) {
     await client_coach_interaction.delete_client_coach_row(client_id);
 }
 
-
+async function get_coaches_of_client(client_id) {
+    return new Promise((resolve, reject) =>{
+        client_coach_interaction.get_coaches_of_client_data_layer(client_id).then((response) =>{
+            resolve(response);
+        }).catch((err) =>{
+            reject(err);
+        })
+    });
+}
 module.exports.get_requested_clients_of_coach_business_layer = get_requested_clients_of_coach_business_layer
 module.exports.get_User_Profile_By_Id_business_layer = get_User_Profile_By_Id_business_layer;
 module.exports.request_coach_business_layer = request_coach_business_layer;
@@ -200,3 +208,4 @@ module.exports._check_if_client_of = _check_if_client_of;
 module.exports.get_clients_of_coach_business_layer = get_clients_of_coach_business_layer;
 module.exports.terminate_client_coach = terminate_client_coach;
 module.exports.reject_client_business_layer = reject_client_business_layer;
+module.exports.get_coaches_of_client = get_coaches_of_client;

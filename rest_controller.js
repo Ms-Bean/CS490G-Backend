@@ -500,9 +500,14 @@ async function get_user_profile(req, res)
   }
   else
   {
+    let id;
+    if("user_id" in req.headers)
+      id = req.headers["user_id"]
+    else
+      id = req.session.user["user_id"];
     profile_management
       .get_profile_info(
-        req.session.user["user_id"],
+        id
       )
       .then((response) =>{
         res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
@@ -1351,6 +1356,24 @@ async function assign_workout_plan(req, res) {
 }
 
 
+async function get_coach(req, res) {
+
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  if (!req.session.user || !req.session.user["user_id"]) {
+    console.log("Access denied: User is not logged in");
+    return res.status(403).send({ message: "Access denied: User is not logged in" });
+  }
+  
+  client_coach_interaction.get_coaches_of_client(req.session.user["user_id"])
+  .then((response) =>{
+    console.log(response);
+    res.status(200).send(response);
+  }).catch((err) =>[
+    res.status(400).send({
+      message: "An error has occured."}
+      )
+  ])
+}
 
 module.exports.get_requested_clients_of_coach_controller = get_requested_clients_of_coach_controller;
 module.exports.get_User_Profile_By_Id_controller = get_User_Profile_By_Id_controller;
@@ -1402,3 +1425,4 @@ module.exports.accept_coach = accept_coach;
 module.exports.reject_coach = reject_coach;
 module.exports.terminate_client_coach = terminate_client_coach;
 module.exports.assign_workout_plan = assign_workout_plan;
+module.exports.get_coach = get_coach;
