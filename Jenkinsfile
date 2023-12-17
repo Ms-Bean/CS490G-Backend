@@ -6,6 +6,7 @@ pipeline {
         string(name: 'DB_HOST', defaultValue: '172.19.0.3', description: 'Database Host')
         string(name: 'DB_NAME', defaultValue: 'moxi', description: 'Database Name')
         string(name: 'FRONTEND_URL', defaultValue: 'http://moxi.akifbayram.com', description: 'Frontend URL')
+        string(name: 'BACKEND_URL', defaultValue: 'http://moxi.akifbayram.com:3500', description: 'Backend URL')
     }
 
     environment {
@@ -43,6 +44,7 @@ pipeline {
                         -e DB_USER=\$DB_USER \
                         -e DB_PASS=\$DB_PASS \
                         -e FRONTEND_URL=${params.FRONTEND_URL} \
+                        -e BACKEND_URL=${params.BACKEND_URL} \
                         -p 3500:3500 \
                         moxi-backend
                         """
