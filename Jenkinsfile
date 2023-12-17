@@ -35,7 +35,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')]) {
                     dir('CS490G-Backend') {
-                        sh 'docker build --build-arg FRONTEND_URL=${params.FRONTEND_URL} --build-arg BACKEND_URL=${params.BACKEND_URL} -t moxi-backend .'
+                        sh "docker build --build-arg FRONTEND_URL=${params.FRONTEND_URL} --build-arg BACKEND_URL=${params.BACKEND_URL} -t moxi-backend ."
                         sh """
                         docker run -d --name moxi-backend \
                         --restart=unless-stopped \
