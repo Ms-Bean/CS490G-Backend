@@ -91,11 +91,11 @@ async function set_client_profile_info(user_id, about_me, experience_level, heig
         });
     })
 }
-async function set_coach_profile_info(user_id, availability, hourly_rate, coaching_history, accepting_new_clients, experience_level, paypal_link)
+async function set_coach_profile_info(user_id, availability, hourly_rate, coaching_history, accepting_new_clients, experience_level)
 {
-    let set_coach_profile_sql = "UPDATE Coaches SET availability=?, hourly_rate=?, coaching_history=?, accepting_new_clients=?, experience_level=?, paypal_link = ? WHERE user_id=?";
+    let set_coach_profile_sql = "UPDATE Coaches SET availability=?, hourly_rate=?, coaching_history=?, accepting_new_clients=?, experience_level=? WHERE user_id=?";
     return new Promise((resolve, reject) =>{
-        con.query(set_coach_profile_sql, [availability, hourly_rate, coaching_history, accepting_new_clients, experience_level, paypal_link, user_id], function(err, results){
+        con.query(set_coach_profile_sql, [availability, hourly_rate, coaching_history, accepting_new_clients, experience_level, user_id], function(err, results){
             if(err)
             {
                 console.log(err);
