@@ -26,6 +26,7 @@ pipeline {
                 sh 'mkdir -p CS490G-Backend'
                 dir('CS490G-Backend') {
                     git branch: params.BACKEND_BRANCH, url: 'https://github.com/Ms-Bean/CS490G-Backend.git'
+                    sh 'npm install'
                 }
             }
         }
