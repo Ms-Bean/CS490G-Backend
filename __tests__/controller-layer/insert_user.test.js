@@ -82,3 +82,34 @@ test("Unsuccessful insert", async () => {
         .expect(200);
     expect(session_response.body?.session?.user).toBeUndefined();
 });
+
+
+/* If the location insertion fails, it ought to either roll back the user insertion
+   or let the frontend know that the location insertion failed
+   
+   Allowing the user insertion to succeed silently seems like a bad idea */
+test.skip("Good user insert, bad location", async () => {
+    const request_body = {...user_credentials, ...location_info};
+    const expected_user_id = 5;
+    const expected_response = {message: "Some error related to exercises"};
+
+    insert_user_business_layer.mockResolvedValue({user_id: expected_user_id, message: "Success message"});
+    set_user_address_business_layer.mockRejectedValue(expected_response.message);
+    const agent = request.agent(app);
+
+    const insert_response = await agent
+        .post("/insert_user")
+        .send(request_body)
+        .accept("application/json")
+        .expect(400);
+    expect(insert_response.body).toEqual(expected_response);
+    expect(set_user_address_business_layer).toHaveBeenCalledWith(
+        expected_user_id,
+        location_info.street_address, location_info.city, location_info.state, location_info.zip_code
+    );
+
+    const session_response = await agent
+        .get("/get-session")
+        .expect(200);
+    expect(session_response.body?.session?.user).toBeUndefined();
+});
