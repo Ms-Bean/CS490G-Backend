@@ -554,7 +554,8 @@ async function set_user_profile(req, res)
         req.body.hourly_rate,
         req.body.coaching_history,
         req.body.accepting_new_clients,
-        req.body.coaching_experience_level
+        req.body.coaching_experience_level,
+        req.body.paypal_link
       )
       .then((response) =>{
         res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
