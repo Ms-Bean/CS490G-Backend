@@ -112,6 +112,9 @@ async function delete_user_workout_plan(user_id, assignee_id) {
 
 async function create_workout_plan_exercise(user_id, wpe_request) {
     try{
+        wpe_request.reps_per_set = wpe_request.reps_per_set === 0 ? null : wpe_request.reps_per_set;
+        wpe_request.num_sets = wpe_request.num_sets === 0 ? null : wpe_request.num_sets;
+        wpe_request.weight = wpe_request.weight === 0 ? null : wpe_request.weight;
         _validate_create_workout_plan_exercise_request(wpe_request);
         const ex = await exercise.get_exercise_by_id_data_layer(wpe_request.exercise_id);
         if (ex === null) {
@@ -156,6 +159,9 @@ async function update_workout_plan(user_id, new_wp) {
 
 
 async function update_workout_plan_exercise(user_id, wpe_request) {
+    wpe_request.reps_per_set = wpe_request.reps_per_set === 0 ? null : wpe_request.reps_per_set;
+    wpe_request.num_sets = wpe_request.num_sets === 0 ? null : wpe_request.num_sets;
+    wpe_request.weight = wpe_request.weight === 0 ? null : wpe_request.weight;
     _validate_create_workout_plan_exercise_request(wpe_request);
     const wp = await workout_management.get_workout_by_id(wpe_request.workout_plan_id);
     const {workout_plan_id, workout_plan_exercise_id} = wpe_request;
