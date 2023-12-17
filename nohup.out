@@ -1,0 +1,146 @@
+Server running on port 3500
+Hello
+results [
+  RowDataPacket {
+    exercise_id: 1,
+    name: 'Squats',
+    description: "Stand with feet shoulder-width apart. Bend your knees and lower your body as if you're sitting back into a chair. Keep your back straight and chest up.",
+    created: 2023-11-14T03:10:56.000Z,
+    modified: 2023-12-17T12:20:33.000Z,
+    user_who_created_it: 85,
+    difficulty: 0,
+    video_link: 'https://www.youtube.com/watch?v=6737451',
+    goal_id: 2,
+    thumbnail: null,
+    active: 1,
+    goal_name: 'Muscle Gain',
+    equipment_items: '[{"Leg Extension Machine": "Leg Extension Machine"}, {"Calf Raise Machine": "Calf Raise Machine"}]',
+    muscle_groups: '[{"Pectoralis Major": "Pectoralis Major"}, {"Lumbricals": "Lumbricals"}]'
+  }
+]
+results [
+  RowDataPacket {
+    exercise_id: 1,
+    name: 'Squats',
+    description: "Stand with feet shoulder-width apart. Bend your knees and lower your body as if you're sitting back into a chair. Keep your back straight and chest up.",
+    created: 2023-11-14T03:10:56.000Z,
+    modified: 2023-12-17T12:20:33.000Z,
+    user_who_created_it: 85,
+    difficulty: 0,
+    video_link: 'https://www.youtube.com/watch?v=6737451',
+    goal_id: 2,
+    thumbnail: null,
+    active: 1,
+    goal_name: 'Muscle Gain',
+    equipment_items: '[{"Leg Extension Machine": "Leg Extension Machine"}, {"Calf Raise Machine": "Calf Raise Machine"}]',
+    muscle_groups: '[{"Pectoralis Major": "Pectoralis Major"}, {"Lumbricals": "Lumbricals"}]'
+  }
+]
+results [
+  RowDataPacket {
+    exercise_id: 1,
+    name: 'Squats',
+    description: "Stand with feet shoulder-width apart. Bend your knees and lower your body as if you're sitting back into a chair. Keep your back straight and chest up.",
+    created: 2023-11-14T03:10:56.000Z,
+    modified: 2023-12-17T12:20:33.000Z,
+    user_who_created_it: 85,
+    difficulty: 0,
+    video_link: 'https://www.youtube.com/watch?v=6737451',
+    goal_id: 2,
+    thumbnail: null,
+    active: 1,
+    goal_name: 'Muscle Gain',
+    equipment_items: '[{"Leg Extension Machine": "Leg Extension Machine"}, {"Calf Raise Machine": "Calf Raise Machine"}]',
+    muscle_groups: '[{"Pectoralis Major": "Pectoralis Major"}, {"Lumbricals": "Lumbricals"}]'
+  }
+]
+results [
+  RowDataPacket {
+    exercise_id: 18,
+    name: 'Side Plank',
+    description: 'Lie on your side, prop yourself up on your elbow, and lift your hips, creating a straight line from head to heels.',
+    created: 2023-11-14T03:10:56.000Z,
+    modified: 2023-12-17T12:20:33.000Z,
+    user_who_created_it: 203,
+    difficulty: 0,
+    video_link: 'https://www.youtube.com/watch?v=3010711',
+    goal_id: 2,
+    thumbnail: null,
+    active: 1,
+    goal_name: 'Muscle Gain',
+    equipment_items: '[{"Dip Station": "Dip Station"}, {"Leg Press Machine": "Leg Press Machine"}]',
+    muscle_groups: '[{"Quadratus Lumborum": "Quadratus Lumborum"}, {"Teres Minor": "Teres Minor"}]'
+  }
+]
+results [
+  RowDataPacket {
+    exercise_id: 1,
+    name: 'Squats',
+    description: "Stand with feet shoulder-width apart. Bend your knees and lower your body as if you're sitting back into a chair. Keep your back straight and chest up.",
+    created: 2023-11-14T03:10:56.000Z,
+    modified: 2023-12-17T12:20:33.000Z,
+    user_who_created_it: 85,
+    difficulty: 0,
+    video_link: 'https://www.youtube.com/watch?v=6737451',
+    goal_id: 2,
+    thumbnail: null,
+    active: 1,
+    goal_name: 'Muscle Gain',
+    equipment_items: '[{"Leg Extension Machine": "Leg Extension Machine"}, {"Calf Raise Machine": "Calf Raise Machine"}]',
+    muscle_groups: '[{"Pectoralis Major": "Pectoralis Major"}, {"Lumbricals": "Lumbricals"}]'
+  }
+]
+results [
+  RowDataPacket {
+    exercise_id: 1,
+    name: 'Squats',
+    description: "Stand with feet shoulder-width apart. Bend your knees and lower your body as if you're sitting back into a chair. Keep your back straight and chest up.",
+    created: 2023-11-14T03:10:56.000Z,
+    modified: 2023-12-17T12:20:33.000Z,
+    user_who_created_it: 85,
+    difficulty: 0,
+    video_link: 'https://www.youtube.com/watch?v=6737451',
+    goal_id: 2,
+    thumbnail: null,
+    active: 1,
+    goal_name: 'Muscle Gain',
+    equipment_items: '[{"Leg Extension Machine": "Leg Extension Machine"}, {"Calf Raise Machine": "Calf Raise Machine"}]',
+    muscle_groups: '[{"Pectoralis Major": "Pectoralis Major"}, {"Lumbricals": "Lumbricals"}]'
+  }
+]
+results [
+  RowDataPacket {
+    exercise_id: 1,
+    name: 'Squats',
+    description: "Stand with feet shoulder-width apart. Bend your knees and lower your body as if you're sitting back into a chair. Keep your back straight and chest up.",
+    created: 2023-11-14T03:10:56.000Z,
+    modified: 2023-12-17T12:20:33.000Z,
+    user_who_created_it: 85,
+    difficulty: 0,
+    video_link: 'https://www.youtube.com/watch?v=6737451',
+    goal_id: 2,
+    thumbnail: null,
+    active: 1,
+    goal_name: 'Muscle Gain',
+    equipment_items: '[{"Leg Extension Machine": "Leg Extension Machine"}, {"Calf Raise Machine": "Calf Raise Machine"}]',
+    muscle_groups: '[{"Pectoralis Major": "Pectoralis Major"}, {"Lumbricals": "Lumbricals"}]'
+  }
+]
+results [
+  RowDataPacket {
+    exercise_id: 18,
+    name: 'Side Plank',
+    description: 'Lie on your side, prop yourself up on your elbow, and lift your hips, creating a straight line from head to heels.',
+    created: 2023-11-14T03:10:56.000Z,
+    modified: 2023-12-17T12:20:33.000Z,
+    user_who_created_it: 203,
+    difficulty: 0,
+    video_link: 'https://www.youtube.com/watch?v=3010711',
+    goal_id: 2,
+    thumbnail: null,
+    active: 1,
+    goal_name: 'Muscle Gain',
+    equipment_items: '[{"Dip Station": "Dip Station"}, {"Leg Press Machine": "Leg Press Machine"}]',
+    muscle_groups: '[{"Quadratus Lumborum": "Quadratus Lumborum"}, {"Teres Minor": "Teres Minor"}]'
+  }
+]

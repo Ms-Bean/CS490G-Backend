@@ -103,7 +103,9 @@ function search_coaches_data_layer({filter_options, sort_options, page_info}) {
                 reject(err);
                 return;
             }
-
+            console.log("I'll use you");
+            console.log({filter_options, sort_options, page_info})
+            console.log(results);
             const mapped_results = results.map(r => {
                 return {
                     coach_id: r.user_id,
@@ -170,3 +172,4 @@ function count_coach_search_results({filter_options}) {
 module.exports.search_coaches_data_layer = search_coaches_data_layer;
 module.exports.count_coach_search_results = count_coach_search_results;
 module.exports._build_search_coach_filter_clauses = _build_search_coach_filter_clauses;
+module.exports._build_search_coach_sort_options = _build_search_coach_sort_options;

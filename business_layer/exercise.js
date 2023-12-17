@@ -344,3 +344,4 @@ module.exports.get_all_exercises_business_layer = get_all_exercises_business_lay
 module.exports.delete_exercise_business_layer = delete_exercise_business_layer;
 module.exports.update_exercise_business_layer = update_exercise_business_layer;
 module.exports._validate_update_exercise_request =_validate_update_exercise_request;
+module.exports._validate_add_exercise_request = _validate_add_exercise_request;
