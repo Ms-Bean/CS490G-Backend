@@ -203,7 +203,7 @@ function _validate_difficulty(difficulty) {
  * @returns {string|null}
  */
 function _validate_video_link(video_link) {
-    return typeof video_link !== "string" ? null : `\`video_link\` must be a valid URL, not ${video_link}`;
+    return typeof video_link === "string" ? null : `\`video_link\` must be a valid URL, not ${video_link}`;
 }
 
 
@@ -343,3 +343,4 @@ module.exports.add_exercise_business_layer = add_exercise_business_layer;
 module.exports.get_all_exercises_business_layer = get_all_exercises_business_layer;
 module.exports.delete_exercise_business_layer = delete_exercise_business_layer;
 module.exports.update_exercise_business_layer = update_exercise_business_layer;
+module.exports._validate_update_exercise_request =_validate_update_exercise_request;

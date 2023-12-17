@@ -6,7 +6,7 @@ const con = connection.con;
  * @returns {Promise<Array<{ user_id: number, about_me: string, experience_level: string, created: Date, modified: Date, height: number, weight: number, medical_conditions: string, budget: number, goals: string, target_weight: number, profile_picture: string, birthday: Date}>>}
  */
 async function get_User_Profile_By_Id_Data_Layer(user_id) {
-    let sql = "SELECT user_id, about_me, experience_level, created, modified, height, weight, medical_conditions, budget, goals, target_weight, pfp_link, birthday FROM user_profile WHERE user_id = ?";
+    let sql = "SELECT user_id, about_me, experience_level, created, modified, height, weight, medical_conditions, budget, goals, target_weight, pfp_link, birthday FROM User_Profile WHERE user_id = ?";
     
     return new Promise((resolve, reject) => {
       con.query(sql, [user_id], function (err, [result]) {

@@ -169,3 +169,4 @@ function count_coach_search_results({filter_options}) {
 }
 module.exports.search_coaches_data_layer = search_coaches_data_layer;
 module.exports.count_coach_search_results = count_coach_search_results;
+module.exports._build_search_coach_filter_clauses = _build_search_coach_filter_clauses;
