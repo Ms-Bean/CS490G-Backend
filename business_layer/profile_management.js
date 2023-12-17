@@ -37,7 +37,7 @@ async function get_profile_info(user_id)
         })
     });
 }
-async function set_profile_info(user_id, pfp_link, about_me, experience_level, height, weight, medical_conditions, budget, goals, target_weight, birthday, availability, hourly_rate, coaching_history, accepting_new_clients, coaching_experience_level)
+async function set_profile_info(user_id, pfp_link, about_me, experience_level, height, weight, medical_conditions, budget, goals, target_weight, birthday, availability, hourly_rate, coaching_history, accepting_new_clients, coaching_experience_level, paypal_link)
 {
     return new Promise((resolve, reject) =>{
         user_info.get_role(user_id).then((role) =>{
@@ -59,7 +59,7 @@ async function set_profile_info(user_id, pfp_link, about_me, experience_level, h
             }
             else if(role == "coach" && (availability !== undefined && hourly_rate !== undefined && coaching_history !== undefined && coaching_experience_level !== undefined && accepting_new_clients !== undefined))
             {
-                profile_management.set_coach_profile_info(user_id, availability, hourly_rate, coaching_history, accepting_new_clients, coaching_experience_level).then((response_2) =>{
+                profile_management.set_coach_profile_info(user_id, availability, hourly_rate, coaching_history, accepting_new_clients, coaching_experience_level, paypal_link).then((response_2) =>{
                     resolve("Information updated");
                 }).catch((err) => {
                     reject(err)
