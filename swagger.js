@@ -1,12 +1,16 @@
 const swaggerAutogen = require('swagger-autogen')
+require('dotenv').config();
+
+const backendUrl = new URL(process.env.BACKEND_URL);
+const host = backendUrl.hostname + (backendUrl.port ? `:${backendUrl.port}` : '');
 
 const doc = {
     info: {
-        title: 'MOXI',
+        title: 'moxi',
         description:'Backend API documentation'
     },
-    host: 'localhost:5000',
-    schemas: ['http']
+    host: host,
+    schemas: [backendUrl.protocol.split(':')[0]]
 };
 
 const outputFile = './swagger-output.json';
