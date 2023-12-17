@@ -203,7 +203,7 @@ function _validate_difficulty(difficulty) {
  * @returns {string|null}
  */
 function _validate_video_link(video_link) {
-    return URL.canParse(video_link) ? null : `\`video_link\` must be a valid URL, not ${video_link}`;
+    return typeof video_link !== "string" ? null : `\`video_link\` must be a valid URL, not ${video_link}`;
 }
 
 
