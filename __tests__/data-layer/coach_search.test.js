@@ -33,7 +33,7 @@ describe("Test counting search result hits", () => {
         const fake_search_results = [{}, {}, {}, {}];
         con.query.mockImplementation((sql, values, callback) => callback(null, fake_search_results));
 
-        expect(count_coach_search_results({filter_options})).resolves.toBe(fake_search_results.length);
+        await expect(count_coach_search_results({filter_options})).resolves.toBe(fake_search_results.length);
         expect(con.query).toHaveBeenCalled();
     });
 
@@ -97,7 +97,7 @@ describe("Testing retrieving search results", () => {
 
         con.query.mockImplementation((sql, values, callback) => callback(null, fake_search_results));
 
-        expect(search_coaches_data_layer(request)).resolves.toEqual(expected_result);
+        await expect(search_coaches_data_layer(request)).resolves.toEqual(expected_result);
         expect(con.query).toHaveBeenCalled();
     });
 
@@ -144,7 +144,7 @@ describe("Testing retrieving search results", () => {
 
         con.query.mockImplementation((sql, values, callback) => callback(null, fake_search_results));
 
-        expect(search_coaches_data_layer(request)).resolves.toEqual(expected_result);
+        await expect(search_coaches_data_layer(request)).resolves.toEqual(expected_result);
         expect(con.query).toHaveBeenCalled();
     });
 

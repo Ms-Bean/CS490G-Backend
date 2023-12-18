@@ -143,7 +143,7 @@ describe("Testing Business rules for coach search", () => {
         count_coach_search_results.mockResolvedValue(expected_page_count);
         search_coaches_data_layer.mockResolvedValue(expected_coaches);
 
-        expect(business_layer.search_coaches_business_layer(request)).resolves.toEqual(expected_response);
+        await expect(business_layer.search_coaches_business_layer(request)).resolves.toEqual(expected_response);
     });
 
     test("Test unsuccessful retrieval of search results", async () => {

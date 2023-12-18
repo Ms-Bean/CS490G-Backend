@@ -2,13 +2,15 @@ const business_layer = require("../../business_layer/client_coach_interaction");
 
 const data_layer = require("../../data_layer/client_coach_interaction");
 const { get_role } = require("../../data_layer/user_info");
+const { delete_user_workout_plan } = require("../../business_layer/workout_management");
+const { delete_messages_between_users } = require("../../data_layer/messaging");
 
 jest.mock("../../data_layer/user_info");
 jest.mock("../../data_layer/client_coach_interaction");
 jest.mock("../../data_layer/messaging");
 jest.mock("../../business_layer/workout_management");
 
-beforeEach(() => jest.clearAllMocks());
+afterEach(() => jest.clearAllMocks());
 
 describe("Test requesting clients of a coach", () => {
     test("Test successfully retrieving clients of coach", async () => {
@@ -21,7 +23,7 @@ describe("Test requesting clients of a coach", () => {
 
         get_role.mockResolvedValue("coach");
         data_layer.get_requested_clients_of_coach_data_layer.mockResolvedValue(expected_response);
-        expect(business_layer.get_requested_clients_of_coach_business_layer(user_id)).resolves.toEqual(expected_response);
+        await expect(business_layer.get_requested_clients_of_coach_business_layer(user_id)).resolves.toEqual(expected_response);
     });
 
     test("Test unsuccessfully retrieving clients of coach due to role", async () => {
@@ -60,7 +62,7 @@ describe("Test getting user profile by id", () => {
             birthday: "2000-12-17"
         }];
         data_layer.get_User_Profile_By_Id_Data_Layer.mockResolvedValue(expected_response);
-        expect(business_layer.get_User_Profile_By_Id_business_layer(user_id)).resolves.toEqual(expected_response);
+        await expect(business_layer.get_User_Profile_By_Id_business_layer(user_id)).resolves.toEqual(expected_response);
     });
 
     test("Unsuccessfuly retrieve user profile", async () => {
@@ -118,7 +120,7 @@ describe("Testing requests for coaches", () => {
 
         data_layer.get_clients_coach_or_request.mockResolvedValue([]);
         data_layer.request_coach_data_layer.mockResolvedValue(expected_message);
-        expect(business_layer.request_coach_business_layer(coach_id, client_id)).resolves.toEqual(expected_message);
+        await expect(business_layer.request_coach_business_layer(coach_id, client_id)).resolves.toEqual(expected_message);
     });
 });
 
@@ -173,7 +175,7 @@ describe("Testing acceptance of clients", () => {
         data_layer.check_if_client_coach_request_exists.mockResolvedValue(true);
         data_layer.check_if_client_has_hired_coach.mockResolvedValue(false);
         data_layer.accept_client_data_layer.mockResolvedValue(data_layer_message);
-        expect(business_layer.accept_client_business_layer(user_id, client_id)).resolves.toEqual(expected_message);
+        await expect(business_layer.accept_client_business_layer(user_id, client_id)).resolves.toEqual(expected_message);
     });
 });
 
@@ -219,6 +221,106 @@ describe("Test client rejection by coach", () => {
         get_role.mockResolvedValue("coach");
         data_layer.check_if_client_coach_request_exists.mockResolvedValue(true);
         data_layer.delete_client_coach_row.mockResolvedValue();
-        expect(business_layer.reject_client_business_layer(user_id, client_id)).resolves.toBeUndefined();
+        await expect(business_layer.reject_client_business_layer(user_id, client_id)).resolves.toBeUndefined();
+    });
+});
+
+describe("Test get_clients_of_coach_business_layer", () => {
+    test("Retrieve clients successfully", async () => {
+        const coach_id = 5;
+        const expected_response = [{client_id: 3}, {client_id: 4}, {client_id: 6}];
+
+        data_layer.get_clients_of_coach_data_layer.mockResolvedValue(expected_response);
+        await expect(business_layer.get_clients_of_coach_business_layer(coach_id)).resolves.toEqual(expected_response);
+    });
+
+    test("Retrieve clients unsuccessfully", async () => {
+        const coach_id = 5;
+        const expected_response = "Something went wrong";
+
+        data_layer.get_clients_of_coach_data_layer.mockRejectedValue(new Error(expected_response));
+        expect(business_layer.get_clients_of_coach_business_layer(coach_id)).rejects.toThrow(expected_response);
+    });
+});
+
+
+describe("Testing checks if a client has hired a coach", () => {
+    test("Successful checking of hiring", async () => {
+        const coach_id = 5;
+        const expected_response = true;
+
+        data_layer.check_if_client_has_hired_coach.mockResolvedValue(expected_response);
+        await expect(business_layer.check_if_client_has_hired_coach(coach_id)).resolves.toEqual(expected_response);
+    });
+
+    test("Unsuccessful checking of hiring", async () => {
+        const coach_id = 5;
+        const expected_response = "Something went wrong";
+
+        data_layer.check_if_client_has_hired_coach.mockRejectedValue(new Error(expected_response));
+        expect(business_layer.check_if_client_has_hired_coach(coach_id)).rejects.toThrow(expected_response);
+    });
+});
+
+
+describe("Test termination of client/coach", () => {
+    test("Failure due to client not hiring coach", async () => {
+        const user_id = 3;
+        const terminatee_id = 4;
+        const expected_response = `User with ID ${user_id} cannot terminate relationship with user with ID ${terminatee_id}`;
+
+        data_layer.check_if_client_has_hired_coach.mockResolvedValue(false);
+
+        try {
+            await business_layer.terminate_client_coach(user_id, terminatee_id);
+            expect(1).toBe(0);
+        } catch (e) {
+            expect(e.message).toEqual(expected_response);
+            expect(e.code).toEqual(403);
+        }
+    });
+
+    test("Failure due to user workout plan deletion failing", async () => {
+        const user_id = 3;
+        const terminatee_id = 4;
+        const expected_response = "An error has occured";
+
+        data_layer.check_if_client_has_hired_coach.mockResolvedValue(true);
+        delete_user_workout_plan.mockRejectedValue(new Error(expected_response));
+
+        await expect(business_layer.terminate_client_coach(user_id, terminatee_id)).rejects.toThrow(expected_response);
+    });
+
+    test("Coach terminating their client", async () => {
+        const user_id = 1;
+        const terminatee_id = 6;
+        const user_workout_plan_deletion_error = new Error();
+        user_workout_plan_deletion_error.status_code = 403;
+
+        data_layer.check_if_client_has_hired_coach
+            .mockResolvedValueOnce(false)
+            .mockResolvedValue(true);
+        delete_user_workout_plan.mockRejectedValue(user_workout_plan_deletion_error);
+        delete_messages_between_users.mockResolvedValue();
+        data_layer.delete_client_coach_row.mockResolvedValue();
+        
+        await expect(business_layer.terminate_client_coach(user_id, terminatee_id)).resolves.toBeUndefined();
+        expect(data_layer.delete_client_coach_row).toHaveBeenCalledWith(user_id);
+    });
+
+    test("Client terminating their coach", async () => {
+        const user_id = 1;
+        const terminatee_id = 6;
+        const user_workout_plan_deletion_error = new Error();
+        user_workout_plan_deletion_error.status_code = 403;
+
+        data_layer.check_if_client_has_hired_coach
+            .mockResolvedValue(true);
+        delete_user_workout_plan.mockRejectedValue(user_workout_plan_deletion_error);
+        delete_messages_between_users.mockResolvedValue();
+        data_layer.delete_client_coach_row.mockResolvedValue();
+        
+        await expect(business_layer.terminate_client_coach(user_id, terminatee_id)).resolves.toBeUndefined();
+        expect(data_layer.delete_client_coach_row).toHaveBeenCalledWith(terminatee_id);
     });
 });
