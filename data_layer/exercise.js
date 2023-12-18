@@ -166,7 +166,7 @@ async function update_exercise_data_layer(exerciseData) {
       sql = `INSERT INTO Exercise_Equipment (exercise_id, equipment_item) VALUES ?`;
       const equipmentValues = equipment_items.map((item) => [
         exercise_id,
-        item.value,
+        item,
       ]); // Extract 'value' from each item
       await new Promise((resolve, reject) => {
         con.query(sql, [equipmentValues], (err, result) => {
@@ -193,7 +193,7 @@ async function update_exercise_data_layer(exerciseData) {
       sql = `INSERT INTO Exercise_Muscle_Group (exercise_id, muscle_group) VALUES ?`;
       const muscleGroupValues = muscle_groups.map((item) => [
         exercise_id,
-        item.value,
+        item,
       ]); // Extract 'value' from each item
       await new Promise((resolve, reject) => {
         con.query(sql, [muscleGroupValues], (err, result) => {
@@ -265,8 +265,8 @@ async function add_exercise_data_layer(exerciseData) {
     video_link,
     goal_id,
     thumbnail,
-    equipmentItems, // Array of equipment items
-    muscleGroups, // Array of muscle groups
+    equipment_items, // Array of equipment items
+    muscle_groups, // Array of muscle groups
   } = exerciseData;
 
   try {
@@ -304,9 +304,9 @@ async function add_exercise_data_layer(exerciseData) {
     });
 
     // Insert into Exercise_Muscle_Group
-    if (muscleGroups && muscleGroups.length > 0) {
+    if (muscle_groups && muscle_groups.length > 0) {
       sql = `INSERT INTO Exercise_Muscle_Group (exercise_id, muscle_group) VALUES ?`;
-      const muscleGroupValues = muscleGroups.map((item) => [
+      const muscleGroupValues = muscle_groups.map((item) => [
         insertedExercise,
         item,
       ]);
@@ -321,9 +321,9 @@ async function add_exercise_data_layer(exerciseData) {
     }
 
     // Insert into Exercise_Equipment
-    if (equipmentItems && equipmentItems.length > 0) {
+    if (equipment_items && equipment_items.length > 0) {
       sql = `INSERT INTO Exercise_Equipment (exercise_id, equipment_item) VALUES ?`;
-      const equipmentValues = equipmentItems.map((item) => [
+      const equipmentValues = equipment_items.map((item) => [
         insertedExercise,
         item,
       ]);
