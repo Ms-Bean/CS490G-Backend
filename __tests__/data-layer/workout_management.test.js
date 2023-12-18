@@ -1,5 +1,5 @@
 const connection = require("../../data_layer/conn.js");
-const { assign_workout_plan, create_workout_plan, get_workouts_by_author, get_workout_by_id,_get_workouts } = require("../../data_layer/workout_management.js"); // Replace "yourFileName" with the actual filename
+const { assign_workout_plan, create_workout_plan,_get_workouts,_get_update_args, update_workout_exercise, create_user_workout_plan } = require("../../data_layer/workout_management.js"); // Replace "yourFileName" with the actual filename
 
 // Mock the connection and query function
 jest.mock("../../data_layer/conn.js");
@@ -148,5 +148,109 @@ describe("Workout Plan Functions", () => {
         expect.any(Function)
       );
     });
+    
   });
+  describe('_get_update_args', () => {
+    test('should generate update arguments successfully', () => {
+      // Mock data for testing
+      const args = {
+        field1: 'value1',
+        field2: 42,
+        field3: undefined, // Should be ignored
+        field4: 'value4',
+      };
+  
+      // Call the function
+      const result = _get_update_args(args);
+  
+      // Assert the expected result
+      expect(result).toEqual({
+        set_clause: 'field1 = ?, field2 = ?, field4 = ?',
+        args: ['value1', 42, 'value4'],
+      });
+    });
+  
+    test('should handle empty args', () => {
+      // Empty args object
+      const args = {};
+  
+      // Call the function
+      const result = _get_update_args(args);
+  
+      // Assert the expected result
+      expect(result).toEqual({
+        set_clause: '',
+        args: [],
+      });
+    });
+  
+    test('should handle undefined values', () => {
+      // Args object with undefined values
+      const args = {
+        field1: 'value1',
+        field2: undefined,
+        field3: 'value3',
+      };
+  
+      // Call the function
+      const result = _get_update_args(args);
+  
+      // Assert the expected result
+      expect(result).toEqual({
+        set_clause: 'field1 = ?, field3 = ?',
+        args: ['value1', 'value3'],
+      });
+    });
+    describe("Workout Plan Functions", () => {
+        afterEach(() => {
+          jest.clearAllMocks();
+        });
+      
+        describe("update_workout_exercise", () => {
+          test("should update workout exercise successfully", async () => {
+            const workoutPlanExercise = {
+              workout_plan_exercise_id: 1,
+              workout_plan_id: 2,
+              exercise_id: 3,
+              weekday: "Monday",
+              time: "Morning",
+              reps_per_set: 10,
+              num_sets: 3,
+              weight: 50,
+            };
+      
+            const mockResults = { affectedRows: 1 };
+            connection.con.query.mockImplementation((sql, values, callback) => {
+              callback(null, mockResults);
+            });
+      
+            const updatedExercise = await update_workout_exercise(workoutPlanExercise);
+      
+            // Your assertions for the updatedExercise
+          });
+      
+          test("should reject on database error", async () => {
+            const workoutPlanExercise = {
+              workout_plan_exercise_id: 1,
+              workout_plan_id: 2,
+              exercise_id: 3,
+              weekday: "Monday",
+              time: "Morning",
+              reps_per_set: 10,
+              num_sets: 3,
+              weight: 50,
+            };
+      
+            const errorMessage = "Database error";
+            connection.con.query.mockImplementation((sql, values, callback) => {
+              callback(new Error(errorMessage));
+            });
+      
+            await expect(update_workout_exercise(workoutPlanExercise)).rejects.toThrow(errorMessage);
+      
+            // Your assertions for the error handling
+          });
+        });
+    });
+});
 });

@@ -6,7 +6,7 @@ const host = backendUrl.hostname + (backendUrl.port ? `:${backendUrl.port}` : ''
 
 const doc = {
     info: {
-        title: 'moxi',
+        title: 'Moxi',
         description:'Backend API documentation'
     },
     host: host,

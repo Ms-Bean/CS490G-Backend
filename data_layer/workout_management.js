@@ -399,6 +399,7 @@ module.exports = {
     get_exercises_of_workouts,
     get_exercises_by_workout_id,
     _get_workouts,
+    _get_update_args,
     create_workout_exercise,
     update_workout_exercise,
     delete_workout_exercise,
@@ -410,5 +411,6 @@ module.exports = {
     assign_workout_plan,
     WorkoutPlanExercise,
     WorkoutPlan,
-    UserWorkoutPlan
+    UserWorkoutPlan,
+    create_user_workout_plan
 };
