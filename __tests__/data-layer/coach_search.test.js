@@ -14,6 +14,7 @@ const template_request = {
         hourly_rate: {min: 0, max: 4},
         location: {city: "Newark", state: "NJ"},
         experience_level: {min: 0, max: 4},
+        goals: [2, 1, 4]
     },
     sort_options: {
         key: "name",

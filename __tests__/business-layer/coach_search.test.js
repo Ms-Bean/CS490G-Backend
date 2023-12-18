@@ -14,6 +14,7 @@ const template_request = {
         hourly_rate: {min: 0, max: 4},
         location: {city: "Newark", state: "NJ"},
         experience_level: {min: 0, max: 4},
+        goals: [1, 2, 5]
     },
     sort_options: {
         key: "name",
@@ -66,6 +67,7 @@ describe("Testing Business rules for coach search", () => {
             experience_level: {min: 0, max: 1000},
             hourly_rate: {min: 0, max: 1_000_000},
             location: {city: "", state: ""},
+            goals: []
         };
 
         const actual_result = business_layer._normalize_filter_options({});
@@ -86,7 +88,8 @@ describe("Testing Business rules for coach search", () => {
             experience_level: {min: {}, max: "2"},
             hourly_rate: {min: [], max: /^12/},
             location: {city: 4.3, state: true},
-            name: 9
+            name: 9,
+            goals: " "
         };
         
         expect(business_layer.search_coaches_business_layer(request_with_bad_types)).rejects.toBeInstanceOf(Error);
