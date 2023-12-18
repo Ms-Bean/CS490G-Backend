@@ -22,6 +22,7 @@ async function get_exercise_by_id_business_layer(exerciseId) {
  * @throws {Promise<string>} - Rejects with an error message if the update operation fails.
  */
 async function update_exercise_business_layer(exerciseData) {
+    _correct_prop_inconsistencies(exerciseData);
     const validation_result = await _validate_update_exercise_request(exerciseData);
     if (validation_result !== null) {
         throw new Error(validation_result);
@@ -38,6 +39,7 @@ async function delete_exercise_business_layer(exerciseId) {
 }
 
 async function add_exercise_business_layer(exerciseData) {
+    _correct_prop_inconsistencies(exerciseData);
     const validation_result = await _validate_add_exercise_request(exerciseData);
     if (validation_result !== null) {
         throw new Error(validation_result);
@@ -55,6 +57,26 @@ async function get_all_muscle_groups_business_layer() {
 
 async function check_exercise_references_business_layer(exerciseId) {
     return exercise_bank.check_exercise_references_data_layer(exerciseId);
+}
+
+
+function _correct_prop_inconsistencies(exercise_data) {
+    if (exercise_data.equipment_items == null) {
+        exercise_data.equipment_items = exercise_data.equipmentItems;
+        delete exercise_data.equipmentItems;
+    }
+    
+    if (exercise_data.muscle_groups == null) {
+        exercise_data.muscle_groups = exercise_data.muscleGroups;
+        delete exercise_data.muscleGroups;
+    }
+
+    if (Array.isArray(exercise_data.equipment_items)) {
+        exercise_data.equipment_items = exercise_data.equipment_items.map(e => e.value ?? e);
+    }
+    if (Array.isArray(exercise_data.muscle_groups)) {
+        exercise_data.muscle_groups = exercise_data.muscle_groups.map(e => e.value ?? e);
+    }
 }
 
 
@@ -146,8 +168,6 @@ function _validate_name(name) {
 function _validate_description(description) {
     if (typeof description !== "string") {
         return `\`description\` must be a string, not ${typeof description}`; 
-    } else if (description.trim().length === 0) {
-        return "`description` must not be blank";
     }
 
     return null;
@@ -187,6 +207,9 @@ async function _validate_author(user_who_created_it) {
  * @returns {string|null}
  */
 function _validate_difficulty(difficulty) {
+    if (difficulty == null) {
+        return null;
+    }
     const original_diff = difficulty;
     difficulty = Number(difficulty);
     if (!Number.isInteger(difficulty) || difficulty < 0) {
@@ -203,6 +226,9 @@ function _validate_difficulty(difficulty) {
  * @returns {string|null}
  */
 function _validate_video_link(video_link) {
+    if (video_link == null) {
+        return null;
+    }
     return typeof video_link === "string" ? null : `\`video_link\` must be a valid URL, not ${video_link}`;
 }
 
@@ -278,25 +304,24 @@ function _increment_counter(counter, element) {
 
 
 /**
- * Validates the `muscleGroups` property of an exercise and returns the appropriate error message
+ * Validates the `muscle_groups` property of an exercise and returns the appropriate error message
  * that the property contains, if there is an error
- * @param {any} muscleGroups The `muscleGroups` attribute of an exercise
+ * @param {any} muscle_groups The `muscle_groups` attribute of an exercise
  * @returns {string|null}
  */
-function _validate_muscle_groups(muscleGroups) {
-    if (!Array.isArray(muscleGroups)) {
-        return `\`muscleGroups\` must be an array of strings; got ${muscleGroups}`;
+function _validate_muscle_groups(muscle_groups) {
+    if (!Array.isArray(muscle_groups)) {
+        return `\`muscle_groups\` must be an array of strings; got ${muscle_groups}`;
     }
 
-    muscleGroups = muscleGroups.map(e => e.value);
-    const nonStringIdx = muscleGroups.findIndex(e => typeof e !== "string");
+    const nonStringIdx = muscle_groups.findIndex(e => typeof e !== "string");
     if (nonStringIdx !== -1) {
-        return `\`muscleGroups\` must be an array of strings; found ${JSON.stringify(muscleGroups[nonStringIdx])}`; 
-    } else if (muscleGroups.some(e => e.trim().length === 0)) {
-        return `All elements of \`muscleGroups\` must be non-blank`;
+        return `\`muscle_groups\` must be an array of strings; found ${JSON.stringify(muscle_groups[nonStringIdx])}`; 
+    } else if (muscle_groups.some(e => e.trim().length === 0)) {
+        return `All elements of \`muscle_groups\` must be non-blank`;
     }
 
-    const counter = muscleGroups.reduce(_increment_counter, {});
+    const counter = muscle_groups.reduce(_increment_counter, {});
     const [duplicate_muscle_group] = Object.entries(counter).find(([_, v]) => v > 1) ?? [null];
     if (duplicate_muscle_group !== null) {
         return `All muscle groups must be unique; found duplicate muscle group: ${duplicate_muscle_group}`;
@@ -307,25 +332,25 @@ function _validate_muscle_groups(muscleGroups) {
 
 
 /**
- * Validates the `equipmentItems` property of an exercise and returns the appropriate error message
+ * Validates the `equipment_items` property of an exercise and returns the appropriate error message
  * that the property contains, if there is an error
- * @param {any} equipmentItems The `equipmentItems` attribute of an exercise
+ * @param {any} equipment_items The `equipment_items` attribute of an exercise
  * @returns {string|null}
  */
-function _validate_equipment_items(equipmentItems) {
-    if (!Array.isArray(equipmentItems)) {
-        return `\`equipmentItems\` must be an array of strings; got ${equipmentItems}`;
+function _validate_equipment_items(equipment_items) {
+    if (!Array.isArray(equipment_items)) {
+        return `\`equipment_items\` must be an array of strings; got ${equipment_items}`;
     }
 
-    equipmentItems = equipmentItems.map(e => e.value);
-    const nonStringIdx = equipmentItems.findIndex(e => typeof e !== "string");
+    
+    const nonStringIdx = equipment_items.findIndex(e => typeof e !== "string");
     if (nonStringIdx !== -1) {
-        return `\`equipmentItems\` must be an array of strings; found ${JSON.stringify(equipmentItems[nonStringIdx])}`; 
-    } else if (equipmentItems.some(e => e.trim().length === 0)) {
-        return `All elements of \`equipmentItems\` must be non-blank`;
+        return `\`equipment_items\` must be an array of strings; found ${JSON.stringify(equipment_items[nonStringIdx])}`; 
+    } else if (equipment_items.some(e => e.trim().length === 0)) {
+        return `All elements of \`equipment_items\` must be non-blank`;
     }
 
-    const counter = equipmentItems.reduce(_increment_counter, {});
+    const counter = equipment_items.reduce(_increment_counter, {});
     const [duplicate_equipment_items] = Object.entries(counter).find(([_, v]) => v > 1) ?? [null];
     if (duplicate_equipment_items !== null) {
         return `All equipment items must be unique; found duplicate equipment item: ${duplicate_equipment_items}`;
