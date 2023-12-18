@@ -398,6 +398,7 @@ module.exports = {
     get_workout_by_id,
     get_exercises_of_workouts,
     get_exercises_by_workout_id,
+    _get_workouts,
     create_workout_exercise,
     update_workout_exercise,
     delete_workout_exercise,

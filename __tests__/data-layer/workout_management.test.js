@@ -1,5 +1,5 @@
 const connection = require("../../data_layer/conn.js");
-const { assign_workout_plan, create_workout_plan, get_workouts_by_author, get_workout_by_id, } = require("../../data_layer/workout_management.js"); // Replace "yourFileName" with the actual filename
+const { assign_workout_plan, create_workout_plan, get_workouts_by_author, get_workout_by_id,_get_workouts } = require("../../data_layer/workout_management.js"); // Replace "yourFileName" with the actual filename
 
 // Mock the connection and query function
 jest.mock("../../data_layer/conn.js");
@@ -97,5 +97,56 @@ describe("Workout Plan Functions", () => {
       );
     });
   });
-  
+  describe("_get_workouts", () => {
+    test("should resolve with workout plans on successful query", async () => {
+      const mockResults = [
+        { workout_plan_id: 1, name: "Plan 1" },
+        { workout_plan_id: 2, name: "Plan 2" },
+      ];
+
+      // Mock the connection.query function to return mockResults
+      connection.con.query.mockImplementation((sql, values, callback) => {
+        callback(null, mockResults);
+      });
+
+      // Define SQL query and parameters
+      const sql = "SELECT * FROM Workout_Plans";
+      const params = [];
+
+      // Call the _get_workouts function
+      const result = await expect(_get_workouts(sql, params)).resolves.toEqual(
+        mockResults.map((r) => expect.objectContaining(r))
+      );
+
+      // Verify that connection.con.query was called with the correct parameters
+      expect(connection.con.query).toHaveBeenCalledWith(
+        sql,
+        params,
+        expect.any(Function)
+      );
+    });
+
+    test("should reject on database error", async () => {
+      const errorMessage = "Database error";
+
+      // Mock the connection.query function to throw an error
+      connection.con.query.mockImplementation((sql, values, callback) => {
+        callback(new Error(errorMessage));
+      });
+
+      // Define SQL query and parameters
+      const sql = "SELECT * FROM Workout_Plans";
+      const params = [];
+
+      // Call the _get_workouts function and expect it to reject with an error message
+      await expect(_get_workouts(sql, params)).rejects.toThrow(errorMessage);
+
+      // Verify that connection.con.query was called with the correct parameters
+      expect(connection.con.query).toHaveBeenCalledWith(
+        sql,
+        params,
+        expect.any(Function)
+      );
+    });
+  });
 });
