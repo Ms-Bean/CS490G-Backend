@@ -3,11 +3,13 @@ const exercise = require('../../data_layer/exercise.js');
 const clientCoachInteraction = require('../../data_layer/client_coach_interaction.js');
 const businessLayer = require('../../business_layer/workout_management.js');
 const user_info = require('../../data_layer/user_info.js'); // Import the user_info module
+const { APIError } = require('../../business_layer/error.js');
 
 jest.mock('../../data_layer/workout_management.js');
 jest.mock('../../data_layer/exercise.js');
 jest.mock('../../data_layer/client_coach_interaction.js');
 jest.mock('../../data_layer/user_info.js');
+
 
 describe('Business Layer Tests', () => {
     afterEach(() => {
@@ -185,8 +187,85 @@ describe('Business Layer Tests', () => {
         expect(clientCoachInteraction.check_if_client_has_hired_coach).not.toHaveBeenCalled();
         expect(workoutManagement.delete_user_workout_plan).toHaveBeenCalledWith(assignee_id);
     });
+    test('get_workout_plan_by_id - Retrieve workout plan by ID without exercises', async () => {
+        const user_id = 1;
+        const wp_id = 1;
+        const include_exercises = false;
 
+        const mockWorkoutPlan = { workout_plan_id: wp_id, name: 'Test Workout Plan' };
 
+        workoutManagement.get_workout_by_id.mockResolvedValue(mockWorkoutPlan);
+
+        const result = await businessLayer.get_workout_plan_by_id({ user_id, wp_id, include_exercises });
+
+        expect(result).toEqual(mockWorkoutPlan);
+        expect(workoutManagement.get_workout_by_id).toHaveBeenCalledWith(wp_id);
+        expect(workoutManagement.get_exercises_by_workout_id).not.toHaveBeenCalled();
+    });
+
+    test('get_workout_plan_by_id - Retrieve workout plan by ID with exercises', async () => {
+        const user_id = 1;
+        const wp_id = 1;
+        const include_exercises = true;
+
+        const mockWorkoutPlan = { workout_plan_id: wp_id, name: 'Test Workout Plan' };
+        const mockExercises = [{ exercise_id: 1, name: 'Exercise 1' }, { exercise_id: 2, name: 'Exercise 2' }];
+
+        workoutManagement.get_workout_by_id.mockResolvedValue(mockWorkoutPlan);
+        workoutManagement.get_exercises_by_workout_id.mockResolvedValue(mockExercises);
+
+        const result = await businessLayer.get_workout_plan_by_id({ user_id, wp_id, include_exercises });
+
+        expect(result).toEqual({ ...mockWorkoutPlan, exercises: mockExercises });
+        expect(workoutManagement.get_workout_by_id).toHaveBeenCalledWith(wp_id);
+        expect(workoutManagement.get_exercises_by_workout_id).toHaveBeenCalledWith(wp_id);
+    });
+
+    test('get_workout_plans_by_owner - Retrieve workout plans by owner', async () => {
+        const user_id = 1;
+        const author_id = 1;
+    
+        const mockWorkoutPlans = [{ workout_plan_id: 1, name: 'Workout Plan 1' }, { workout_plan_id: 2, name: 'Workout Plan 2' }];
+    
+        // Mock the external function
+        workoutManagement.get_workouts_by_author.mockResolvedValue(mockWorkoutPlans);
+    
+        const result = await businessLayer.get_workout_plans_by_owner({ user_id, author_id });
+    
+        expect(result).toEqual(mockWorkoutPlans);
+        expect(workoutManagement.get_workouts_by_author).toHaveBeenCalledWith(author_id);
+    
+        
+    });
+    test('get_workout_plan_exercise_by_id - Retrieve workout plan exercise by ID', async () => {
+        const user_id = 1;
+        const wp_id = 1;
+        const wpe_id = 1;
+    
+        const mockWorkoutPlan = { workout_plan_id: wp_id, author_id: 2 }; // Adjust author_id as needed
+        const mockWorkoutPlanExercise = { workout_plan_exercise_id: wpe_id, name: 'Exercise 1' };
+    
+        workoutManagement.get_workout_by_id.mockResolvedValue(mockWorkoutPlan);
+        workoutManagement.get_workout_exercise_by_id.mockResolvedValue(mockWorkoutPlanExercise);
+        clientCoachInteraction.check_if_client_has_hired_coach.mockResolvedValue(true); // Adjust as needed
+    
+        const result = await businessLayer.get_workout_plan_exercise_by_id(user_id, wp_id, wpe_id);
+    
+        expect(result).toEqual(mockWorkoutPlanExercise);
+        expect(workoutManagement.get_workout_by_id).toHaveBeenCalledWith(wp_id);
+        expect(clientCoachInteraction.check_if_client_has_hired_coach).toHaveBeenCalledWith(user_id, mockWorkoutPlan.author_id);
+        expect(workoutManagement.get_workout_exercise_by_id).toHaveBeenCalledWith(wpe_id);
+    });
+    
+    // test('_is_authorized_to_view_workout_plan_or_throw_403 - User is authorized to view workout plan', async () => {
+    //     const user_id = 1;
+    //     const wp_author_id = 2;
+    
+    //     clientCoachInteraction.check_if_client_has_hired_coach.mockResolvedValue(true); // Adjust as needed
+    
+    //     await expect(businessLayer._is_authorized_to_view_workout_plan_or_throw_403(user_id, wp_author_id)).resolves.not.toThrow();
+    //     expect(clientCoachInteraction.check_if_client_has_hired_coach).toHaveBeenCalledWith(user_id, wp_author_id);
+    // });
   });
   
   // Add more test cases for other functions in the businessLayer module
