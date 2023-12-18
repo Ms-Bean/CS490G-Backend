@@ -58,8 +58,8 @@ describe('exercise', () => {
             difficulty: "2",
             active: 1,
             video_link: "http://thing.org",
-            equipment_items: [{value: "Barbells"}],
-            muscle_groups: [{value: "Barbells"}],
+            equipment_items: ["Barbells"],
+            muscle_groups: ["Barbells"],
             goal_id: 4,
             user_who_created_it: 5,
             exercise_id: 5
@@ -77,8 +77,8 @@ describe('exercise', () => {
             description: "an exercise",
             difficulty: "2",
             video_link: "http://thing.org",
-            equipment_items: [{value: "Barbells"}],
-            muscle_groups: [{value: "Barbells"}],
+            equipment_items: ["Barbells"],
+            muscle_groups: ["Barbells"],
             goal_id: 4,
             user_who_created_it: 5
         });
