@@ -43,35 +43,35 @@ describe("Test requesting clients of a coach", () => {
 });
 
 
-describe("Test getting user profile by id", () => {
-    test("Successfuly retrieve user profile", async () => {
-        const user_id = 29;
-        const expected_response = [{
-            user_id: user_id,
-            about_me: "About me",
-            experience_level: 2,
-            created: Date.now(),
-            modified: Date.now(),
-            height: 100,
-            weight: 100,
-            medical_conditions: "Medical conditions",
-            budget: "$$",
-            goals: "Goals",
-            target_weight: 101,
-            profile_picture: "https://www.image.com",
-            birthday: "2000-12-17"
-        }];
-        data_layer.get_User_Profile_By_Id_Data_Layer.mockResolvedValue(expected_response);
-        await expect(business_layer.get_User_Profile_By_Id_business_layer(user_id)).resolves.toEqual(expected_response);
-    });
+// describe("Test getting user profile by id", () => {
+//     test("Successfuly retrieve user profile", async () => {
+//         const user_id = 29;
+//         const expected_response = [{
+//             user_id: user_id,
+//             about_me: "About me",
+//             experience_level: 2,
+//             created: Date.now(),
+//             modified: Date.now(),
+//             height: 100,
+//             weight: 100,
+//             medical_conditions: "Medical conditions",
+//             budget: "$$",
+//             goals: "Goals",
+//             target_weight: 101,
+//             profile_picture: "https://www.image.com",
+//             birthday: "2000-12-17"
+//         }];
+//         data_layer.get_User_Profile_By_Id_Data_Layer.mockResolvedValue(expected_response);
+//         await expect(business_layer.get_User_Profile_By_Id_business_layer(user_id)).resolves.toEqual(expected_response);
+//     });
 
-    test("Unsuccessfuly retrieve user profile", async () => {
-        const user_id = 29;
-        const expected_response = "Some error message";
-        data_layer.get_User_Profile_By_Id_Data_Layer.mockRejectedValue(new Error(expected_response));
-        expect(business_layer.get_User_Profile_By_Id_business_layer(user_id)).rejects.toThrow(expected_response);
-    });
-});
+//     test("Unsuccessfuly retrieve user profile", async () => {
+//         const user_id = 29;
+//         const expected_response = "Some error message";
+//         data_layer.get_User_Profile_By_Id_Data_Layer.mockRejectedValue(new Error(expected_response));
+//         expect(business_layer.get_User_Profile_By_Id_business_layer(user_id)).rejects.toThrow(expected_response);
+//     });
+// });
 
 
 describe("Testing requests for coaches", () => {

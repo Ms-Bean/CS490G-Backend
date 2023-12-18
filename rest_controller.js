@@ -1240,21 +1240,21 @@ async function get_client_target_weight(req, res) {
   }
 }
 
-async function get_User_Profile_By_Id_controller(req, res) {
-  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+// async function get_User_Profile_By_Id_controller(req, res) {
+//   res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
-  if (!req.session || !req.session.user) {
-    return res.status(401).json({ message: "User session not found" });
-  }
+//   if (!req.session || !req.session.user) {
+//     return res.status(401).json({ message: "User session not found" });
+//   }
 
-  await client_coach_interaction.get_User_Profile_By_Id_business_layer(
-    Number(req.query.user_id)
-  )
-    .then((dto) => {
-      res.json(dto);
-    })
-    .catch((err) => res.status(400).json({ message: err.message }));
-}
+//   await client_coach_interaction.get_User_Profile_By_Id_business_layer(
+//     Number(req.query.user_id)
+//   )
+//     .then((dto) => {
+//       res.json(dto);
+//     })
+//     .catch((err) => res.status(400).json({ message: err.message }));
+// }
 
 
 
@@ -1377,7 +1377,7 @@ async function get_coach(req, res) {
 }
 
 module.exports.get_requested_clients_of_coach_controller = get_requested_clients_of_coach_controller;
-module.exports.get_User_Profile_By_Id_controller = get_User_Profile_By_Id_controller;
+// module.exports.get_User_Profile_By_Id_controller = get_User_Profile_By_Id_controller;
 module.exports.get_client_target_weight = get_client_target_weight;
 module.exports.check_exercise_references_controller = check_exercise_references_controller;
 module.exports.get_exercise_by_id_controller = get_exercise_by_id_controller;
