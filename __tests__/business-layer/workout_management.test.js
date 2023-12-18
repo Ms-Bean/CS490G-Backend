@@ -163,6 +163,29 @@ describe('Business Layer Tests', () => {
     //     // Ensure the validation function was not called
     //     expect(businessLayer._validate_create_workout_plan_exercise_request).not.toHaveBeenCalled();
     // });
+    test('get_user_workout_plan - Authorized user retrieves workout plan', async () => {
+        const user_id = 1;
+        const assignee_id = 1;
+
+        workoutManagement.get_user_workout_plan.mockResolvedValue('user_workout_plan_data');
+
+        const result = await businessLayer.get_user_workout_plan(user_id, assignee_id);
+
+        expect(result).toBe('user_workout_plan_data');
+        expect(clientCoachInteraction.check_if_client_has_hired_coach).not.toHaveBeenCalled();
+        expect(workoutManagement.get_user_workout_plan).toHaveBeenCalledWith(assignee_id);
+    });
+
+    test('delete_user_workout_plan - Authorized user deletes workout plan', async () => {
+        const user_id = 1;
+        const assignee_id = 1;
+
+        await businessLayer.delete_user_workout_plan(user_id, assignee_id);
+
+        expect(clientCoachInteraction.check_if_client_has_hired_coach).not.toHaveBeenCalled();
+        expect(workoutManagement.delete_user_workout_plan).toHaveBeenCalledWith(assignee_id);
+    });
+
 
   });
   
