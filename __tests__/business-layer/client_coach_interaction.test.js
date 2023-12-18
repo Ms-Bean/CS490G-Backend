@@ -324,3 +324,22 @@ describe("Test termination of client/coach", () => {
         expect(data_layer.delete_client_coach_row).toHaveBeenCalledWith(terminatee_id);
     });
 });
+
+
+describe("Test getting coaches of client", () => {
+    test("Retrieve clients successfully", async () => {
+        const client_id = 5;
+        const expected_response = [{coach_id: 3}, {coach_id: 4}, {coach_id: 6}];
+
+        data_layer.get_coaches_of_client_data_layer.mockResolvedValue(expected_response);
+        await expect(business_layer.get_coaches_of_client(client_id)).resolves.toEqual(expected_response);
+    });
+
+    test("Retrieve clients unsuccessfully", async () => {
+        const client_id = 5;
+        const expected_response = "Something went wrong";
+
+        data_layer.get_coaches_of_client_data_layer.mockRejectedValue(new Error(expected_response));
+        expect(business_layer.get_coaches_of_client(client_id)).rejects.toThrow(expected_response);
+    });
+});
