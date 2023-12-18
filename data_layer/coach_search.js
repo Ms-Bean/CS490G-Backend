@@ -15,16 +15,18 @@ let con = connection.con;
  * @param {Object} [filter_options.location] 
  * @param {string} [filter_options.location.city] 
  * @param {string} [filter_options.location.state] 
+ * @param {Array<Number>} [filter_options.goals] 
  */
-function _build_search_coach_filter_clauses({name, accepting_new_clients, hourly_rate, experience_level, location}) {
+function _build_search_coach_filter_clauses({name, accepting_new_clients, hourly_rate, experience_level, location, goals}) {
     const name_cond = name ? `CONCAT(Users.first_name, ' ', Users.last_name) LIKE ?` : "";
     const accepting_new_clients_cond = accepting_new_clients !== null ? "Coaches.accepting_new_clients = ?" : "";
     const hourly_rate_cond = hourly_rate ? "Coaches.hourly_rate BETWEEN ? AND ?" : "";
     const experience_level_cond = experience_level ? "Coaches.experience_level BETWEEN ? AND ?" : "";
     const cities_cond = location?.city ? "Addresses.city LIKE ?" : "";
     const states_cond = location?.state ? "Addresses.state LIKE ?" : "";
+    const goals_cond = (goals?.length) ? "(SELECT COUNT(Coaches_Goals.coach_id) FROM Coaches_Goals WHERE Coaches_Goals.coach_id = Coaches.user_id AND Coaches_Goals.goal_id IN (?)) = ?" : "";
     const accepted_cond = "Coaches.accepted = 1";
-    const where_conds = [name_cond, accepting_new_clients_cond, hourly_rate_cond, experience_level_cond, cities_cond, states_cond, accepted_cond].filter(s => s).join(" AND ");
+    const where_conds = [name_cond, accepting_new_clients_cond, hourly_rate_cond, experience_level_cond, cities_cond, states_cond, goals_cond, accepted_cond].filter(s => s).join(" AND ");
 
     const sql_args = [];
     if (name_cond) sql_args.push(`${name}%`);
@@ -33,6 +35,7 @@ function _build_search_coach_filter_clauses({name, accepting_new_clients, hourly
     if (experience_level_cond) sql_args.push(...[experience_level.min, experience_level.max]);
     if (cities_cond) sql_args.push(`${location.city}%`);
     if (states_cond) sql_args.push(`${location.state}%`);
+    if (goals_cond) sql_args.push(...[goals, goals.length]);
 
     return {
         where: where_conds ? "WHERE " + where_conds : "",
@@ -69,6 +72,7 @@ function _build_search_coach_sort_options({key, is_descending}) {
  * @param {Object} search_options.filter_options.location 
  * @param {string} search_options.filter_options.location.city 
  * @param {string} search_options.filter_options.location.state
+ * @param {Array<Number>} search_options.filter_options.goals
  * 
  * @param {Object} [search_options.sort_options] 
  * @param {"name"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
@@ -103,9 +107,6 @@ function search_coaches_data_layer({filter_options, sort_options, page_info}) {
                 reject(err);
                 return;
             }
-            console.log("I'll use you");
-            console.log({filter_options, sort_options, page_info})
-            console.log(results);
             const mapped_results = results.map(r => {
                 return {
                     coach_id: r.user_id,
@@ -146,6 +147,7 @@ function search_coaches_data_layer({filter_options, sort_options, page_info}) {
  * @param {Object} search_options.filter_options.location 
  * @param {string} search_options.filter_options.location.city 
  * @param {string} search_options.filter_options.location.state
+ * @param {Array<Number>} search_options.filter_options.goals
  * @returns {Promise<number>} 
  */
 function count_coach_search_results({filter_options}) {

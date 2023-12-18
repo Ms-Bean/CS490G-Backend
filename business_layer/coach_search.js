@@ -72,6 +72,9 @@ function _check_types_of_filter_options(normalized_filter_options) {
     if (!Number.isInteger(normalized_filter_options.hourly_rate.max)) {
         errors.push(`Max hourly rate must be an integer`);
     }
+    if(!Array.isArray(normalized_filter_options.goals) || !normalized_filter_options.goals.every(g => Number.isInteger(g))) {
+        errors.push("`goals` must be an array of integers (goal_ids)");
+    }
 
     return errors;
 }
@@ -94,6 +97,7 @@ function _normalize_filter_options(filter_options) {
         city: filter_options?.location?.city ?? "",
         state: filter_options?.location?.state ?? ""
     };
+    normalized.goals = filter_options.goals ?? [];
     normalized.accepting_new_clients = filter_options?.accepting_new_clients ?? null;
 
     return normalized;
@@ -116,6 +120,7 @@ function _normalize_filter_options(filter_options) {
  * @param {Object} [search_options.filter_options.experience_level] 
  * @param {number} [search_options.filter_options.experience_level.min] 
  * @param {number} [search_options.filter_options.experience_level.max] 
+ * @param {Array<number>} [search_options.filter_options.goals]
  * 
  * @param {Object} [search_options.sort_options]
  * @param {"name"|"hourly_rate"|"experience_level"} search_options.sort_options.key 
