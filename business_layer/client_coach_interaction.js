@@ -112,37 +112,39 @@ async function reject_client_business_layer(current_user_id, client_id) {
 }
 
 
-// Function to check if one user is the coach of another
-/**
- * @param {number} user_id1 - ID of the first user.
- * @param {number} user_id2 - ID of the second user.
- * @returns {Promise<boolean>} - Resolves with true if user 1 is the coach of user 2; otherwise, resolves with false.
- */
-async function _check_if_coach_of(user_id1, user_id2) {
-    const role1 = await user_info.get_role(user_id1);
-    if (role1 !== 'coach') {
-        return false;
-    }
+// // Function to check if one user is the coach of another
+// /**
+//  * @param {number} user_id1 - ID of the first user.
+//  * @param {number} user_id2 - ID of the second user.
+//  * @returns {Promise<boolean>} - Resolves with true if user 1 is the coach of user 2; otherwise, resolves with false.
+//  */
+// async function _check_if_coach_of(user_id1, user_id2) {
+//     const role1 = await user_info.get_role(user_id1);
+//     if (role1 !== 'coach') {
+//         return false;
+//     }
 
-    const user1_clients = await client_coach_interaction.get_clients_of_coach(user_id1) || [];
-    return user1_clients.includes(user_id2);
-}
-/**
- * @param {number} user_id1 - ID of the first user.
- * @param {number} user_id2 - ID of the second user.
- * @returns {Promise<boolean>} - Resolves with true if user 1 is a client of user 2 (coach); otherwise, resolves with false.
- */
-async function _check_if_client_of(user_id1, user_id2) {
-    const role2 = await user_info.get_role(user_id2);
+//     const user1_clients = await client_coach_interaction.get_clients_of_coach(user_id1) || [];
+//     return user1_clients.includes(user_id2);
+// }
 
-    if (role2 !== 'coach') {
-        return false;
-    }
 
-    const user1_coaches = await client_coach_interaction.get_coaches_of_client(user_id1) || [];
+// /**
+//  * @param {number} user_id1 - ID of the first user.
+//  * @param {number} user_id2 - ID of the second user.
+//  * @returns {Promise<boolean>} - Resolves with true if user 1 is a client of user 2 (coach); otherwise, resolves with false.
+//  */
+// async function _check_if_client_of(user_id1, user_id2) {
+//     const role2 = await user_info.get_role(user_id2);
 
-    return user1_coaches.includes(user_id2);
-}
+//     if (role2 !== 'coach') {
+//         return false;
+//     }
+
+//     const user1_coaches = await client_coach_interaction.get_coaches_of_client(user_id1) || [];
+
+//     return user1_coaches.includes(user_id2);
+// }
 
 /**
  * @param {number} coach_id 
@@ -198,8 +200,8 @@ module.exports.get_User_Profile_By_Id_business_layer = get_User_Profile_By_Id_bu
 module.exports.request_coach_business_layer = request_coach_business_layer;
 module.exports.accept_client_business_layer = accept_client_business_layer;
 module.exports.check_if_client_has_hired_coach = check_if_client_has_hired_coach;
-module.exports._check_if_coach_of = _check_if_coach_of;
-module.exports._check_if_client_of = _check_if_client_of;
+// module.exports._check_if_coach_of = _check_if_coach_of;
+// module.exports._check_if_client_of = _check_if_client_of;
 module.exports.get_clients_of_coach_business_layer = get_clients_of_coach_business_layer;
 module.exports.terminate_client_coach = terminate_client_coach;
 module.exports.reject_client_business_layer = reject_client_business_layer;
