@@ -41,6 +41,27 @@ describe('Business Layer Tests', () => {
       expect(clientCoachInteraction.check_if_client_has_hired_coach).toHaveBeenCalledWith(assigner_id, client_id);
       expect(workoutManagement.assign_workout_plan).toHaveBeenCalledWith(client_id, workout_plan_id);
     });
+    test('create_user_workout_plan - Creates user workout plan successfully', async () => {
+        const user_id = 1;
+        const workout_plan_id = 1;
+        const uwp_request = { user_id, workout_plan_id };
+      
+        const mockUserWorkoutPlan = {
+          user_id: 1,
+          workout_plan_id: 1,
+          // Add other properties as needed
+        };
+      
+        workoutManagement.UserWorkoutPlan.mockImplementationOnce(() => mockUserWorkoutPlan);
+        workoutManagement.create_user_workout_plan.mockResolvedValue(mockUserWorkoutPlan);
+      
+        const result = await businessLayer.create_user_workout_plan(uwp_request);
+      
+        expect(result).toEqual(mockUserWorkoutPlan);
+        expect(workoutManagement.UserWorkoutPlan).toHaveBeenCalledWith(uwp_request);
+        expect(workoutManagement.create_user_workout_plan).toHaveBeenCalledWith(mockUserWorkoutPlan);
+      });
+      
 
   });
   
