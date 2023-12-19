@@ -1358,7 +1358,6 @@ async function assign_workout_plan(req, res) {
 
 
 async function get_coach(req, res) {
-
   res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   if (!req.session.user || !req.session.user["user_id"]) {
     console.log("Access denied: User is not logged in");
@@ -1376,8 +1375,28 @@ async function get_coach(req, res) {
   ])
 }
 
+async function check_user_workout_plan_controller(req, res) {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  if (!req.session.user || !req.session.user["user_id"]) {
+      console.log("Access denied: User is not logged in");
+      return res.status(403).send({ message: "Access denied: User is not logged in" });
+  }
+
+  client_dashboard.check_user_workout_plan({ user_id: req.session.user["user_id"] })
+      .then((workoutPlan) => {
+          if (workoutPlan) {
+              res.status(200).send({ workoutPlan });
+          } else {
+              res.status(404).send({ message: "No workout plan found for this user" });
+          }
+      })
+      .catch((err) => {
+          res.status(400).send({ message: "An error has occurred.", error: err.message });
+      });
+}
+
+module.exports.check_user_workout_plan_controller = check_user_workout_plan_controller;
 module.exports.get_requested_clients_of_coach_controller = get_requested_clients_of_coach_controller;
-// module.exports.get_User_Profile_By_Id_controller = get_User_Profile_By_Id_controller;
 module.exports.get_client_target_weight = get_client_target_weight;
 module.exports.check_exercise_references_controller = check_exercise_references_controller;
 module.exports.get_exercise_by_id_controller = get_exercise_by_id_controller;

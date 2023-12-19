@@ -121,6 +121,7 @@ app.get("/get_client_target_weight/:client_id?", controller.get_client_target_we
 app.post("/assign_workout_plan", controller.assign_workout_plan);
 app.delete("/terminate/:terminatee_id", controller.terminate_client_coach);
 app.get("/get_coach", controller.get_coach);
+app.get("/check_user_workout_plan", controller.check_user_workout_plan_controller);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {

@@ -188,6 +188,19 @@ async function get_client_target_weight(client_id) {
     });
   }
 
+  function get_user_workout_plan({ user_id }) {
+    const sql = `SELECT workout_plan_id FROM User_Workout_Plan WHERE user_id = ?`;
+    return new Promise((resolve, reject) => {
+        con.query(sql, [user_id], (err, results) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(results);
+        });
+    });
+}
+module.exports.get_user_workout_plan = get_user_workout_plan;
 module.exports.get_client_dashboard_info = get_client_dashboard_info;
 module.exports.check_is_coach = check_is_coach;
 module.exports.get_client_target_weight = get_client_target_weight;
