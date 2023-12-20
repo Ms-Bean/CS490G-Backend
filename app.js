@@ -76,7 +76,7 @@ app.post("/reject_client", controller.reject_client_controller);
 app.get("/has_hired_coach/:coach_id", controller.check_if_client_has_hired_coach);
 app.get("/get_clients/:coach_id", controller.get_users_clients);
 app.get("/get_role", controller.get_role_controller);
-app.get("/get_profile_info", controller.get_User_Profile_By_Id_controller);
+// app.get("/get_profile_info", controller.get_User_Profile_By_Id_controller);
 app.get("/get_user_account_info", controller.get_user_account_info_controller);
 app.post("/alter_account_info", controller.alter_account_info_controller);
 app.get("/get_client_dashboard_info", controller.get_client_dashboard_info);
@@ -121,6 +121,7 @@ app.get("/get_client_target_weight/:client_id?", controller.get_client_target_we
 app.post("/assign_workout_plan", controller.assign_workout_plan);
 app.delete("/terminate/:terminatee_id", controller.terminate_client_coach);
 app.get("/get_coach", controller.get_coach);
+app.get("/check_user_workout_plan", controller.check_user_workout_plan_controller);
 
 app.get("/check_session", (req, res) => {
   if (req.session.user) {

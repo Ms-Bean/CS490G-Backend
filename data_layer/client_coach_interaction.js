@@ -1,47 +1,45 @@
 const connection = require("./conn");
 const con = connection.con;
 
-/**
- * @param {number} user_id 
- * @returns {Promise<Array<{ user_id: number, about_me: string, experience_level: string, created: Date, modified: Date, height: number, weight: number, medical_conditions: string, budget: number, goals: string, target_weight: number, profile_picture: string, birthday: Date}>>}
- */
-async function get_User_Profile_By_Id_Data_Layer(user_id) {
-    let sql = "SELECT user_id, about_me, experience_level, created, modified, height, weight, medical_conditions, budget, goals, target_weight, pfp_link, birthday FROM User_Profile WHERE user_id = ?";
+// /**
+//  * @param {number} user_id 
+//  * @returns {Promise<Array<{ user_id: number, about_me: string, experience_level: string, created: Date, modified: Date, height: number, weight: number, medical_conditions: string, budget: number, goals: string, target_weight: number, profile_picture: string, birthday: Date}>>}
+//  */
+// async function get_User_Profile_By_Id_Data_Layer(user_id) {
+//     let sql = "SELECT user_id, about_me, experience_level, created, modified, height, weight, medical_conditions, budget, goals, target_weight, pfp_link, birthday FROM User_Profile WHERE user_id = ?";
     
-    return new Promise((resolve, reject) => {
-      con.query(sql, [user_id], function (err, [result]) {
-        if (err) {
-          console.log(err);
-          reject("SQL failure");
-        }
+//     return new Promise((resolve, reject) => {
+//       con.query(sql, [user_id], function (err, results) {
+//         if (err) {
+//           console.error(err);
+//           return reject(new Error("SQL failure"));
+//         }
   
-        if (!result) {
-          reject("User profile not found");
-        } else {
-          // Extract relevant properties and format them as an array of objects
-          const userProfile = [
-            {
-              user_id: result.user_id,
-              about_me: result.about_me, // Replace 'about_me' with the actual property you want for 'client_name'
-              experience_level: result.experience_level,
-              created: result.created,
-              modified: result.modified,
-              height: result.height,
-              weight: result.weight,
-              medical_conditions: result.medical_conditions,
-              budget: result.budget,
-              goals: result.goals,
-              target_weight: result.target_weight,
-              profile_picture: result.pfp_link,
-              birthday: result.birthday
-            }
-          ];
+//         if (results.length === 0) {
+//           return resolve(null);
+//         } else {
+//           // Extract relevant properties and format them as an array of objects
+//           const userProfile = {
+//               user_id: results[0].user_id,
+//               about_me: results[0].about_me, // Replace 'about_me' with the actual property you want for 'client_name'
+//               experience_level: results[0].experience_level,
+//               created: results[0].created,
+//               modified: results[0].modified,
+//               height: results[0].height,
+//               weight: results[0].weight,
+//               medical_conditions: results[0].medical_conditions,
+//               budget: results[0].budget,
+//               goals: results[0].goals,
+//               target_weight: results[0].target_weight,
+//               profile_picture: results[0].pfp_link,
+//               birthday: results[0].birthday
+//             };
   
-          resolve(userProfile);
-        }
-      });
-    });
-  }
+//           resolve(userProfile);
+//         }
+//       });
+//     });
+//   }
   
 /**
  * @param {number} coach_id
@@ -333,7 +331,7 @@ module.exports.get_coaches_of_client_data_layer = get_coaches_of_client_data_lay
 module.exports.accept_client_data_layer = accept_client_data_layer;
 module.exports.check_if_client_coach_request_exists = check_if_client_coach_request_exists;
 module.exports.check_if_client_has_hired_coach = check_if_client_has_hired_coach;
-module.exports.get_User_Profile_By_Id_Data_Layer = get_User_Profile_By_Id_Data_Layer;
+// module.exports.get_User_Profile_By_Id_Data_Layer = get_User_Profile_By_Id_Data_Layer;
 module.exports.request_coach_data_layer = request_coach_data_layer;
 module.exports.get_clients_of_coach_data_layer = get_clients_of_coach_data_layer;
 module.exports.remove_coach_data_layer = remove_coach_data_layer;

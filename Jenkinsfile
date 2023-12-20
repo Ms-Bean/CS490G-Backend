@@ -36,7 +36,7 @@ pipeline {
                 dir('CS490G-Backend') {
                     script {
                         try {
-                            sh 'npm test' // Replace with your actual test command
+                            sh 'npm test'
                         } catch (Exception e) {
                             echo "Tests failed, but pipeline will continue."
                         }

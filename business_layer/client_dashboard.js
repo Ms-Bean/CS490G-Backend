@@ -1,5 +1,7 @@
 let client_dashboard = require("../data_layer/client_dashboard");
 let user_info = require("../business_layer/user_info");
+
+
 async function get_client_dashboard_info(requester_id, client_id)
 {
     return new Promise((resolve, reject) =>{
@@ -51,6 +53,18 @@ async function get_client_target_weight_business_layer(client_id) {
       });
   }
 
+
+
+async function check_user_workout_plan({ user_id }) {
+    if (!user_id) {
+        return Promise.reject(new Error("User ID is required"));
+    }
+
+    const workoutPlans = await client_dashboard.get_user_workout_plan({ user_id });
+    return workoutPlans.length > 0 ? workoutPlans : null;
+}
+
+module.exports.check_user_workout_plan = check_user_workout_plan;
 module.exports.get_client_dashboard_info = get_client_dashboard_info;
 module.exports.get_client_target_weight_business_layer = get_client_target_weight_business_layer;
   
