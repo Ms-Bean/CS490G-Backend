@@ -10,7 +10,7 @@ describe('messaging', () => {
     sinon.restore();
   });
 
-  describe.skip("get_profile_info business layer coach success", function () {
+  describe("get_profile_info business layer coach success", function () {
     it("should get profile info from simulated data layer", async function () {
         // Arrange
         sinon.stub(user_info_data_layer, "get_role").returns(Promise.resolve("coach"));
@@ -46,7 +46,7 @@ describe('messaging', () => {
     });
   });
 
-  describe.skip("set_profile_info business layer coach success", function () {
+  describe("set_profile_info business layer coach success", function () {
     it("should set profile info using simulated data layer", async function () {
         // Arrange
         sinon.stub(user_info_data_layer, "get_role").returns(Promise.resolve("coach"));
@@ -57,7 +57,7 @@ describe('messaging', () => {
         expect(result).toBe("Information updated");
     });
   });
-  describe.skip("set_profile_info business layer coach failure", function () {
+  describe("set_profile_info business layer coach failure", function () {
     it("should return an error due to not having anything to update", async function () {
         // Arrange
         sinon.stub(user_info_data_layer, "get_role").returns(Promise.resolve("coach"));
@@ -66,6 +66,7 @@ describe('messaging', () => {
         try
         {
           const result = await profile_management_business_layer.set_profile_info();
+          console.error(result);
           expect(1).toBe(0);
         }
         catch(err)

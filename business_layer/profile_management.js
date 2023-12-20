@@ -109,27 +109,25 @@ async function set_profile_info(
             .catch((err) => {
               reject(err);
             });
-        } else if (role === "coach") {
+        } else if (role === "coach" && 
+          availability !== undefined &&
+          hourly_rate !== undefined &&
+          coaching_history !== undefined &&
+          coaching_experience_level !== undefined &&
+          accepting_new_clients !== undefined
+        ) {
           let coachUpdatePromises = [];
-          if (
-            availability !== undefined &&
-            hourly_rate !== undefined &&
-            coaching_history !== undefined &&
-            coaching_experience_level !== undefined &&
-            accepting_new_clients !== undefined
-          ) {
-            coachUpdatePromises.push(
-              profile_management.set_coach_profile_info(
-                user_id,
-                availability,
-                hourly_rate,
-                coaching_history,
-                accepting_new_clients,
-                coaching_experience_level,
-                paypal_link
-              )
-            );
-          }
+          coachUpdatePromises.push(
+            profile_management.set_coach_profile_info(
+              user_id,
+              availability,
+              hourly_rate,
+              coaching_history,
+              accepting_new_clients,
+              coaching_experience_level,
+              paypal_link
+            )
+          );
           if (goals !== undefined && goals.length > 0) {
             coachUpdatePromises.push(
               profile_management.set_coach_goals(user_id, goals)
