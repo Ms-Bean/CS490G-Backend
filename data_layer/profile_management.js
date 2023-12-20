@@ -73,6 +73,20 @@ async function get_coach_profile_info(user_id)
     })
 }
 
+async function get_coach_goals(user_id) {
+    let get_coach_goals_sql = "SELECT goal_id FROM Coaches_Goals WHERE coach_id = ?";
+    return new Promise((resolve, reject) => {
+        con.query(get_coach_goals_sql, [user_id], function(err, results) {
+            if (err) {
+                console.log(err);
+                reject("SQL failure in getting coach goals");
+            }
+            let goal_ids = results.map(row => row.goal_id);
+            resolve(goal_ids);
+        });
+    });
+}
+
 async function set_client_profile_info(user_id, about_me, experience_level, height, weight, medical_conditions, budget, goals, target_weight, birthday, pfp_link)
 {
     console.log("Birthday:");
@@ -106,6 +120,31 @@ async function set_coach_profile_info(user_id, availability, hourly_rate, coachi
     })
 }
 
+async function set_coach_goals(user_id, goals) {
+    let clear_goals_sql = "DELETE FROM Coaches_Goals WHERE coach_id = ?";
+    let insert_goals_sql = "INSERT INTO Coaches_Goals (coach_id, goal_id) VALUES ?";
+    let values = goals.map(goal_id => [user_id, goal_id]);
+
+    return new Promise((resolve, reject) => {
+        con.query(clear_goals_sql, [user_id], function(err, results) {
+            if (err) {
+                console.log(err);
+                return reject("SQL failure in clearing coach goals");
+            }
+
+            con.query(insert_goals_sql, [values], function(err, results) {
+                if (err) {
+                    console.log(err);
+                    return reject("SQL failure in setting coach goals");
+                }
+                resolve("Coach goals updated");
+            });
+        });
+    });
+}
+
+module.exports.get_coach_goals = get_coach_goals;   
+module.exports.set_coach_goals = set_coach_goals;
 module.exports.get_client_profile_info = get_client_profile_info;
 module.exports.get_coach_profile_info = get_coach_profile_info;
 module.exports.set_client_profile_info = set_client_profile_info;
