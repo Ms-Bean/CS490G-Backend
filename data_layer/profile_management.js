@@ -122,7 +122,7 @@ async function set_coach_profile_info(user_id, availability, hourly_rate, coachi
 
 async function set_coach_goals(user_id, goals) {
     let clear_goals_sql = "DELETE FROM Coaches_Goals WHERE coach_id = ?";
-    let insert_goals_sql = "INSERT INTO Coaches_Goals (coach_id, goal_id) VALUES ?";
+    let insert_goals_sql = "INSERT INTO Coaches_Goals (coach_id, goal_id) VALUES (?, ?)";
     await new Promise((resolve, reject) => {
         con.query(clear_goals_sql, [user_id], (err) => {
             if (err) {

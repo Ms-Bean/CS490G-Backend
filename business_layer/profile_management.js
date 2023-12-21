@@ -67,7 +67,8 @@ async function set_profile_info(
   coaching_history,
   accepting_new_clients,
   coaching_experience_level,
-  paypal_link
+  paypal_link,
+  coach_goals
 ) {
   return new Promise((resolve, reject) => {
     user_info
@@ -117,9 +118,9 @@ async function set_profile_info(
               paypal_link
             )
           );
-          if (goals !== undefined && goals.length > 0) {
+          if (coach_goals !== undefined) {
             coachUpdatePromises.push(
-              profile_management.set_coach_goals(user_id, goals)
+              profile_management.set_coach_goals(user_id, coach_goals)
             );
           }
           Promise.all(coachUpdatePromises)
