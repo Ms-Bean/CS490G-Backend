@@ -1381,8 +1381,9 @@ async function check_user_workout_plan_controller(req, res) {
       console.log("Access denied: User is not logged in");
       return res.status(403).send({ message: "Access denied: User is not logged in" });
   }
-
-  client_dashboard.check_user_workout_plan({ user_id: req.session.user["user_id"] })
+  console.log("User:");
+  console.log(req.headers.user_id === undefined ? req.session.user["user_id"] : req.headers.user_id);
+  client_dashboard.check_user_workout_plan({ user_id: req.headers.user_id === undefined ? req.session.user["user_id"] : req.headers.user_id})
       .then((workoutPlan) => {
           if (workoutPlan) {
               res.status(200).send({ workoutPlan });
