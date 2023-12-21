@@ -1,42 +1,37 @@
-// get_requested_clients_of_coach.test.js
-const user_info = require('../../data_layer/user_info');
-const client_coach_interaction = require('../../data_layer/client_coach_interaction');
-const { get_requested_clients_of_coach_business_layer } = require('../../business_layer/client_coach_interaction'); // Replace 'yourFileName' with the actual filename
+const { con } = require("../../data_layer/conn");
+const data_layer = require("../../data_layer/client_coach_interaction");
 
-jest.mock('../../data_layer/user_info');
-jest.mock('../../data_layer/client_coach_interaction');
 
-describe('get_requested_clients_of_coach_business_layer', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+jest.mock("../../data_layer/conn");
 
-  test('should resolve with an array of clients for a valid coach', async () => {
-    const coachId = 1;
-    user_info.get_role.mockResolvedValue('coach');
-    client_coach_interaction.get_requested_clients_of_coach_data_layer.mockResolvedValue([
-      { id: 1, name: 'Client 1', username: 'client1' },
-      { id: 2, name: 'Client 2', username: 'client2' },
-    ]);
 
-    const result = await get_requested_clients_of_coach_business_layer(coachId);
+describe("Test getting clients of coach", () => {
+    test("Database failure", async () => {
+        const coach_id = 3;
+        const expected_response = "Something went wrong";
+        con.query.mockImplementation((sql, values, callback) => callback(new Error(expected_response)));
 
-    expect(result).toEqual([
-      { id: 1, name: 'Client 1', username: 'client1' },
-      { id: 2, name: 'Client 2', username: 'client2' },
-    ]);
-    expect(user_info.get_role).toHaveBeenCalledWith(coachId);
-    expect(client_coach_interaction.get_requested_clients_of_coach_data_layer).toHaveBeenCalledWith(coachId);
-  });
+        await expect(data_layer.get_clients_of_coach_data_layer(coach_id)).rejects.toThrow(expected_response);
+    });
 
-  test('should reject for a non-coach user', async () => {
-    const coachId = 1;
-    user_info.get_role.mockResolvedValue('client');
-
-    await expect(get_requested_clients_of_coach_business_layer(coachId)).rejects.toThrowError('Only coach can check their client requests.');
-    expect(user_info.get_role).toHaveBeenCalledWith(coachId);
-    expect(client_coach_interaction.get_requested_clients_of_coach_data_layer).not.toHaveBeenCalled();
-  });
-
-  // Add more test cases as needed...
+    test("Successful retrieval", async () => {
+        const coach_id = 3;
+        const mock_db_row = [{
+            client_id: 3,
+            client_name: "clientName",
+            pfp_link: "https://www.some-image.com",
+            message: "Message",
+            created: Date.now()
+        }];
+        const expected_response = [{
+            id: mock_db_row[0].client_id,
+            name: mock_db_row[0].client_name,
+            profile_picture: mock_db_row[0].pfp_link,
+            message_content: mock_db_row[0].message,
+            message_created: mock_db_row[0].created
+        }];
+        con.query.mockImplementation((sql, values, callback) => callback(null, mock_db_row));
+    
+        await expect(data_layer.get_clients_of_coach_data_layer(coach_id)).resolves.toEqual(expected_response);
+    });
 });

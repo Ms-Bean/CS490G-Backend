@@ -1,45 +1,6 @@
 const connection = require("./conn");
 const con = connection.con;
 
-// /**
-//  * @param {number} user_id 
-//  * @returns {Promise<Array<{ user_id: number, about_me: string, experience_level: string, created: Date, modified: Date, height: number, weight: number, medical_conditions: string, budget: number, goals: string, target_weight: number, profile_picture: string, birthday: Date}>>}
-//  */
-// async function get_User_Profile_By_Id_Data_Layer(user_id) {
-//     let sql = "SELECT user_id, about_me, experience_level, created, modified, height, weight, medical_conditions, budget, goals, target_weight, pfp_link, birthday FROM User_Profile WHERE user_id = ?";
-    
-//     return new Promise((resolve, reject) => {
-//       con.query(sql, [user_id], function (err, results) {
-//         if (err) {
-//           console.error(err);
-//           return reject(new Error("SQL failure"));
-//         }
-  
-//         if (results.length === 0) {
-//           return resolve(null);
-//         } else {
-//           // Extract relevant properties and format them as an array of objects
-//           const userProfile = {
-//               user_id: results[0].user_id,
-//               about_me: results[0].about_me, // Replace 'about_me' with the actual property you want for 'client_name'
-//               experience_level: results[0].experience_level,
-//               created: results[0].created,
-//               modified: results[0].modified,
-//               height: results[0].height,
-//               weight: results[0].weight,
-//               medical_conditions: results[0].medical_conditions,
-//               budget: results[0].budget,
-//               goals: results[0].goals,
-//               target_weight: results[0].target_weight,
-//               profile_picture: results[0].pfp_link,
-//               birthday: results[0].birthday
-//             };
-  
-//           resolve(userProfile);
-//         }
-//       });
-//     });
-//   }
   
 /**
  * @param {number} coach_id
@@ -109,9 +70,6 @@ function get_clients_of_coach_data_layer(coach_id) {
         AND cc.requested = 0
     GROUP BY 
         cc.client_id, client_name, up.pfp_link, message, m.created;
-
-
-
     `;
     
     return new Promise((resolve, reject) => {
