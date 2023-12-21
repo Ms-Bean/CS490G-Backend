@@ -77,7 +77,7 @@ async function set_profile_info(
           reject("User is not a client or coach");
         }
 
-        if (role === "client") {
+        if (pfp_link !== undefined || experience_level !== undefined || height !== undefined || weight !== undefined || medical_conditions !== undefined || budget !== undefined || goals !== undefined || target_weight !== undefined || birthday !== undefined) {
           profile_management
             .set_client_profile_info(
               user_id,

@@ -58,7 +58,7 @@ describe('Profile Managment', () => {
         // Act
         const result = await profile_management_business_layer.set_profile_info(1, "http://link.png", "hello", 5, 5, 4, "sickness", 45, [1, 2], 44, "2000-12-12", "today", 100, 55, true, 1, "0");
         // Assert
-        expect(result).toBe("Coach information updated");
+        expect(result).toBe("Client information updated");
     });
   });
   describe("set_profile_info business layer coach failure", function () {
