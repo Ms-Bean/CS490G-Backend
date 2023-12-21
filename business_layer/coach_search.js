@@ -97,7 +97,7 @@ function _normalize_filter_options(filter_options) {
         city: filter_options?.location?.city ?? "",
         state: filter_options?.location?.state ?? ""
     };
-    normalized.goals = filter_options.goals ?? [];
+    normalized.goals = filter_options?.goals ?? [];
     normalized.accepting_new_clients = filter_options?.accepting_new_clients ?? null;
 
     return normalized;
