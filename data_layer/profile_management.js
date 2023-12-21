@@ -123,24 +123,46 @@ async function set_coach_profile_info(user_id, availability, hourly_rate, coachi
 async function set_coach_goals(user_id, goals) {
     let clear_goals_sql = "DELETE FROM Coaches_Goals WHERE coach_id = ?";
     let insert_goals_sql = "INSERT INTO Coaches_Goals (coach_id, goal_id) VALUES ?";
-    let values = goals.map(goal_id => [user_id, goal_id]);
-
-    return new Promise((resolve, reject) => {
-        con.query(clear_goals_sql, [user_id], function(err, results) {
+    await new Promise((resolve, reject) => {
+        con.query(clear_goals_sql, [user_id], (err) => {
             if (err) {
-                console.log(err);
+                console.error(err);
                 return reject("SQL failure in clearing coach goals");
             }
-
-            con.query(insert_goals_sql, [values], function(err, results) {
-                if (err) {
-                    console.log(err);
-                    return reject("SQL failure in setting coach goals");
-                }
-                resolve("Coach goals updated");
-            });
+            resolve();
         });
     });
+
+    let values = goals.map(goal_id => [user_id, goal_id]);
+    for (let user_goal_pair of values) {
+        await new Promise((resolve, reject) => {
+            con.query(insert_goals_sql, user_goal_pair, (err) => {
+                if (err) {
+                    console.error(err);
+                    return reject("SQL failure in setting coach goals");
+                }
+                resolve();
+            });
+        });
+    }
+    
+    return "Coach goals updated";
+    // return new Promise((resolve, reject) => {
+    //     con.query(clear_goals_sql, [user_id], function(err, results) {
+    //         if (err) {
+    //             console.log(err);
+    //             return reject("SQL failure in clearing coach goals");
+    //         }
+
+    //         con.query(insert_goals_sql, [values], function(err, results) {
+    //             if (err) {
+    //                 console.log(err);
+    //                 return reject("SQL failure in setting coach goals");
+    //             }
+    //             resolve("Coach goals updated");
+    //         });
+    //     });
+    // });
 }
 
 module.exports.get_coach_goals = get_coach_goals;   

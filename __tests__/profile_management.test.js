@@ -3,9 +3,7 @@ const conn = require("../data_layer/conn");
 const profile_management_data_layer = require("../data_layer/profile_management");
 const profile_management_business_layer = require("../business_layer/profile_management");
 const user_info_data_layer = require("../data_layer/user_info");
-describe('messaging', () => {
-  beforeEach(() => {
-  });
+describe('Profile Managment', () => {
   afterEach(function () {
     sinon.restore();
   });
@@ -15,14 +13,18 @@ describe('messaging', () => {
         // Arrange
         sinon.stub(user_info_data_layer, "get_role").returns(Promise.resolve("coach"));
         sinon.stub(profile_management_data_layer, "get_client_profile_info").returns(Promise.resolve("test_response_1"));
-        sinon.stub(profile_management_data_layer, "get_coach_profile_info").returns(Promise.resolve("test_response_2"));
+        sinon.stub(profile_management_data_layer, "get_coach_profile_info").returns(Promise.resolve({info: "test_response_2"}));
+        sinon.stub(profile_management_data_layer, "get_coach_goals").returns(Promise.resolve("test_response_3"));
         // Act
         const result = await profile_management_business_layer.get_profile_info(1);
         // Assert
         console.log(result);
         expect(result).toStrictEqual({
           "client_profile_info": "test_response_1", 
-          "coach_profile_info": "test_response_2"
+          "coach_profile_info": {
+            info: "test_response_2",
+            goals: "test_response_3"
+          }
         });
     });
   });
@@ -51,10 +53,12 @@ describe('messaging', () => {
         // Arrange
         sinon.stub(user_info_data_layer, "get_role").returns(Promise.resolve("coach"));
         sinon.stub(profile_management_data_layer, "set_client_profile_info").returns(Promise.resolve());
+        sinon.stub(profile_management_data_layer, "set_coach_profile_info").returns(Promise.resolve());
+        sinon.stub(profile_management_data_layer, "set_coach_goals").returns(Promise.resolve());
         // Act
-        const result = await profile_management_business_layer.set_profile_info(1, "http://link.png", "hello", 5, 5, 4, "sickness", 45, "to eat", 44, "today", "not", 55, "yes", 1, 0);
+        const result = await profile_management_business_layer.set_profile_info(1, "http://link.png", "hello", 5, 5, 4, "sickness", 45, [1, 2], 44, "2000-12-12", "today", 100, 55, true, 1, "0");
         // Assert
-        expect(result).toBe("Information updated");
+        expect(result).toBe("Coach information updated");
     });
   });
   describe("set_profile_info business layer coach failure", function () {
